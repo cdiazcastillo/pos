@@ -1,0 +1,83 @@
+:root {
+    /* Color Palette - Premium Dark */
+    --bg-primary: #111111;
+    --bg-secondary: #1a1a1a;
+    --bg-glass: rgba(26, 26, 26, 0.8);
+    
+    --text-primary: #ffffff;
+    --text-secondary: #aaaaaa;
+    --text-accent: #D4AF37; /* Gold */
+    
+    /* Brand Identity */
+    --brand-gold: #D4AF37;
+    --brand-dark-gold: #aa8c2c;
+    
+    /* Spacing */
+    --container-width: 1200px;
+    --header-height: 80px;
+    
+    /* Typography */
+    --font-heading: 'Montserrat', sans-serif;
+    --font-body: 'Inter', sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    overflow-x: hidden;
+    line-height: 1.6;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    color: var(--text-primary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+h1 { font-size: 3.5rem; line-height: 1.1; }
+h2 { font-size: 2.5rem; margin-bottom: 1rem; }
+h3 { font-size: 1.5rem; color: var(--brand-gold); }
+
+/* Utilities */
+.container {
+    max-width: var(--container-width);
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.btn {
+    display: inline-block;
+    padding: 12px 30px;
+    background: var(--brand-gold);
+    color: var(--bg-primary);
+    font-family: var(--font-heading);
+    font-weight: 700;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+    border: 2px solid var(--brand-gold);
+    cursor: pointer;
+}
+
+.btn:hover {
+    background: transparent;
+    color: var(--brand-gold);
+}
+
+.text-gold { color: var(--brand-gold); }
+.text-center { text-align: center; }
+
+/* Section Logic */
+section {
+    padding: 80px 0;
+}
