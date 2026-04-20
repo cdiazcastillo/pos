@@ -16,6 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const productGrid = document.getElementById('product-grid');
     const cartItemsContainer = document.getElementById('cart-items');
     const cartTotalElem = document.getElementById('cart-total');
+    const cartTotalItemsElem = document.getElementById('cart-total-items');
+    const cartCountBadgeElem = document.getElementById('cart-count-badge');
     const clearCartBtn = document.getElementById('clear-cart-btn');
     const startShiftForm = document.getElementById('start-shift-form');
     
@@ -95,12 +97,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateCart() {
+        if (!cartItemsContainer || !cartTotalElem) return;
+
         cartItemsContainer.innerHTML = '';
         let total = 0;
+        let totalItems = 0;
 
         cart.forEach(item => {
             const itemTotal = item.price * item.quantity;
             total += itemTotal;
+            totalItems += item.quantity;
             
             const itemElem = document.createElement('div');
             itemElem.classList.add('cart-item');
@@ -114,6 +120,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         cartTotalElem.textContent = `$${formatWithDots(total)}`;
+        if (cartTotalItemsElem) cartTotalItemsElem.textContent = `${totalItems}`;
+        if (cartCountBadgeElem) cartCountBadgeElem.textContent = `${totalItems}`;
 
         // Add event listeners to remove buttons
         document.querySelectorAll('.remove-item-btn').forEach(btn => {

@@ -8,6 +8,7 @@ class Database {
     private static $dbname;
     private static $username;
     private static $password;
+    private static $port;
 
     // The single instance of the class
     private static $instance = null;
@@ -32,16 +33,38 @@ class Database {
         self::$dbname = self::env('DB_NAME', 'ventascaf_db');
         self::$username = self::env('DB_USER', 'root');
         self::$password = self::env('DB_PASS', '');
+        self::$port = self::env('DB_PORT', '3306');
 
         try {
-            $dsn = "mysql:host=" . self::$host . ";dbname=" . self::$dbname . ";charset=utf8mb4";
+            $dsn = self::buildDsn(self::$host, self::$port, self::$dbname);
             $this->conn = new PDO($dsn, self::$username, self::$password);
             $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $this->conn->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            // En un entorno de producción, registrarías este error y mostrarías un mensaje genérico
-            die("Database connection failed: " . $e->getMessage());
+            $message = $e->getMessage();
+            if (self::$host === 'localhost' && self::isSocketError($message)) {
+                try {
+                    $dsn = self::buildDsn('127.0.0.1', self::$port, self::$dbname);
+                    $this->conn = new PDO($dsn, self::$username, self::$password);
+                    $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                    $this->conn->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+                    return;
+                } catch (PDOException $fallbackError) {
+                    throw new RuntimeException("Database connection failed: " . $fallbackError->getMessage());
+                }
+            }
+            throw new RuntimeException("Database connection failed: " . $message);
         }
+    }
+
+    private static function buildDsn(string $host, string $port, string $dbname): string {
+        $safePort = trim($port) === '' ? '3306' : $port;
+        return "mysql:host={$host};port={$safePort};dbname={$dbname};charset=utf8mb4";
+    }
+
+    private static function isSocketError(string $message): bool {
+        return stripos($message, 'No such file or directory') !== false
+            || stripos($message, 'SQLSTATE[HY000] [2002]') !== false;
     }
     
     /**

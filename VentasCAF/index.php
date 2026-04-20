@@ -98,97 +98,14 @@ function get_stock_semaphore_class($product) {
             flex-direction: column;
             max-width: 1600px;
             margin: 0 auto;
-            padding: 14px;
-            gap: 12px;
-        }
-
-        .topbar {
-            background: linear-gradient(135deg, var(--primary-color), #5146e5);
-            color: #fff;
-            border-radius: 16px;
-            padding: 14px 16px;
-            display: grid;
-            grid-template-columns: auto 1fr auto;
-            gap: 12px;
-            align-items: center;
-            box-shadow: 0 10px 24px rgba(37, 62, 168, 0.25);
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .brand img {
-            width: 52px;
-            height: 52px;
-            border-radius: 12px;
-            background-color: rgba(255, 255, 255, 0.95);
-            padding: 4px;
-        }
-
-        .brand h1 {
-            margin: 0;
-            font-size: 1.2rem;
-        }
-
-        .brand p {
-            margin: 3px 0 0;
-            opacity: 0.9;
-            font-size: 0.85rem;
-        }
-
-        .topbar-stats {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .pill {
-            background-color: rgba(255, 255, 255, 0.16);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            padding: 6px 10px;
-            border-radius: 999px;
-            font-size: 0.82rem;
-            font-weight: 700;
-            white-space: nowrap;
-        }
-
-        .topbar-actions {
-            display: flex;
-            gap: 8px;
-            justify-self: end;
-        }
-
-        .topbar-link {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.36);
-            color: #fff;
-            background-color: rgba(255, 255, 255, 0.1);
-            font-size: 0.85rem;
-            font-weight: 700;
-            padding: 9px 12px;
-            transition: all 0.2s ease;
-        }
-
-        .topbar-link:hover {
-            background-color: rgba(255, 255, 255, 0.2);
-        }
-
-        .topbar-link.secondary {
-            background-color: rgba(17, 24, 39, 0.2);
+            padding: 8px;
         }
 
         #sales-interface {
             display: flex;
             flex-grow: 1;
             min-height: 0;
-            gap: 12px;
+            gap: 8px;
         }
 
         .products-panel {
@@ -202,35 +119,19 @@ function get_stock_semaphore_class($product) {
             min-height: 0;
         }
 
-        .panel-head {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 14px 16px;
-            border-bottom: 1px solid #eef2fb;
-            background-color: var(--surface-soft);
-        }
-
-        .panel-head h2 {
-            margin: 0;
-            font-size: 1rem;
-        }
-
-        .panel-head span {
-            font-size: 0.84rem;
-            color: var(--muted);
-            font-weight: 600;
-        }
-
         #product-grid {
             flex: 1;
-            padding: 14px;
+            padding: 10px;
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
-            gap: 10px;
+            gap: 8px;
             align-content: start;
-            overflow-y: auto;
+            overflow-y: scroll;
             min-height: 0;
+            scrollbar-gutter: stable;
+            scrollbar-width: auto;
+            scrollbar-color: #9db0f6 #eef2fb;
+            -webkit-overflow-scrolling: touch;
         }
 
         #cart {
@@ -335,28 +236,45 @@ function get_stock_semaphore_class($product) {
 
         .cart-header {
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-end;
             align-items: center;
             border-bottom: 1px solid #eef2fb;
-            padding: 4px 4px 10px;
-        }
-
-        .cart-header h2 {
-            margin: 0;
-            font-size: 1.05rem;
-        }
-
-        .cart-header small {
-            color: var(--muted);
-            font-weight: 600;
+            padding: 2px 4px 8px;
         }
 
         #cart-items {
             flex-grow: 1;
-            overflow-y: auto;
+            overflow-y: scroll;
             padding: 6px 2px;
             display: grid;
             gap: 4px;
+            scrollbar-gutter: stable;
+            scrollbar-width: auto;
+            scrollbar-color: #9db0f6 #eef2fb;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        #product-grid::-webkit-scrollbar,
+        #cart-items::-webkit-scrollbar {
+            width: 14px;
+        }
+
+        #product-grid::-webkit-scrollbar-track,
+        #cart-items::-webkit-scrollbar-track {
+            background: #eef2fb;
+            border-radius: 999px;
+        }
+
+        #product-grid::-webkit-scrollbar-thumb,
+        #cart-items::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #9db0f6, #6f87ea);
+            border-radius: 999px;
+            border: 3px solid #eef2fb;
+        }
+
+        #product-grid::-webkit-scrollbar-thumb:hover,
+        #cart-items::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #7b96f0, #4f6fe2);
         }
 
         .cart-item {
@@ -401,6 +319,14 @@ function get_stock_semaphore_class($product) {
             border-top: 1px solid #eef2fb;
             padding-top: 10px;
             margin-top: auto;
+            background: #fff;
+        }
+
+        .cart-sticky-summary {
+            position: sticky;
+            bottom: 0;
+            background: linear-gradient(180deg, rgba(255,255,255,0.92), #fff 20%);
+            padding-top: 6px;
         }
 
         .summary-row {
@@ -537,34 +463,28 @@ function get_stock_semaphore_class($product) {
 
         @media (max-width: 768px) {
             #pos-container {
-                padding: 8px;
-                gap: 8px;
-            }
-
-            .topbar {
-                grid-template-columns: 1fr;
-                gap: 10px;
-            }
-
-            .topbar-actions {
-                justify-self: stretch;
-                display: grid;
-                grid-template-columns: repeat(2, 1fr);
+                padding: 4px;
             }
 
             #sales-interface {
                 flex-direction: column;
                 min-height: 0;
+                gap: 6px;
             }
 
             .products-panel {
-                flex: 2;
+                flex: 1;
                 min-height: 0;
             }
 
             #cart {
-                flex: 1;
-                min-height: 265px;
+                flex: 0 0 auto;
+                min-height: 320px;
+                max-height: 46vh;
+                position: sticky;
+                bottom: 0;
+                z-index: 5;
+                box-shadow: 0 -8px 20px rgba(15, 23, 42, 0.08);
             }
 
             #product-grid {
@@ -572,8 +492,27 @@ function get_stock_semaphore_class($product) {
                 gap: 8px;
             }
 
+            #cart-items {
+                max-height: 200px;
+            }
+
+            .summary-row {
+                font-size: 0.88rem;
+            }
+
+            .summary-row.total {
+                font-size: 1.05rem;
+            }
+
             #cart-actions {
                 grid-template-columns: repeat(2, 1fr);
+                gap: 6px;
+                margin-top: 8px;
+            }
+
+            .action-btn {
+                font-size: 0.74rem;
+                padding: 9px 6px;
             }
         }
 
@@ -602,33 +541,8 @@ function get_stock_semaphore_class($product) {
 </head>
 <body ontouchstart="">
     <div id="pos-container" class="<?php echo !$is_shift_open ? 'shift-closed' : ''; ?>">
-
-        <header class="topbar">
-            <div class="brand">
-                <img src="img/logo.png" alt="Logo VentasCAF">
-                <div>
-                    <h1>Punto de Venta VentasCAF</h1>
-                    <p>Operación rápida, clara y preparada para móvil.</p>
-                </div>
-            </div>
-            <div class="topbar-stats">
-                <span class="pill"><?php echo count($products); ?> productos activos</span>
-                <span class="pill"><?php echo $stock_available_count; ?> con stock</span>
-                <span class="pill"><?php echo $is_shift_open ? 'Turno activo' : 'Turno cerrado'; ?></span>
-            </div>
-            <div class="topbar-actions">
-                <a href="admin.php" class="topbar-link">Administración</a>
-                <a href="return.php" class="topbar-link secondary">Devoluciones</a>
-            </div>
-        </header>
-
         <main id="sales-interface">
             <section class="products-panel">
-                <div class="panel-head">
-                    <h2>Productos disponibles</h2>
-                    <span>Toca un producto para agregarlo al carrito</span>
-                </div>
-
                 <div id="product-grid">
                     <?php foreach ($products as $product): ?>
                         <?php $stock_class = get_stock_semaphore_class($product); ?>
@@ -652,15 +566,17 @@ function get_stock_semaphore_class($product) {
 
             <aside id="cart">
                 <div class="cart-header">
-                    <h2>Carrito</h2>
-                    <small>Resumen en tiempo real</small>
                 </div>
                 <div id="cart-items">
                 </div>
-                <div id="cart-summary">
+                <div id="cart-summary" class="cart-sticky-summary">
+                    <div class="summary-row">
+                        <span>Productos:</span>
+                        <span id="cart-total-items">0</span>
+                    </div>
                     <div class="summary-row total">
                         <span>Total:</span>
-                        <span id="cart-total">$0.00</span>
+                        <span id="cart-total">$0</span>
                     </div>
                 </div>
                 <div id="cart-actions">

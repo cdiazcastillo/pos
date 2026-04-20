@@ -26,6 +26,7 @@ Edita `.env` con credenciales reales:
 
 ```env
 DB_HOST=localhost
+DB_PORT=3306
 DB_NAME=tu_bd
 DB_USER=tu_usuario
 DB_PASS=tu_password
@@ -39,6 +40,7 @@ Con el mismo contenido:
 
 ```env
 DB_HOST=localhost
+DB_PORT=3306
 DB_NAME=tu_bd
 DB_USER=tu_usuario
 DB_PASS=tu_password
@@ -52,6 +54,37 @@ El sistema ahora intenta leer, en orden:
 - `config/env.local`
 
 Esto evita que use `root` por defecto cuando faltan variables en producción.
+Además, si `DB_HOST=localhost` falla por socket, la conexión ahora intenta automáticamente `127.0.0.1` usando `DB_PORT`.
+
+### Archivos de conectividad ya generados
+
+Este proyecto ya incluye copias de conectividad listas para despliegue:
+
+- `.env.local`
+- `config/.env`
+- `config/env.local`
+
+### Verificación rápida de conexión
+
+Puedes abrir o ejecutar:
+
+- `healthcheck.php`
+
+Muestra variables activas (sin revelar contraseña) y estado de conexión a MySQL.
+
+### Verificación extendida de host
+
+También tienes:
+
+- `healthcheck_extended.php`
+
+Este script prueba automáticamente varios hosts en orden (`DB_HOST`, `localhost`, `127.0.0.1` y candidatos personalizados) y reporta cuál responde.
+
+Puedes agregar candidatos extra en `.env`:
+
+```env
+DB_HOST_CANDIDATES=localhost,127.0.0.1,mysql.tudominio.com
+```
 
 ### 3) Inicializar tablas
 
