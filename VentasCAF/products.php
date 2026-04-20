@@ -15,7 +15,7 @@ $products = $db->query("SELECT * FROM products ORDER BY id ASC", [], true);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestionar Productos - VentasCAF</title>
+    <title>Gestionar Productos - 4 Básico A</title>
     <style>
         :root {
             --primary-color: #007bff;

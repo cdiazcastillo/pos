@@ -55,7 +55,7 @@ function format_clp_local($amount) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control Operativo - VentasCAF</title>
+    <title>Control Operativo - 4 Básico A</title>
     <base href="<?php echo htmlspecialchars($baseHref, ENT_QUOTES, 'UTF-8'); ?>">
     <style>
         :root {

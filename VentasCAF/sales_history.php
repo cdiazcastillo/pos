@@ -81,11 +81,11 @@ function format_payment_method($method) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Historial de Ventas - VentasCAF</title>
+    <title>Historial de Ventas - 4 Básico A</title>
     <style>
         :root {
             --primary-color: #007bff; --secondary-color: #6c757d; --danger-color: #dc3545;
-            --success-color: #28a745; --light-gray: #f8f9fa; --dark-gray: #343a40;
+            --success-color: #28a745; --info-color: #17a2b8; --light-gray: #f8f9fa; --dark-gray: #343a40;
             --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
         body { font-family: var(--font-family); background-color: var(--light-gray); color: var(--dark-gray); margin: 0; padding: 20px; }
@@ -104,7 +104,9 @@ function format_payment_method($method) {
             background-color: #e9ecef;
             padding: 5px;
             border-radius: 8px;
+            flex-wrap: wrap;
         }
+        .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
         .filter-btn {
             padding: 8px 15px;
             text-decoration: none;
@@ -189,9 +191,10 @@ function format_payment_method($method) {
                 <a href="sales_history.php?filter=transfer" class="filter-btn <?php if ($filter === 'transfer') echo 'active'; ?>">Transferencia</a>
                 <a href="sales_history.php?filter=voided" class="filter-btn <?php if ($filter === 'voided') echo 'active'; ?>">Anuladas</a>
             </div>
-            <div>
+            <div class="header-actions">
                 <a href="reports.php" class="btn btn-info">Reportes</a>
-                <a href="admin.php" class="btn btn-secondary">Volver al Menú</a>
+                <a href="index.php" class="btn btn-info">Regresar al POS</a>
+                <a href="admin.php" class="btn btn-secondary">Regresar a Ventas</a>
             </div>
         </div>
         <div id="sales-card-grid">

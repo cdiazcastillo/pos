@@ -1,11 +1,72 @@
 /* Reports-specific styles */
+.container {
+    width: min(1200px, 96vw) !important;
+    margin: 16px auto;
+    padding: 18px;
+}
+
+body {
+    display: block !important;
+    align-items: initial !important;
+    justify-content: initial !important;
+    min-height: auto !important;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.header h1 {
+    margin: 0;
+    font-size: clamp(1.2rem, 2.2vw, 1.8rem);
+}
+
+.reports-title-wrap {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+}
+
+.reports-brand {
+    margin: 0;
+    color: #3b4f9e;
+    font-size: clamp(0.78rem, 1.5vw, 0.92rem);
+    font-weight: 800;
+    letter-spacing: 0.2px;
+}
+
+.header img {
+    max-width: 108px !important;
+    border-radius: 14px;
+    padding: 4px;
+    background: #fff;
+    border: 1px solid #dbe4ff;
+    box-shadow: 0 8px 20px rgba(59, 79, 158, 0.18);
+}
+
+.reports-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
 .reports-container {
     margin-top: 20px;
+    overflow-x: auto;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #fff;
+    -webkit-overflow-scrolling: touch;
 }
 
 #shifts-table {
     width: 100%;
     border-collapse: collapse;
+    min-width: 900px;
 }
 
 #shifts-table th, #shifts-table td {
@@ -16,6 +77,9 @@
 
 #shifts-table th {
     background-color: #f2f2f2;
+    position: sticky;
+    top: 0;
+    z-index: 1;
 }
 
 .view-report-btn {
@@ -36,8 +100,69 @@
     padding: 20px;
     border: 1px solid #ddd;
     background-color: #f9f9f9;
+    border-radius: 10px;
+}
+
+.report-details h2 {
+    margin-top: 0;
+    font-size: clamp(1rem, 2vw, 1.35rem);
+}
+
+.report-details p {
+    margin: 7px 0;
+    word-break: break-word;
 }
 
 /* Button styles from reports.php */
 .btn-secondary { background-color: var(--secondary-color) !important; }
 .btn-success { background-color: var(--success-color) !important; }
+
+@media (max-width: 900px) {
+    .container {
+        width: min(1200px, 98vw) !important;
+        padding: 12px;
+        border-radius: 10px;
+    }
+
+    .header {
+        align-items: flex-start;
+    }
+
+    .header img {
+        max-width: 88px !important;
+    }
+
+    .reports-actions {
+        width: 100%;
+    }
+
+    .reports-title-wrap {
+        width: 100%;
+    }
+
+    .reports-actions .btn {
+        flex: 1 1 220px;
+        text-align: center;
+    }
+
+    #shifts-table th,
+    #shifts-table td {
+        padding: 10px 8px;
+        font-size: 0.86rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .container {
+        margin: 6px auto;
+        padding: 10px;
+    }
+
+    .reports-container {
+        margin-top: 12px;
+    }
+
+    .report-details {
+        padding: 12px;
+    }
+}

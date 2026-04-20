@@ -6,7 +6,7 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Assume we are running from VentasCAF/
+// Assume we are running from 4 Básico A/
 chdir(dirname(__FILE__));
 
 // --- Step 0: Include necessary files ---

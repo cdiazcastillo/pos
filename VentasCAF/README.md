@@ -1,4 +1,4 @@
-# VentasCAF POS
+# 4 Básico A POS
 
 Sistema POS en PHP + MySQL.
 

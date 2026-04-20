@@ -18,12 +18,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-$confirmation = trim($_POST['confirmation'] ?? '');
+$security_key = trim($_POST['security_key'] ?? '');
 $initial_cash_input = $_POST['initial_cash'] ?? null;
 $clear_products = isset($_POST['clear_products']) && $_POST['clear_products'] === '1';
 
-if ($confirmation !== 'REINICIAR') {
-    $response['message'] = "Confirmación inválida. Debes escribir exactamente 'REINICIAR'.";
+if ($security_key !== '250012') {
+    $response['message'] = 'Clave de seguridad inválida.';
     echo json_encode($response);
     exit;
 }

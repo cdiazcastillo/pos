@@ -1,5 +1,5 @@
 <?php
-// Simple script to initialize the database for the VentasCAF POS system.
+// Simple script to initialize the database for the 4 Básico A POS system.
 // WARNING: This script will drop existing tables if they exist.
 
 require_once __DIR__ . '/config/bootstrap.php'; // Incluir bootstrap para cargar variables de entorno
@@ -164,7 +164,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['install'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VentasCAF - Instalador de Base de Datos</title>
+    <title>4 Básico A - Instalador de Base de Datos</title>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 2rem auto; padding: 0 1rem; background-color: #f8f9fa; }
         .container { background-color: #fff; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
@@ -178,7 +178,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['install'])) {
 </head>
 <body>
     <div class="container">
-        <h1>VentasCAF Instalador de Base de Datos</h1>
+        <h1>4 Básico A Instalador de Base de Datos</h1>
         <p>Este script configurará la base de datos y las tablas necesarias para el sistema POS.</p>
         <p><strong>Advertencia:</strong> Esto eliminará las tablas existentes con los mismos nombres en la base de datos `<?php echo $dbname; ?>`.</p>
         

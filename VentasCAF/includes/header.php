@@ -16,14 +16,14 @@ $active_shift = $db->query("SELECT id FROM shifts WHERE user_id = ? AND status =
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $page_title ?? 'VentasCAF'; ?></title>
+    <title><?php echo $page_title ?? '4 Básico A'; ?></title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <div class="header">
             <img src="img/logo.png" alt="Logo" style="max-width: 100px;">
-            <h1><?php echo $page_title ?? 'VentasCAF'; ?></h1>
+            <h1><?php echo $page_title ?? '4 Básico A'; ?></h1>
             <div>
                 <a href="admin.php" class="btn btn-secondary">Menú Principal</a>
             </div>

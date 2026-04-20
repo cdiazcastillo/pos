@@ -81,7 +81,7 @@ $hostsToTest = array_values(array_unique(array_filter($hostsToTest, function ($h
     return trim((string)$host) !== '';
 })));
 
-echo "VentasCAF Healthcheck Extendido\n";
+echo "4 Básico A Healthcheck Extendido\n";
 echo "=============================\n\n";
 
 echo "Configuración activa:\n";

@@ -19,7 +19,7 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menú de Administración - VentasCAF</title>
+    <title>Menú de Administración - 4 Básico A</title>
     <base href="<?php echo htmlspecialchars($baseHref, ENT_QUOTES, 'UTF-8'); ?>">
     <style>
         :root {
@@ -66,11 +66,26 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
             color: white;
         }
 
+        .logo-spotlight {
+            width: 118px;
+            height: 118px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at 30% 30%, #ffffff, #eef2ff 68%, #dbe4ff 100%);
+            border: 2px solid rgba(255, 255, 255, 0.78);
+            box-shadow:
+                0 16px 30px rgba(37, 62, 168, 0.35),
+                0 0 0 6px rgba(255, 255, 255, 0.18);
+            flex-shrink: 0;
+        }
+
         .admin-header img {
-            max-width: 72px;
-            border-radius: 12px;
-            background: rgba(255,255,255,0.95);
-            padding: 6px;
+            width: 84px;
+            height: 84px;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 8px rgba(37, 62, 168, 0.2));
         }
 
         .header-text {
@@ -182,6 +197,20 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
             border-radius: 14px;
             padding: 18px;
             background-color: #fcfcff;
+        }
+
+        .panel-hidden {
+            display: none;
+        }
+
+        .panel-visible {
+            display: block;
+        }
+
+        .panel-note {
+            margin: 0 0 8px;
+            color: var(--muted);
+            font-size: 0.9rem;
         }
 
         .danger-panel {
@@ -455,6 +484,16 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
                 flex-direction: column;
             }
 
+            .logo-spotlight {
+                width: 98px;
+                height: 98px;
+            }
+
+            .admin-header img {
+                width: 70px;
+                height: 70px;
+            }
+
             .status-pill {
                 margin-top: 6px;
             }
@@ -472,7 +511,9 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
 <body>
     <div class="admin-container">
         <div class="admin-header">
-            <img src="img/logo.png" alt="Logo">
+            <div class="logo-spotlight">
+                <img src="img/logo.png" alt="Logo">
+            </div>
             <div class="header-text">
                 <h1>Panel de Administración</h1>
                 <p>Gestiona productos, turnos y reportes desde un solo lugar.</p>
@@ -517,11 +558,22 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
                         <span class="card-title">Control operativo</span>
                         <span class="card-subtitle">Resumen clave y monitoreo de correos.</span>
                     </a>
+                    <a href="#" id="open-shift-manager-btn" class="menu-card">
+                        <span class="card-icon">⏱️</span>
+                        <span class="card-title">Gestión de turno</span>
+                        <span class="card-subtitle">Abrir panel práctico para iniciar o terminar turno.</span>
+                    </a>
+                    <a href="#" id="open-security-manager-btn" class="menu-card">
+                        <span class="card-icon">🔐</span>
+                        <span class="card-title">Seguridad</span>
+                        <span class="card-subtitle">Reinicio operativo con clave de seguridad.</span>
+                    </a>
                 </div>
             </section>
 
-            <section class="shift-panel">
+            <section id="shift-manager-panel" class="shift-panel panel-hidden">
                 <h2 class="section-title">Gestión de turno</h2>
+                <p class="panel-note">Usa este panel para abrir o cerrar turno de forma rápida.</p>
                 <div class="shift-grid">
                     <div class="field-group">
                         <label for="initial-cash">Efectivo inicial para abrir turno</label>
@@ -539,13 +591,17 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
                 </div>
             </section>
 
-            <section class="danger-panel">
+            <section id="security-manager-panel" class="danger-panel panel-hidden">
                 <h2 class="section-title">Reinicio operativo (día nuevo)</h2>
                 <p>Esta acción cierra todos los turnos abiertos, devuelve stock de ventas completadas y elimina ventas, detalle y gastos para iniciar desde cero.</p>
                 <div class="shift-grid">
                     <div class="field-group">
                         <label for="reset-initial-cash">Efectivo inicial del nuevo turno (opcional)</label>
                         <input id="reset-initial-cash" class="money-input" type="number" min="0" step="1" placeholder="Si lo ingresas, abre un turno nuevo automáticamente">
+                    </div>
+                    <div class="field-group">
+                        <label for="reset-security-key">Clave de seguridad</label>
+                        <input id="reset-security-key" class="money-input" type="password" inputmode="numeric" placeholder="Ingresa clave (ej: 250012)">
                     </div>
                 </div>
                 <label class="option-row" for="clear-products-checkbox">
@@ -591,8 +647,13 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
         const initialCashInput = document.getElementById('initial-cash');
         const finalCashInput = document.getElementById('final-cash');
         const resetInitialCashInput = document.getElementById('reset-initial-cash');
+        const resetSecurityKeyInput = document.getElementById('reset-security-key');
         const clearProductsCheckbox = document.getElementById('clear-products-checkbox');
         const resetOperationsBtn = document.getElementById('reset-operations-btn');
+        const openShiftManagerBtn = document.getElementById('open-shift-manager-btn');
+        const openSecurityManagerBtn = document.getElementById('open-security-manager-btn');
+        const shiftManagerPanel = document.getElementById('shift-manager-panel');
+        const securityManagerPanel = document.getElementById('security-manager-panel');
         const toast = document.getElementById('toast');
         const actionModal = document.getElementById('action-modal');
         const modalTitle = document.getElementById('modal-title');
@@ -627,6 +688,30 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
 
             return response.json();
         }
+
+        function showOnlyPanel(panelToShow) {
+            [shiftManagerPanel, securityManagerPanel].forEach(panel => {
+                if (!panel) return;
+                panel.classList.add('panel-hidden');
+                panel.classList.remove('panel-visible');
+            });
+
+            if (panelToShow) {
+                panelToShow.classList.remove('panel-hidden');
+                panelToShow.classList.add('panel-visible');
+                panelToShow.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        openShiftManagerBtn?.addEventListener('click', (event) => {
+            event.preventDefault();
+            showOnlyPanel(shiftManagerPanel);
+        });
+
+        openSecurityManagerBtn?.addEventListener('click', (event) => {
+            event.preventDefault();
+            showOnlyPanel(securityManagerPanel);
+        });
 
         function openActionModal(options) {
             const {
@@ -778,22 +863,20 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
         });
 
         resetOperationsBtn.addEventListener('click', async () => {
-            const resetConfirm = await openActionModal({
-                title: 'Reinicio operativo',
-                message: 'Esta acción cerrará todos los turnos y borrará ventas/gastos. Escribe <strong>REINICIAR</strong> para confirmar.',
-                confirmText: 'Ejecutar reinicio',
-                confirmDanger: true,
-                inputLabel: 'Palabra de confirmación',
-                inputPlaceholder: 'Escribe REINICIAR',
-                requireInput: true
-            });
-            if (!resetConfirm.confirmed) {
+            const securityKey = resetSecurityKeyInput.value.trim();
+            if (securityKey !== '250012') {
+                showToast('Clave de seguridad incorrecta.', true);
+                resetSecurityKeyInput.focus();
                 return;
             }
 
-            const confirmation = resetConfirm.value;
-            if (confirmation !== 'REINICIAR') {
-                showToast('Operación cancelada por confirmación inválida.', true);
+            const resetConfirm = await openActionModal({
+                title: 'Reinicio operativo',
+                message: 'Esta acción cerrará todos los turnos, limpiará ventas y gastos. ¿Deseas continuar?',
+                confirmText: 'Ejecutar reinicio',
+                confirmDanger: true
+            });
+            if (!resetConfirm.confirmed) {
                 return;
             }
 
@@ -809,7 +892,7 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
 
             resetOperationsBtn.disabled = true;
             try {
-                const payload = { confirmation };
+                const payload = { security_key: securityKey };
                 if (resetAmount !== '') {
                     payload.initial_cash = parseAmount(resetAmount);
                 }

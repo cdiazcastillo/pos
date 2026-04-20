@@ -105,7 +105,7 @@ function send_logged_notification(PDO $conn, int $notification_id, int $max_atte
 
     $headers = "MIME-Version: 1.0\r\n";
     $headers .= "Content-type: text/plain; charset=UTF-8\r\n";
-    $headers .= "From: VentasCAF <{$from}>\r\n";
+    $headers .= "From: 4 Básico A <{$from}>\r\n";
 
     $total_attempts = intval($notification['attempts'] ?? 0);
     $last_error = null;

@@ -62,9 +62,23 @@ function get_stock_semaphore_class($product) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VentasCAF - Punto de Venta</title>
+    <title>4 Básico A - Punto de Venta</title>
     <base href="<?php echo htmlspecialchars($baseHref, ENT_QUOTES, 'UTF-8'); ?>">
     <link rel="apple-touch-icon" href="img/logo.png">
+    <script>
+        (function () {
+            try {
+                const key = 'pvdl_splash_seen_persistent';
+                const alreadySeen = localStorage.getItem(key) === '1';
+                if (!alreadySeen) {
+                    document.documentElement.classList.add('show-brand-splash');
+                    localStorage.setItem(key, '1');
+                }
+            } catch (e) {
+                document.documentElement.classList.add('show-brand-splash');
+            }
+        })();
+    </script>
     <style>
         :root {
             --primary-color: #3457dc;
@@ -99,6 +113,122 @@ function get_stock_semaphore_class($product) {
             max-width: 1600px;
             margin: 0 auto;
             padding: 8px;
+            position: relative;
+        }
+
+        .school-badge {
+            position: absolute;
+            top: 10px;
+            left: 12px;
+            z-index: 20;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #dbe5ff;
+            border-radius: 999px;
+            padding: 6px 12px 6px 7px;
+            box-shadow: 0 6px 18px rgba(52, 87, 220, 0.2);
+            backdrop-filter: blur(4px);
+        }
+
+        .school-badge img {
+            width: 38px;
+            height: 38px;
+            object-fit: contain;
+            border-radius: 999px;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            padding: 3px;
+        }
+
+        .school-badge span {
+            font-size: 0.84rem;
+            font-weight: 800;
+            color: #1f3b9f;
+            letter-spacing: 0.2px;
+        }
+
+        .products-panel::before {
+            content: '';
+            position: absolute;
+            width: 210px;
+            height: 210px;
+            right: -36px;
+            top: -34px;
+            background: url('img/logo.png') center/contain no-repeat;
+            opacity: 0.08;
+            pointer-events: none;
+            filter: grayscale(0.1);
+            z-index: 0;
+        }
+
+        .products-panel {
+            position: relative;
+        }
+
+        #product-grid {
+            position: relative;
+            z-index: 1;
+        }
+
+        .school-splash {
+            position: fixed;
+            inset: 0;
+            z-index: 2200;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at 20% 20%, #4f63de, #2e45c7 45%, #1b2f99 100%);
+            color: #fff;
+            pointer-events: none;
+            animation: splashFade 2.9s ease forwards;
+        }
+
+        .show-brand-splash .school-splash {
+            display: flex;
+        }
+
+        .school-splash-card {
+            text-align: center;
+            width: min(96vw, 1100px);
+            padding: 26px 18px 22px;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.09);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            box-shadow: 0 24px 45px rgba(15, 23, 42, 0.28);
+            backdrop-filter: blur(4px);
+        }
+
+        .school-splash-card img {
+            width: min(74vw, 74vh);
+            height: min(74vw, 74vh);
+            max-width: 540px;
+            max-height: 540px;
+            object-fit: contain;
+            border-radius: 26px;
+            background: #fff;
+            padding: 12px;
+            box-shadow: 0 14px 30px rgba(15, 23, 42, 0.28);
+        }
+
+        .school-splash-card h2 {
+            margin: 16px 0 8px;
+            font-size: clamp(1.25rem, 3.8vw, 2.4rem);
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+        }
+
+        .school-splash-card p {
+            margin: 0;
+            font-size: clamp(0.92rem, 2.1vw, 1.2rem);
+            opacity: 0.95;
+        }
+
+        @keyframes splashFade {
+            0% { opacity: 1; visibility: visible; }
+            72% { opacity: 1; visibility: visible; }
+            100% { opacity: 0; visibility: hidden; }
         }
 
         #sales-interface {
@@ -466,6 +596,36 @@ function get_stock_semaphore_class($product) {
                 padding: 4px;
             }
 
+            .school-badge {
+                top: 6px;
+                left: 6px;
+                padding: 5px 10px 5px 6px;
+            }
+
+            .school-badge img {
+                width: 30px;
+                height: 30px;
+            }
+
+            .school-badge span {
+                font-size: 0.74rem;
+            }
+
+            .school-splash-card {
+                margin: 0 8px;
+                padding: 18px 12px 14px;
+            }
+
+            .school-splash-card img {
+                width: min(84vw, 52vh);
+                height: min(84vw, 52vh);
+                border-radius: 20px;
+            }
+
+            .school-splash-card h2 {
+                font-size: clamp(1rem, 4.2vw, 1.5rem);
+            }
+
             #sales-interface {
                 flex-direction: column;
                 min-height: 0;
@@ -540,7 +700,20 @@ function get_stock_semaphore_class($product) {
     </style>
 </head>
 <body ontouchstart="">
+    <div class="school-splash" aria-hidden="true">
+        <div class="school-splash-card">
+            <img src="img/logo.png" alt="Logo 4 Básico A">
+            <h2>PUNTO DE VENTA DIA DEL LIBRO</h2>
+            <p>4 Básico A</p>
+        </div>
+    </div>
+
     <div id="pos-container" class="<?php echo !$is_shift_open ? 'shift-closed' : ''; ?>">
+        <div class="school-badge">
+            <img src="img/logo.png" alt="Logo">
+            <span>4 Básico A</span>
+        </div>
+
         <main id="sales-interface">
             <section class="products-panel">
                 <div id="product-grid">

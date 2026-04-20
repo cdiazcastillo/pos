@@ -99,7 +99,7 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Turno en Curso - VentasCAF</title>
+    <title>Panel Turno en Curso - 4 Básico A</title>
     <style>
         :root {
             --primary-color: #007bff; --secondary-color: #6c757d; --danger-color: #dc3545;
@@ -111,11 +111,22 @@ try {
         .container { max-width: 1200px; margin: auto; background-color: transparent; box-shadow: none; padding: 0; }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 20px; }
         h1 { margin: 0; color: var(--dark-gray); }
+        .title-wrap { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .shift-badge {
+            background: #eef4ff;
+            color: var(--primary-color);
+            border: 1px solid #cfe0ff;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            padding: 6px 10px;
+        }
         .btn { padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; font-size: 1rem; font-weight: 600; color: white !important; }
         .btn-secondary { background-color: var(--secondary-color) !important; }
         .btn-primary { background-color: var(--primary-color) !important; }
         .btn-success { background-color: var(--success-color) !important; }
         .btn-info { background-color: var(--info-color) !important; }
+        .btn-danger { background-color: var(--danger-color) !important; }
 
         /* Dashboard Grid */
         #dashboard-grid {
@@ -158,15 +169,21 @@ try {
     <div class="container">
         <div class="header">
             <img src="img/logo.png" alt="Logo" style="max-width: 100px;">
-            <h1>Panel Turno en Curso</h1>
+            <div class="title-wrap">
+                <h1>Panel Turno en Curso</h1>
+                <span class="shift-badge"><?php echo $shift_id ? 'Turno actual (ID: ' . $shift_id . ')' : 'Sin turno activo'; ?></span>
+            </div>
             <div>
-                <a href="reports.php" class="btn btn-info">Reportes</a>
-                <a href="admin.php" class="btn btn-secondary">Volver al Menú Admin</a>
+                <?php if ($shift_id): ?>
+                    <button id="end-shift-btn" class="btn btn-danger">Cerrar Turno (ID: <?php echo $shift_id; ?>)</button>
+                <?php endif; ?>
+                <a href="index.php" class="btn btn-info">Regresar al POS</a>
+                <a href="admin.php" class="btn btn-secondary">Regresar a Ventas</a>
             </div>
         </div>
 
         <?php if ($shift_id): ?>
-            <p>Mostrando datos para el turno activo (ID: <?php echo $shift_id; ?>).</p>
+            <p>Mostrando datos del turno activo para control rápido de caja.</p>
         <?php else: ?>
             <p>No hay un turno activo. Inicia uno para ver el resumen.</p>
         <?php endif; ?>
@@ -202,13 +219,7 @@ try {
             </div>
         </div>
 
-        <div class="footer-actions">
-            <?php if ($shift_id): ?>
-                <button id="end-shift-btn" class="btn btn-danger">Cerrar Turno (ID: <?php echo $shift_id; ?>)</button>
-            <?php else: ?>
-                <p>Inicia un turno para obtener datos en tiempo real.</p>
-            <?php endif; ?>
-        </div>
+        <div class="footer-actions"></div>
     </div>
 
     <div id="toast-notification"></div>

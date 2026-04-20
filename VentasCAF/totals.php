@@ -10,7 +10,7 @@ if (!isset($_SESSION['user_id'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ventas Totales - VentasCAF</title>
+    <title>Ventas Totales - 4 Básico A</title>
     <style>
         :root {
             --primary-color: #007bff;

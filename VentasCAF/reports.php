@@ -14,7 +14,7 @@ if (!isset($_SESSION['user_id'])) {
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="reports.css">
     <style>
-        .btn { padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; font-size: 1rem; font-weight: 600; color: white !important; display: inline-block; text-align: center; }
+        .btn { padding: 10px 15px; border: none; border-radius: 8px; cursor: pointer; text-decoration: none; font-size: 0.95rem; font-weight: 700; color: white !important; display: inline-block; text-align: center; }
         .btn-secondary { background-color: var(--secondary-color) !important; }
         .btn-success { background-color: var(--success-color) !important; }
     </style>
@@ -23,13 +23,17 @@ if (!isset($_SESSION['user_id'])) {
     <div class="container">
         <div class="header">
             <img src="img/logo.png" alt="Logo" style="max-width: 100px;">
-            <h1>Reportes de Turno</h1>
-            <div>
+            <div class="reports-title-wrap">
+                <h1>Reportes de Turno</h1>
+                <p class="reports-brand">PUNTO DE VENTA DIA DEL LIBRO · 4 Básico A</p>
+            </div>
+            <div class="reports-actions">
                 <button id="export-all-btn" class="btn btn-success">Exportar Todo a Excel</button>
-                <a href="admin.php" class="btn btn-secondary">Volver al menu</a>
+                <a href="index.php" class="btn btn-success">Regresar al POS</a>
+                <a href="admin.php" class="btn btn-secondary">Regresar a Ventas</a>
             </div>
         </div>
-        <div class="reports-container">
+        <div class="reports-container" role="region" aria-label="Listado de turnos">
             <table id="shifts-table">
                 <thead>
                     <tr>

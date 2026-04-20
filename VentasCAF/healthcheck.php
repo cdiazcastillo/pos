@@ -11,7 +11,7 @@ function safe_env_value($value) {
     return $value;
 }
 
-echo "VentasCAF Healthcheck\n";
+echo "4 Básico A Healthcheck\n";
 echo "====================\n\n";
 
 echo "Variables cargadas:\n";
