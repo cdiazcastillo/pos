@@ -23,8 +23,20 @@ function load_env($path) {
     }
 }
 
+function load_env_from_candidates(array $paths) {
+    foreach ($paths as $path) {
+        load_env($path);
+    }
+}
+
 // Cargar variables de entorno para la aplicación principal
-load_env(__DIR__ . '/../.env');
+// Orden: archivo estándar .env y luego alternativas útiles para hosting compartido
+load_env_from_candidates([
+    __DIR__ . '/../.env',
+    __DIR__ . '/../.env.local',
+    __DIR__ . '/.env',
+    __DIR__ . '/env.local'
+]);
 
 // Puedes añadir una bandera para entornos de testing si es necesario más adelante
 // if (isset($_ENV['APP_ENV']) && $_ENV['APP_ENV'] === 'testing') {

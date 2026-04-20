@@ -14,16 +14,24 @@ class Database {
     // The PDO connection object
     private $conn;
 
+    private static function env(string $key, string $default = ''): string {
+        $value = $_ENV[$key] ?? getenv($key);
+        if ($value === false || $value === null || $value === '') {
+            return $default;
+        }
+        return (string)$value;
+    }
+
     /**
      * Private constructor to prevent direct creation of object.
      * Connects to the database.
      */
     private function __construct() {
         // Asignar los valores desde las variables de entorno
-        self::$host = $_ENV['DB_HOST'] ?? 'localhost';
-        self::$dbname = $_ENV['DB_NAME'] ?? 'ventascaf_db';
-        self::$username = $_ENV['DB_USER'] ?? 'root';
-        self::$password = $_ENV['DB_PASS'] ?? '';
+        self::$host = self::env('DB_HOST', 'localhost');
+        self::$dbname = self::env('DB_NAME', 'ventascaf_db');
+        self::$username = self::env('DB_USER', 'root');
+        self::$password = self::env('DB_PASS', '');
 
         try {
             $dsn = "mysql:host=" . self::$host . ";dbname=" . self::$dbname . ";charset=utf8mb4";
@@ -135,21 +143,21 @@ class Database {
     public static function getHost() {
         // Asegurarse de que las variables de entorno estén cargadas
         require_once __DIR__ . '/bootstrap.php';
-        return $_ENV['DB_HOST'] ?? 'localhost';
+        return self::env('DB_HOST', 'localhost');
     }
 
     public static function getDbname() {
         require_once __DIR__ . '/bootstrap.php';
-        return $_ENV['DB_NAME'] ?? 'ventascaf_db';
+        return self::env('DB_NAME', 'ventascaf_db');
     }
 
     public static function getUsername() {
         require_once __DIR__ . '/bootstrap.php';
-        return $_ENV['DB_USER'] ?? 'root';
+        return self::env('DB_USER', 'root');
     }
 
     public static function getPassword() {
         require_once __DIR__ . '/bootstrap.php';
-        return $_ENV['DB_PASS'] ?? '';
+        return self::env('DB_PASS', '');
     }
 }
