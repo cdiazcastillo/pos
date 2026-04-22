@@ -93,7 +93,7 @@ $items = $db->query(
             background: #fff;
             padding: 4px;
         }
-        .top-menu-row {
+        .header-actions {
             display: flex;
             justify-content: center;
             gap: 8px;
@@ -227,8 +227,7 @@ $items = $db->query(
                     <img src="img/logo.png" alt="Logo">
                 </div>
             </div>
-            <div class="top-menu-row">
-                <a href="index.php" class="btn btn-primary">Ir POS</a>
+            <div class="header-actions">
                 <a href="sales_history.php" class="btn btn-secondary">Ir Historial</a>
             </div>
         </div>

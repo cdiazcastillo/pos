@@ -67,7 +67,6 @@ $currentUser = auth_require_role(['admin'], 'admin_login.php', 'index.php');
             color: var(--dark-gray);
             font-size: 1.15rem;
         }
-        .top-menu-row { display: flex; justify-content: center; gap: 8px; }
         .btn {
             padding: 8px 12px;
             border: none;
@@ -84,9 +83,6 @@ $currentUser = auth_require_role(['admin'], 'admin_login.php', 'index.php');
         .btn-secondary {
             background-color: var(--secondary-color) !important;
         }
-        .btn-menu { background-color: #16a34a !important; }
-        .btn-pos { background-color: #dc2626 !important; }
-        .btn-logout { background-color: #2563eb !important; }
         .kpi-card {
             background-color: #fff;
             padding: 1.25rem;
@@ -132,10 +128,6 @@ $currentUser = auth_require_role(['admin'], 'admin_login.php', 'index.php');
                 <div class="logo-column">
                     <img src="img/logo.png" alt="Logo">
                 </div>
-            </div>
-            <div class="top-menu-row">
-                <a href="index.php" class="btn btn-pos">Regresar al POS</a>
-                <a href="logout.php" class="btn btn-logout">Cerrar sesión</a>
             </div>
         </div>
 

@@ -65,7 +65,7 @@ $products = $db->query("SELECT * FROM products ORDER BY id ASC", [], true);
             background: #fff;
             padding: 4px;
         }
-        .top-menu-row { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+        .header-actions { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
         .btn {
             padding: 8px 12px;
             border: none;
@@ -83,9 +83,6 @@ $products = $db->query("SELECT * FROM products ORDER BY id ASC", [], true);
         .btn-success { background-color: var(--success-color) !important; }
         .btn-danger { background-color: var(--danger-color) !important; }
         .btn-warning { background-color: var(--warning-color) !important; }
-        .btn-menu { background-color: #16a34a !important; }
-        .btn-pos { background-color: #dc2626 !important; }
-        .btn-logout { background-color: #2563eb !important; }
 
         .product-modal-content {
             background: #fff;
@@ -308,9 +305,7 @@ $products = $db->query("SELECT * FROM products ORDER BY id ASC", [], true);
                     <img src="img/logo.png" alt="Logo">
                 </div>
             </div>
-            <div class="top-menu-row">
-                <a href="index.php" class="btn btn-pos">Regresar al POS</a>
-                <a href="logout.php" class="btn btn-logout">Cerrar sesión</a>
+            <div class="header-actions">
                 <button id="new-product-btn" class="btn btn-primary">Crear Nuevo Producto</button>
             </div>
         </div>

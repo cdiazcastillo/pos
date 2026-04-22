@@ -17,9 +17,6 @@ $currentUser = auth_require_role(['admin'], 'admin_login.php', 'index.php');
         .btn-secondary { background-color: #6b7280 !important; }
         .btn-success { background-color: #1f9d61 !important; }
         .btn-primary { background-color: #3457dc !important; }
-        .btn-menu { background-color: #16a34a !important; }
-        .btn-pos { background-color: #dc2626 !important; }
-        .btn-logout { background-color: #2563eb !important; }
     </style>
 </head>
 <body>
@@ -35,10 +32,8 @@ $currentUser = auth_require_role(['admin'], 'admin_login.php', 'index.php');
                     <img src="img/logo.png" alt="Logo">
                 </div>
             </div>
-            <div class="top-menu-row reports-actions">
+            <div class="reports-actions">
                 <button id="export-all-btn" class="btn btn-success">Exportar a Excel</button>
-                <a href="index.php" class="btn btn-pos">Volver al POS</a>
-                <a href="logout.php" class="btn btn-logout">Cerrar sesión</a>
             </div>
         </div>
         <div class="reports-container" role="region" aria-label="Listado de turnos">

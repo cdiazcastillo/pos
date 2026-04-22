@@ -153,7 +153,7 @@ try {
             background: #fff;
             padding: 4px;
         }
-        .top-menu-row {
+        .header-actions {
             display: flex;
             justify-content: center;
             gap: 8px;
@@ -174,9 +174,6 @@ try {
         .btn-success { background-color: var(--success-color) !important; }
         .btn-info { background-color: var(--info-color) !important; }
         .btn-danger { background-color: var(--danger-color) !important; }
-        .btn-menu { background-color: #16a34a !important; }
-        .btn-pos { background-color: #dc2626 !important; }
-        .btn-logout { background-color: #2563eb !important; }
         .btn-end-blue { background-color: #2563eb !important; }
 
         /* Dashboard Grid */
@@ -236,12 +233,11 @@ try {
                 </div>
             </div>
 
-            <div class="top-menu-row">
+            <div class="header-actions">
                 <?php if ($shift_id): ?>
                     <button id="end-shift-btn" class="btn btn-end-blue">Cerrar Turno (ID: <?php echo $shift_id; ?>)</button>
                 <?php endif; ?>
-                <a href="index.php" class="btn btn-pos">Regresar al POS</a>
-                <a href="logout.php" class="btn btn-logout">Cerrar sesión</a>
+                <a href="logout.php" class="btn btn-secondary">Cerrar sesión</a>
             </div>
         </div>
 

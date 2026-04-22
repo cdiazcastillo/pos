@@ -96,18 +96,26 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
         }
 
         .admin-header {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            padding: 24px;
+            position: sticky;
+            top: calc(var(--nav-height, 3.8rem) + 0.4rem);
+            z-index: 95;
+            display: grid;
+            gap: 0.6rem;
+            padding: 14px 16px;
             background: linear-gradient(135deg, var(--primary-color), #4f46e5);
             color: white;
         }
 
+        .header-main {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
         .logo-spotlight {
-            width: 118px;
-            height: 118px;
-            border-radius: 20px;
+            width: 132px;
+            height: 132px;
+            border-radius: 22px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -120,8 +128,8 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
         }
 
         .admin-header img {
-            width: 84px;
-            height: 84px;
+            width: 100px;
+            height: 100px;
             object-fit: contain;
             filter: drop-shadow(0 4px 8px rgba(37, 62, 168, 0.2));
         }
@@ -133,7 +141,7 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
 
         .admin-header h1 {
             margin: 0;
-            font-size: 1.7rem;
+            font-size: 1.28rem;
             line-height: 1.2;
         }
 
@@ -153,6 +161,10 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
             font-size: 0.84rem;
             background-color: rgba(255, 255, 255, 0.18);
             border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .header-status {
+            align-self: flex-start;
         }
 
         .status-dot {
@@ -658,8 +670,33 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
         .footer-actions {
             display: flex;
             justify-content: flex-end;
+            align-items: center;
+            gap: 8px;
             border-top: 1px solid #edf0f8;
             padding-top: 12px;
+        }
+
+        .footer-actions .menu-button {
+            border-radius: 0.85rem;
+            min-height: 2.75rem;
+            padding: 0.55rem 0.95rem;
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+
+        .footer-actions .menu-button.pos-red,
+        .footer-actions .menu-button.end-blue,
+        .footer-actions .menu-button.danger {
+            background: rgba(124, 58, 237, 0.12);
+            color: #7c3aed;
+            border: 1px solid rgba(124, 58, 237, 0.2);
+        }
+
+        .footer-actions .menu-button.pos-red:hover,
+        .footer-actions .menu-button.end-blue:hover,
+        .footer-actions .menu-button.danger:hover {
+            background: #7c3aed;
+            color: #fff;
         }
 
         .menu-button.secondary {
@@ -836,19 +873,19 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
                 padding: 10px;
             }
 
-            .admin-header {
-                align-items: flex-start;
-                flex-direction: column;
+            .header-main {
+                align-items: center;
+                gap: 10px;
             }
 
             .logo-spotlight {
-                width: 98px;
-                height: 98px;
+                width: 116px;
+                height: 116px;
             }
 
             .admin-header img {
-                width: 70px;
-                height: 70px;
+                width: 86px;
+                height: 86px;
             }
 
             .status-pill {
@@ -869,13 +906,15 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
     <?php $activePage = 'admin'; include 'top-nav.php'; ?>
     <div class="admin-container">
         <div class="admin-header">
-            <div class="logo-spotlight">
-                <img src="img/logo.png" alt="Logo">
+            <div class="header-main">
+                <div class="logo-spotlight">
+                    <img src="img/logo.png" alt="Logo">
+                </div>
+                <div class="header-text">
+                    <h1>Panel de Administración</h1>
+                </div>
             </div>
-            <div class="header-text">
-                <h1>Panel de Administración</h1>
-            </div>
-            <div class="status-pill <?php echo $has_active_shift ? 'open' : 'closed'; ?>">
+            <div class="status-pill header-status <?php echo $has_active_shift ? 'open' : 'closed'; ?>">
                 <span class="status-dot"></span>
                 <?php echo $has_active_shift ? ('Turno #' . intval($active_shift['id'])) : 'Turno cerrado'; ?>
             </div>

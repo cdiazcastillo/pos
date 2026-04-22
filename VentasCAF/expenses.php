@@ -13,33 +13,6 @@ $activeShift = $db->query(
      JOIN users u ON u.id = s.user_id
      WHERE s.user_id = ? AND s.status = 'open'
      ORDER BY s.start_time DESC LIMIT 1",
-    [$userId]
-);
-
-$hasActiveShift = $activeShift && isset($activeShift['id']);
-$activeShiftId = $activeShift ? intval($activeShift['id']) : 0;
-
-// Obtener gastos del turno actual
-$expenses = [];
-if ($hasActiveShift) {
-    $expenses = $db->query(
-        "SELECT id, description, amount, payment_method, expense_time
-         FROM expenses
-         WHERE shift_id = ? AND sale_id IS NULL
-         ORDER BY expense_time DESC",
-        [$activeShiftId],
-        true
-    ) ?: [];
-}
-
-$totalExpenses = array_sum(array_map(function ($e) { return intval($e['amount']); }, $expenses));
-$totalCashExpenses = array_sum(array_map(function ($e) { 
-    return ($e['payment_method'] === 'cash') ? intval($e['amount']) : 0; 
-}, $expenses));
-
-$basePath = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
-?>
-<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -505,8 +478,7 @@ $basePath = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
         <div class="header-content">
             <h1>Otros Gastos</h1>
             <div class="header-buttons">
-                <a href="index.php" class="btn btn-pos">Regresar al POS</a>
-                <a href="logout.php" class="btn btn-logout">Cerrar sesión</a>
+                <a href="logout.php" class="btn btn-secondary">Cerrar sesión</a>
             </div>
         </div>
     </header>

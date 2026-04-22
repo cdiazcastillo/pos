@@ -196,52 +196,43 @@ function format_payment_method($method) {
         .btn-danger { background-color: var(--danger-color) !important; }
         .btn-warning { background-color: #ffc107 !important; }
         .btn-info { background-color: var(--danger-color) !important; }
-        .btn-menu { background-color: #16a34a !important; }
-        .btn-pos { background-color: #dc2626 !important; }
-        .btn-logout { background-color: #2563eb !important; }
+        .filters-wrap {
+            display: flex;
+            justify-content: center;
+            margin-top: 0.35rem;
+        }
 
         .filter-buttons {
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 6px;
-            background-color: #e9ecef;
-            padding: 5px;
-            border-radius: 1.25rem;
+            gap: 0.2rem;
+            background: rgba(124, 58, 237, 0.12);
+            padding: 0.2rem;
+            border-radius: 999rem;
             width: min(100%, 760px);
         }
-        .top-menu-row {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: nowrap;
-            overflow: hidden;
-            padding-bottom: 2px;
-        }
-        .top-menu-row .btn { white-space: nowrap; padding: 8px 12px; font-size: 0.92rem; }
-        .top-menu-row .filter-buttons { margin: 0 auto; }
         .filter-btn {
-            padding: 7px 6px;
+            padding: 0.45rem 0.7rem;
             text-decoration: none;
             color: var(--secondary-color);
-            font-weight: 600;
+            font-weight: 700;
             border-radius: 999rem;
             transition: all 0.2s;
             text-align: center;
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 36px;
+            min-height: 2.3rem;
             line-height: 1.1;
             font-size: 0.86rem;
         }
         .filter-btn:hover {
-            background-color: #d1d5db;
+            background-color: rgba(124, 58, 237, 0.16);
         }
         .filter-btn.active {
-            background-color: var(--primary-color);
-            color: white;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            background-color: #fff;
+            color: var(--dark-gray);
+            box-shadow: 0 0.1rem 0.4rem rgba(30, 27, 75, 0.12);
         }
         .context-note {
             margin: 6px 0 0;
@@ -306,10 +297,36 @@ function format_payment_method($method) {
         .card-items-list { background-color: var(--light-gray); padding: 15px 20px; margin: 0; border-top: 1px solid #eee; flex-grow: 1; }
         .card-items-list ul { margin: 0; padding-left: 20px; }
         .card-items-list li { font-size: 0.9rem; }
-        .card-footer { padding: 15px 20px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 10px; }
+        .card-footer { padding: 15px 20px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+        .card-footer .btn {
+            border-radius: 0.85rem;
+            font-size: 0.82rem;
+            min-height: 2.75rem;
+            padding: 0.55rem 0.9rem;
+        }
+        .card-footer .btn-warning {
+            background: linear-gradient(135deg, #7c3aed, #8b5cf6) !important;
+            color: #fff !important;
+        }
+        .card-footer .btn-danger {
+            background: rgba(251, 113, 133, 0.12) !important;
+            color: #9f1239 !important;
+            border: 1px solid rgba(251, 113, 133, 0.2);
+        }
         .btn.disabled-link { pointer-events: none; opacity: 0.6; }
         #toast-notification { position: fixed; bottom: 20px; right: 20px; background-color: var(--success-color); color: white; padding: 12px 25px; border-radius: 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 2000; visibility: hidden; opacity: 0; transition: all 0.3s; transform: translateX(110%); }
         #toast-notification.show { visibility: visible; opacity: 1; transform: translateX(0); }
+
+        @media (max-width: 760px) {
+            .filter-buttons {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                border-radius: 1rem;
+            }
+
+            .card-footer .btn {
+                flex: 1;
+            }
+        }
     </style>
 </head>
 <body>
@@ -319,17 +336,13 @@ function format_payment_method($method) {
             <div class="header">
                 <div class="title-wrap">
                     <h1>Historial de Ventas</h1>
-                    <div class="top-menu-row">
-                        <a href="index.php" class="btn btn-pos">Ir POS</a>
-                        <a href="logout.php" class="btn btn-logout">Cerrar sesión</a>
-                    </div>
                 </div>
                 <div class="logo-column">
                     <img src="img/logo.png" alt="Logo">
                 </div>
             </div>
 
-            <div class="top-menu-row">
+            <div class="filters-wrap">
                 <div class="filter-buttons">
                     <a href="sales_history.php?filter=all" class="filter-btn <?php if ($filter === 'all') echo 'active'; ?>">Todos</a>
                     <a href="sales_history.php?filter=cash" class="filter-btn <?php if ($filter === 'cash') echo 'active'; ?>">Efectivo</a>
@@ -395,8 +408,8 @@ function format_payment_method($method) {
                         </div>
                         <div class="card-footer">
                             <?php if ($sale['status'] === 'completed'): ?>
-                                <a href="return.php?sale_id=<?php echo $sale['id']; ?>" class="btn btn-warning">Procesar Devolución</a>
-                                <button class="btn btn-danger void-sale-btn" data-id="<?php echo $sale['id']; ?>">Anular Venta Completa</button>
+                                <a href="return.php?sale_id=<?php echo $sale['id']; ?>" class="btn btn-warning">Devolución</a>
+                                <button class="btn btn-danger void-sale-btn" data-id="<?php echo $sale['id']; ?>">Anular Vta</button>
                             <?php endif; ?>
                         </div>
                     </div>
