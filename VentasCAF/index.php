@@ -173,9 +173,9 @@ function get_stock_semaphore_class($product) {
             background-color: var(--surface);
             border: 1px solid #e8ecf8;
             border-radius: 16px;
-            display: grid;
-            grid-template-rows: auto minmax(0, 1fr) auto auto;
-            row-gap: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
             padding: 12px;
             min-height: 0;
             overflow: hidden;
@@ -279,8 +279,9 @@ function get_stock_semaphore_class($product) {
         }
 
         #cart-items {
+            flex: 1 1 auto;
             min-height: 0;
-            overflow-y: scroll;
+            overflow-y: auto;
             padding: 2px 0;
             display: grid;
             gap: 2px;
@@ -288,6 +289,8 @@ function get_stock_semaphore_class($product) {
             scrollbar-width: auto;
             scrollbar-color: #9db0f6 #eef2fb;
             -webkit-overflow-scrolling: touch;
+            touch-action: pan-y;
+            overscroll-behavior-y: contain;
         }
 
         #product-grid::-webkit-scrollbar,
@@ -392,9 +395,7 @@ function get_stock_semaphore_class($product) {
             padding-top: 6px;
             border-top: 1px solid #eef2fb;
             background: #fff;
-            position: sticky;
-            bottom: 0;
-            z-index: 10;
+            position: static;
         }
 
         .action-btn {
@@ -529,6 +530,7 @@ function get_stock_semaphore_class($product) {
             #cart {
                 flex: 0 0 auto;
                 min-height: 0;
+                height: 46vh;
                 max-height: 46vh;
                 position: relative;
                 z-index: 5;
@@ -545,6 +547,7 @@ function get_stock_semaphore_class($product) {
             }
 
             #cart-items {
+                min-height: 0;
                 max-height: none;
             }
 
