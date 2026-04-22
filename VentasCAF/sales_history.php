@@ -320,7 +320,6 @@ function format_payment_method($method) {
                 <div class="title-wrap">
                     <h1>Historial de Ventas</h1>
                     <div class="top-menu-row">
-                        <a href="admin.php" class="btn btn-menu">Menú</a>
                         <a href="index.php" class="btn btn-pos">Ir POS</a>
                         <a href="logout.php" class="btn btn-logout">Cerrar sesión</a>
                     </div>

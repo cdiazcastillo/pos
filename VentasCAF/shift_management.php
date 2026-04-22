@@ -410,7 +410,6 @@ $basePath = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
         <div class="header-content">
             <h1>Gestión de Turno</h1>
             <div class="header-buttons">
-                <a href="admin.php" class="btn btn-menu">Menú</a>
                 <a href="index.php" class="btn btn-pos">POS</a>
                 <a href="logout.php" class="btn btn-logout">Cerrar sesión</a>
             </div>

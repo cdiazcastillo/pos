@@ -204,7 +204,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
     <div class="app">
         <div class="top-nav">
-            <a href="admin.php" class="nav-btn menu">Menú</a>
             <a href="index.php" class="nav-btn pos">Volver al POS</a>
             <a href="logout.php" class="nav-btn logout">Cerrar sesión</a>
         </div>

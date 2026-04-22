@@ -37,7 +37,6 @@ $currentUser = auth_require_role(['admin'], 'admin_login.php', 'index.php');
             </div>
             <div class="top-menu-row reports-actions">
                 <button id="export-all-btn" class="btn btn-success">Exportar a Excel</button>
-                <a href="admin.php" class="btn btn-menu">Menú</a>
                 <a href="index.php" class="btn btn-pos">Volver al POS</a>
                 <a href="logout.php" class="btn btn-logout">Cerrar sesión</a>
             </div>

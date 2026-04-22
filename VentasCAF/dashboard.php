@@ -240,7 +240,6 @@ try {
                 <?php if ($shift_id): ?>
                     <button id="end-shift-btn" class="btn btn-end-blue">Cerrar Turno (ID: <?php echo $shift_id; ?>)</button>
                 <?php endif; ?>
-                <a href="admin.php" class="btn btn-menu">Menú</a>
                 <a href="index.php" class="btn btn-pos">Regresar al POS</a>
                 <a href="logout.php" class="btn btn-logout">Cerrar sesión</a>
             </div>

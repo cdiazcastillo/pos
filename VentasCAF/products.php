@@ -309,7 +309,6 @@ $products = $db->query("SELECT * FROM products ORDER BY id ASC", [], true);
                 </div>
             </div>
             <div class="top-menu-row">
-                <a href="admin.php" class="btn btn-menu">Menú</a>
                 <a href="index.php" class="btn btn-pos">Regresar al POS</a>
                 <a href="logout.php" class="btn btn-logout">Cerrar sesión</a>
                 <button id="new-product-btn" class="btn btn-primary">Crear Nuevo Producto</button>

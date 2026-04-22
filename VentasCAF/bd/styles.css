@@ -244,6 +244,13 @@ button, input, select, textarea {
     color: var(--text-white);
 }
 
+.top-nav .fab .fab-label {
+    color: var(--text-white);
+    font-size: 1.15rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
 
 /* ============================================================
    5. IDENTIDAD / AVATAR / TOPBAR

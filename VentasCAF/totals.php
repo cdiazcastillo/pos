@@ -134,7 +134,6 @@ $currentUser = auth_require_role(['admin'], 'admin_login.php', 'index.php');
                 </div>
             </div>
             <div class="top-menu-row">
-                <a href="admin.php" class="btn btn-menu">Menú</a>
                 <a href="index.php" class="btn btn-pos">Regresar al POS</a>
                 <a href="logout.php" class="btn btn-logout">Cerrar sesión</a>
             </div>
