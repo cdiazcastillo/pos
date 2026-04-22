@@ -403,11 +403,11 @@ $basePath = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
 <body>
     <header class="header">
         <div class="header-content">
-            <h1>⏱️ Gestión de Turno</h1>
+            <h1>Gestión de Turno</h1>
             <div class="header-buttons">
-                <a href="admin.php" class="btn btn-menu">📋 Menú</a>
-                <a href="index.php" class="btn btn-pos">🛒 POS</a>
-                <a href="logout.php" class="btn btn-logout">🚪 Cerrar sesión</a>
+                <a href="admin.php" class="btn btn-menu">Menú</a>
+                <a href="index.php" class="btn btn-pos">POS</a>
+                <a href="logout.php" class="btn btn-logout">Cerrar sesión</a>
             </div>
         </div>
     </header>
@@ -417,7 +417,7 @@ $basePath = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
 
         <?php if ($hasActiveShift): ?>
             <div class="active-shift-banner">
-                <h3>✓ Turno Activo</h3>
+                <h3>Turno Activo</h3>
                 <p>Trabajando en Turno #<?php echo intval($activeShift['id']); ?> desde <?php echo date('H:i:s', strtotime($activeShift['start_time'])); ?> • Usuario: <strong><?php echo htmlspecialchars($activeShift['username']); ?></strong></p>
             </div>
         <?php endif; ?>
@@ -457,7 +457,7 @@ $basePath = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
             </div>
 
             <div class="button-group">
-                <button class="btn btn-primary" onclick="goToCloseTurn()">💰 Ir a Cierre de Caja</button>
+                <button class="btn btn-primary" onclick="goToCloseTurn()">Ir a Cierre de Caja</button>
                 <button class="btn btn-danger" onclick="confirmCloseTurn()">❌ Cerrar Turno Ahora</button>
             </div>
             <?php else: ?>
@@ -467,7 +467,7 @@ $basePath = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
             </div>
 
             <div class="button-group">
-                <button class="btn btn-primary" onclick="openNewShift()">✅ Abrir Nuevo Turno</button>
+                <button class="btn btn-primary" onclick="openNewShift()">Abrir Nuevo Turno</button>
             </div>
             <?php endif; ?>
         </div>

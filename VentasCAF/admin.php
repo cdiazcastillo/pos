@@ -217,7 +217,17 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
             justify-content: center;
             border-radius: 10px;
             background-color: #dbe6ff;
-            font-size: 1.1rem;
+            color: #253ea8;
+        }
+
+        .card-icon svg {
+            width: 18px;
+            height: 18px;
+            stroke: currentColor;
+            stroke-width: 1.5;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
         }
 
         .card-title {
@@ -874,55 +884,55 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
                 <h2 class="section-title">Accesos rápidos</h2>
                 <div class="admin-menu">
                     <a href="products.php" class="menu-card">
-                        <span class="card-icon">📦</span>
+                        <span class="card-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7.5 12 3l9 4.5-9 4.5-9-4.5Z"/><path d="M3 7.5V16.5L12 21l9-4.5V7.5"/></svg></span>
                         <span class="card-title">Gestionar productos</span>
                         <span class="card-subtitle">Precios, stock y estado de venta.</span>
                     </a>
                     <a href="sales_history.php" class="menu-card">
-                        <span class="card-icon">🧾</span>
+                        <span class="card-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10a2 2 0 0 1 2 2v16l-2-1.5L15 21l-2-1.5L11 21l-2-1.5L7 21l-2-1.5V5a2 2 0 0 1 2-2Z"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></span>
                         <span class="card-title">Historial de ventas</span>
                         <span class="card-subtitle">Consulta ventas, anulaciones y detalles.</span>
                     </a>
                     <a href="dashboard.php" class="menu-card">
-                        <span class="card-icon">📊</span>
+                        <span class="card-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20V8"/></svg></span>
                         <span class="card-title">Panel turno en curso</span>
                         <span class="card-subtitle">Visualiza ventas del turno activo.</span>
                     </a>
                     <?php if ($isAdmin): ?>
                         <a href="reports.php" class="menu-card">
-                            <span class="card-icon">📈</span>
+                            <span class="card-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17 9 11l4 4 8-8"/><path d="M14 7h7v7"/></svg></span>
                             <span class="card-title">Reportes de turno</span>
                             <span class="card-subtitle">Exporta y revisa resultados diarios.</span>
                         </a>
                         <a href="totals.php" class="menu-card">
-                            <span class="card-icon">💰</span>
+                            <span class="card-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18"/><path d="M17 7.5c0-1.9-2.2-3.5-5-3.5s-5 1.6-5 3.5 2.2 3.5 5 3.5 5 1.6 5 3.5-2.2 3.5-5 3.5-5-1.6-5-3.5"/></svg></span>
                             <span class="card-title">Ventas totales</span>
                             <span class="card-subtitle">Resumen acumulado del negocio.</span>
                         </a>
                         <a href="monitor.php" class="menu-card">
-                            <span class="card-icon">🛰️</span>
+                            <span class="card-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 16 8-8"/><path d="m11 7 6 6"/><path d="M3 12h5M16 12h5M12 3v5M12 16v5"/></svg></span>
                             <span class="card-title">Control operativo</span>
                             <span class="card-subtitle">Resumen clave y monitoreo de correos.</span>
                         </a>
                     <?php endif; ?>
                     <a href="expenses.php" class="menu-card">
-                        <span class="card-icon">💸</span>
+                        <span class="card-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/><path d="M7 14h4"/></svg></span>
                         <span class="card-title">OTROS GASTOS</span>
                         <span class="card-subtitle">Abrir página nueva para registrar, editar y eliminar gastos.</span>
                     </a>
                     <?php if ($isAdmin): ?>
                         <a href="#" id="open-security-manager-btn" class="menu-card">
-                            <span class="card-icon">📊</span>
+                            <span class="card-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20V8"/></svg></span>
                             <span class="card-title">Cierre de Turnos</span>
                             <span class="card-subtitle">Cuadre de caja y cierre operativo con resumen financiero.</span>
                         </a>
                         <a href="#" id="open-realtime-insights-btn" class="menu-card">
-                            <span class="card-icon">⚡</span>
+                            <span class="card-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></svg></span>
                             <span class="card-title">Insights en tiempo real</span>
                             <span class="card-subtitle">Ingresos netos, otros gastos y productos más/menos vendidos.</span>
                         </a>
                         <a href="permissions.php" class="menu-card">
-                            <span class="card-icon">👥</span>
+                            <span class="card-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="3"/><path d="M23 21v-2a4 4 0 0 0-3-3.9"/><path d="M16 3.1a3 3 0 0 1 0 5.8"/></svg></span>
                             <span class="card-title">Permisos</span>
                             <span class="card-subtitle">Configurar qué puede ver cada rol del sistema.</span>
                         </a>

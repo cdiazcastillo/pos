@@ -498,11 +498,11 @@ $basePath = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
 <body>
     <header class="header">
         <div class="header-content">
-            <h1>💰 Otros Gastos</h1>
+            <h1>Otros Gastos</h1>
             <div class="header-buttons">
-                <a href="admin.php" class="btn btn-menu">📋 Regresar al Menú</a>
-                <a href="index.php" class="btn btn-pos">🛒 Regresar al POS</a>
-                <a href="logout.php" class="btn btn-logout">🚪 Cerrar sesión</a>
+                <a href="admin.php" class="btn btn-menu">Regresar al Menú</a>
+                <a href="index.php" class="btn btn-pos">Regresar al POS</a>
+                <a href="logout.php" class="btn btn-logout">Cerrar sesión</a>
             </div>
         </div>
     </header>
@@ -512,11 +512,11 @@ $basePath = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
 
         <?php if (!$hasActiveShift): ?>
             <div class="alert alert-warning">
-                ⚠️ No tienes un turno activo. Los gastos registrados se guardarán cuando abras un turno.
+                Aviso: no tienes un turno activo. Los gastos registrados se guardarán cuando abras un turno.
             </div>
         <?php else: ?>
             <div class="alert alert-info">
-                ✓ Turno #<?php echo $activeShiftId; ?> activo • Usuario: <?php echo htmlspecialchars($currentUser['username']); ?>
+                Turno #<?php echo $activeShiftId; ?> activo • Usuario: <?php echo htmlspecialchars($currentUser['username']); ?>
             </div>
         <?php endif; ?>
 
@@ -536,14 +536,14 @@ $basePath = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
                 <div class="form-group">
                     <label for="expense-method">Método de Pago</label>
                     <select id="expense-method">
-                        <option value="cash">💵 Efectivo</option>
-                        <option value="transfer">🏦 Transferencia</option>
+                        <option value="cash">Efectivo</option>
+                        <option value="transfer">Transferencia</option>
                     </select>
                 </div>
             </div>
 
             <div class="button-group">
-                <button class="btn btn-primary" id="save-expense-btn" onclick="saveExpense()" <?php echo $hasActiveShift ? '' : 'disabled'; ?>>✅ Guardar Gasto</button>
+                <button class="btn btn-primary" id="save-expense-btn" onclick="saveExpense()" <?php echo $hasActiveShift ? '' : 'disabled'; ?>>Guardar Gasto</button>
             </div>
         </div>
 
@@ -575,8 +575,8 @@ $basePath = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
                             data-amount="<?php echo intval($expense['amount']); ?>"
                             data-method="<?php echo htmlspecialchars($expense['payment_method'] ?? 'cash', ENT_QUOTES, 'UTF-8'); ?>"
                             onclick="openEditExpenseModal(this)"
-                        >✏️ Editar</button>
-                        <button class="expense-delete-btn" type="button" onclick="deleteExpense(<?php echo intval($expense['id']); ?>)">🗑️ Quitar</button>
+>Editar</button>
+                        <button class="expense-delete-btn" type="button" onclick="deleteExpense(<?php echo intval($expense['id']); ?>)">Quitar</button>
                     </div>
                 </article>
                 <?php endforeach; ?>
@@ -599,7 +599,7 @@ $basePath = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
         </div>
         <?php elseif ($hasActiveShift): ?>
         <div class="empty-state">
-            <div class="empty-state-icon">📋</div>
+            <div class="empty-state-icon">—</div>
             <p>No hay gastos registrados en este turno.</p>
         </div>
         <?php endif; ?>
@@ -623,8 +623,8 @@ $basePath = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
                 <div class="form-group">
                     <label for="edit-expense-method">Método de Pago</label>
                     <select id="edit-expense-method">
-                        <option value="cash">💵 Efectivo</option>
-                        <option value="transfer">🏦 Transferencia</option>
+                        <option value="cash">Efectivo</option>
+                        <option value="transfer">Transferencia</option>
                     </select>
                 </div>
             </div>

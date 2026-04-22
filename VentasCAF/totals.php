@@ -10,22 +10,24 @@ $currentUser = auth_require_role(['admin'], 'admin_login.php', 'index.php');
     <title>Ventas Totales - 4 Básico A</title>
     <style>
         :root {
-            --primary-color: #007bff;
-            --secondary-color: #6c757d;
-            --success-color: #28a745;
-            --warning-color: #ffc107;
-            --danger-color: #dc3545;
-            --info-color: #17a2b8;
-            --light-gray: #f8f9fa;
-            --dark-gray: #343a40;
-            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --primary-color: #7c3aed;
+            --secondary-color: #6b7280;
+            --success-color: #14b8a6;
+            --warning-color: #f97316;
+            --danger-color: #fb7185;
+            --info-color: #3b82f6;
+            --light-gray: #f3f0ff;
+            --dark-gray: #1e1b4b;
+            --font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            --card-shadow: 0 0.5rem 1.5rem rgba(30, 27, 75, 0.1);
         }
         body {
             font-family: var(--font-family);
             background-color: var(--light-gray);
             color: var(--dark-gray);
             margin: 0;
-            padding: 12px;
+            padding: 0.75rem;
+            overflow-x: hidden;
         }
         .container {
             max-width: 1200px;
@@ -54,7 +56,7 @@ $currentUser = auth_require_role(['admin'], 'admin_login.php', 'index.php');
             width: 66px;
             height: 66px;
             object-fit: contain;
-            border-radius: 10px;
+            border-radius: 1.25rem;
             border: 1px solid #dbe4ff;
             background: #fff;
             padding: 4px;
@@ -68,7 +70,7 @@ $currentUser = auth_require_role(['admin'], 'admin_login.php', 'index.php');
         .btn {
             padding: 8px 12px;
             border: none;
-            border-radius: 5px;
+            border-radius: 999rem;
             cursor: pointer;
             text-decoration: none;
             font-size: 0.92rem;
@@ -86,9 +88,9 @@ $currentUser = auth_require_role(['admin'], 'admin_login.php', 'index.php');
         .btn-logout { background-color: #2563eb !important; }
         .kpi-card {
             background-color: #fff;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            padding: 1.25rem;
+            border-radius: 1.4rem;
+            box-shadow: var(--card-shadow);
             display: flex;
             flex-direction: column;
             justify-content: space-between;

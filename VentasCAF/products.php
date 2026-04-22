@@ -13,21 +13,23 @@ $products = $db->query("SELECT * FROM products ORDER BY id ASC", [], true);
     <title>Gestionar Productos - 4 Básico A</title>
     <style>
         :root {
-            --primary-color: #007bff;
-            --secondary-color: #6c757d;
-            --danger-color: #dc3545;
-            --success-color: #28a745;
-            --warning-color: #ffc107;
-            --light-gray: #f8f9fa;
-            --dark-gray: #343a40;
-            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --primary-color: #7c3aed;
+            --secondary-color: #6b7280;
+            --danger-color: #fb7185;
+            --success-color: #14b8a6;
+            --warning-color: #f97316;
+            --light-gray: #f3f0ff;
+            --dark-gray: #1e1b4b;
+            --font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            --card-shadow: 0 0.5rem 1.5rem rgba(30, 27, 75, 0.1);
         }
         body {
             font-family: var(--font-family);
             background-color: var(--light-gray);
             color: var(--dark-gray);
             margin: 0;
-            padding: 12px;
+            padding: 0.75rem;
+            overflow-x: hidden;
         }
         .container {
             max-width: 1200px;
@@ -57,7 +59,7 @@ $products = $db->query("SELECT * FROM products ORDER BY id ASC", [], true);
             width: 66px;
             height: 66px;
             object-fit: contain;
-            border-radius: 10px;
+            border-radius: 1.25rem;
             border: 1px solid #dbe4ff;
             background: #fff;
             padding: 4px;
@@ -66,13 +68,14 @@ $products = $db->query("SELECT * FROM products ORDER BY id ASC", [], true);
         .btn {
             padding: 8px 12px;
             border: none;
-            border-radius: 5px;
+            border-radius: 999rem;
             cursor: pointer;
             text-decoration: none;
             font-size: 0.92rem;
-            font-weight: 600;
+            font-weight: 700;
             color: white !important;
             white-space: nowrap;
+            min-height: 2.75rem;
         }
         .btn-primary { background-color: var(--primary-color) !important; }
         .btn-secondary { background-color: var(--secondary-color) !important; }
@@ -86,7 +89,7 @@ $products = $db->query("SELECT * FROM products ORDER BY id ASC", [], true);
         .product-modal-content {
             background: #fff;
             padding: clamp(16px, 3vw, 30px);
-            border-radius: 10px;
+            border-radius: 1.25rem;
             width: min(500px, 94vw);
             max-height: 92vh;
             overflow-y: auto;
@@ -107,7 +110,7 @@ $products = $db->query("SELECT * FROM products ORDER BY id ASC", [], true);
             width: 100%;
             padding: 10px;
             border: 1px solid #ccc;
-            border-radius: 5px;
+            border-radius: 0.9rem;
             box-sizing: border-box;
             font-size: 0.95rem;
         }
@@ -140,8 +143,8 @@ $products = $db->query("SELECT * FROM products ORDER BY id ASC", [], true);
         }
         .product-admin-card {
             background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-radius: 1.4rem;
+            box-shadow: var(--card-shadow);
             padding: 20px;
             display: flex;
             flex-direction: column;
@@ -167,7 +170,7 @@ $products = $db->query("SELECT * FROM products ORDER BY id ASC", [], true);
         }
         .status-badge {
             padding: 4px 8px;
-            border-radius: 12px;
+            border-radius: 999rem;
             font-size: 0.8rem;
             font-weight: 700;
             color: white;
@@ -212,7 +215,7 @@ $products = $db->query("SELECT * FROM products ORDER BY id ASC", [], true);
 
         .modal-content.product-modal-content {
             width: min(500px, 94vw);
-            border-radius: 14px;
+            border-radius: 1.25rem;
             box-shadow: 0 14px 40px rgba(0, 0, 0, 0.25);
             animation: modalPopIn 0.2s ease-out;
         }

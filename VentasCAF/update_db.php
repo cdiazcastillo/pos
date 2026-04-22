@@ -25,7 +25,7 @@ try {
             `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
     ");
-    $message .= "✓ Tabla 'permissions' verificada/creada.<br>";
+    $message .= "OK: Tabla 'permissions' verificada/creada.<br>";
 
     // Crear tabla de role_permissions si no existe
     $pdo->exec("
@@ -38,7 +38,7 @@ try {
             UNIQUE KEY `role_perm_unique` (`role`, `permission_id`)
         );
     ");
-    $message .= "✓ Tabla 'role_permissions' verificada/creada.<br>";
+    $message .= "OK: Tabla 'role_permissions' verificada/creada.<br>";
 
     // Asegurar columna payment_method en expenses
     $stmt = $pdo->prepare(
@@ -51,9 +51,9 @@ try {
 
     if (!$hasPaymentMethod) {
         $pdo->exec("ALTER TABLE `expenses` ADD COLUMN `payment_method` ENUM('cash', 'transfer') NOT NULL DEFAULT 'cash' AFTER `amount`");
-        $message .= "✓ Columna 'payment_method' agregada a expenses.<br>";
+        $message .= "OK: Columna 'payment_method' agregada a expenses.<br>";
     } else {
-        $message .= "ℹ️ Columna 'payment_method' ya existe en expenses.<br>";
+        $message .= "INFO: Columna 'payment_method' ya existe en expenses.<br>";
     }
 
     // Insertar permisos base (si no existen)
@@ -78,7 +78,7 @@ try {
     foreach ($permissions as $perm) {
         $stmt->execute($perm);
     }
-    $message .= "✓ Permisos base sincronizados.<br>";
+    $message .= "OK: Permisos base sincronizados.<br>";
 
     // Asegurar permisos admin (todos)
     $stmt = $pdo->prepare("
@@ -95,9 +95,9 @@ try {
     ");
     $stmt->execute();
 
-    $message .= "✓ Permisos por defecto de roles aplicados.<br>";
+    $message .= "OK: Permisos por defecto de roles aplicados.<br>";
 
-    $message .= "<hr><strong>✓ Actualización completada.</strong> Ya puedes usar la gestión de permisos.";
+    $message .= "<hr><strong>OK: Actualización completada.</strong> Ya puedes usar la gestión de permisos.";
     $messageType = 'success';
 
 } catch (PDOException $e) {

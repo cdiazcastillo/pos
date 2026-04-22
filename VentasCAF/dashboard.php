@@ -118,12 +118,13 @@ try {
     <title>Panel Turno en Curso - 4 Básico A</title>
     <style>
         :root {
-            --primary-color: #007bff; --secondary-color: #6c757d; --danger-color: #dc3545;
-            --success-color: #28a745; --warning-color: #ffc107; --info-color: #17a2b8;
-            --light-gray: #f8f9fa; --dark-gray: #343a40;
-            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --primary-color: #7c3aed; --secondary-color: #6b7280; --danger-color: #fb7185;
+            --success-color: #14b8a6; --warning-color: #f97316; --info-color: #3b82f6;
+            --light-gray: #f3f0ff; --dark-gray: #1e1b4b;
+            --font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            --card-shadow: 0 0.5rem 1.5rem rgba(30, 27, 75, 0.1);
         }
-        body { font-family: var(--font-family); background-color: var(--light-gray); color: var(--dark-gray); margin: 0; padding: 12px; }
+        body { font-family: var(--font-family); background-color: var(--light-gray); color: var(--dark-gray); margin: 0; padding: 0.75rem; overflow-x: hidden; }
         .container { max-width: 1200px; margin: auto; background-color: transparent; box-shadow: none; padding: 0; }
         .sticky-top {
             position: sticky;
@@ -146,7 +147,7 @@ try {
             width: 68px;
             height: 68px;
             object-fit: contain;
-            border-radius: 10px;
+            border-radius: 1.25rem;
             border: 1px solid #dbe4ff;
             background: #fff;
             padding: 4px;
@@ -161,12 +162,12 @@ try {
             background: #eef4ff;
             color: var(--primary-color);
             border: 1px solid #cfe0ff;
-            border-radius: 999px;
+            border-radius: 999rem;
             font-size: 0.78rem;
             font-weight: 700;
             padding: 4px 8px;
         }
-        .btn { padding: 8px 12px; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; font-size: 0.9rem; font-weight: 600; color: white !important; white-space: nowrap; }
+        .btn { padding: 0.65rem 0.95rem; border: none; border-radius: 999rem; cursor: pointer; text-decoration: none; font-size: 0.9rem; font-weight: 700; color: white !important; white-space: nowrap; min-height: 2.75rem; display: inline-flex; align-items: center; justify-content: center; }
         .btn-secondary { background-color: var(--secondary-color) !important; }
         .btn-primary { background-color: var(--primary-color) !important; }
         .btn-success { background-color: var(--success-color) !important; }
@@ -186,9 +187,9 @@ try {
         }
         .kpi-card {
             background-color: #fff;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            padding: 1.25rem;
+            border-radius: 1.4rem;
+            box-shadow: var(--card-shadow);
             display: flex;
             flex-direction: column;
             justify-content: space-between;

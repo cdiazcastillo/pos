@@ -13,11 +13,11 @@ try {
         "UPDATE users SET password_hash = ? WHERE username = 'admin'",
         [$password_hash]
     );
-    echo "✓ Contraseña del usuario admin actualizada a: 250012<br>";
-    echo "✓ Puedes iniciar sesión con:<br>";
+    echo "OK: Contraseña del usuario admin actualizada a: 250012<br>";
+    echo "OK: Puedes iniciar sesión con:<br>";
     echo "  Usuario: <strong>admin</strong><br>";
     echo "  Contraseña: <strong>250012</strong>";
 } catch (Exception $e) {
-    echo "✗ Error al actualizar contraseña: " . $e->getMessage();
+    echo "ERROR al actualizar contraseña: " . $e->getMessage();
 }
 ?>
