@@ -16,7 +16,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_permissions'])
     $permissionIds = isset($_POST['permissions']) && is_array($_POST['permissions']) ? 
         array_map('intval', $_POST['permissions']) : [];
     
-    if (in_array($role, $roles, true)) {
+    // Admin siempre tiene todos los permisos, no se puede cambiar
+    if ($role === 'admin') {
+        $message = "Los permisos del administrador no pueden modificarse.";
+        $messageType = 'warning';
+    } elseif (in_array($role, $roles, true)) {
         try {
             auth_set_role_permissions($role, $permissionIds);
             $message = "Permisos actualizados correctamente para el rol '$role'.";
@@ -27,6 +31,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_permissions'])
         }
     }
 }
+
+// Determinar rol seleccionado
+$selectedRole = isset($_GET['role']) && in_array($_GET['role'], $roles, true) ? $_GET['role'] : 'cashier';
 
 // Obtener todos los permisos
 $allPermissions = $db->query(
@@ -44,48 +51,106 @@ $allPermissions = $db->query(
     <title>Gestión de Permisos - POS</title>
     <link rel="stylesheet" href="style.css">
     <style>
+        :root {
+            --primary-color: #3457dc;
+            --success-color: #1f9d61;
+            --warning-color: #f59e0b;
+            --danger-color: #dc3545;
+            --muted: #6b7280;
+            --light-bg: #f3f5fb;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
         .permissions-container {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
+            padding: clamp(12px, 3vw, 24px);
+        }
+
+        .role-selector-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            background: #fff;
+            padding: 14px 16px;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            flex-wrap: wrap;
+        }
+
+        .role-selector-row label {
+            font-weight: 700;
+            color: var(--muted);
+            white-space: nowrap;
+        }
+
+        .role-selector-row select {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            min-width: 200px;
         }
 
         .role-section {
             background: #fff;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 30px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: clamp(14px, 2vw, 22px);
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
         }
 
         .role-section h3 {
             margin-top: 0;
-            color: #333;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #007bff;
+            color: #1f2937;
+            font-size: clamp(1rem, 2vw, 1.2rem);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .role-status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            background: #e0e7ff;
+            color: #3730a3;
         }
 
         .permissions-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 12px;
+            margin: 18px 0 22px;
         }
 
         .permission-item {
             display: flex;
             align-items: flex-start;
             padding: 12px;
-            background: #f8f9fa;
-            border-radius: 6px;
-            border: 1px solid #e9ecef;
+            background: #f8faff;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
             transition: all 0.2s;
         }
 
-        .permission-item:hover {
-            background: #e7f3ff;
-            border-color: #007bff;
+        .permission-item:not(:has(input:disabled)):hover {
+            background: #eef3ff;
+            border-color: var(--primary-color);
+        }
+
+        .permission-item:has(input:disabled) {
+            opacity: 0.6;
+            pointer-events: none;
         }
 
         .permission-item input[type="checkbox"] {
@@ -94,7 +159,7 @@ $allPermissions = $db->query(
             width: 18px;
             height: 18px;
             cursor: pointer;
-            accent-color: #007bff;
+            accent-color: var(--primary-color);
         }
 
         .permission-label {
@@ -104,46 +169,54 @@ $allPermissions = $db->query(
 
         .permission-label strong {
             display: block;
-            color: #333;
+            color: #1f2937;
             margin-bottom: 4px;
+            font-size: 0.92rem;
         }
 
         .permission-label small {
-            color: #666;
-            font-size: 0.85rem;
+            color: var(--muted);
+            font-size: 0.8rem;
         }
 
         .button-group {
             margin-top: 20px;
             display: flex;
             gap: 10px;
+            flex-wrap: wrap;
         }
 
         button {
-            padding: 10px 20px;
+            padding: clamp(10px, 1vw, 12px) clamp(16px, 2vw, 20px);
             border: none;
-            border-radius: 5px;
-            font-size: 1rem;
+            border-radius: 8px;
+            font-size: 0.95rem;
             cursor: pointer;
             transition: background-color 0.2s;
+            font-weight: 700;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
         .btn-primary {
-            background-color: #007bff;
+            background-color: var(--primary-color);
             color: #fff;
         }
 
         .btn-primary:hover {
-            background-color: #0056b3;
+            background-color: #253ea8;
         }
 
         .btn-secondary {
-            background-color: #6c757d;
+            background-color: var(--muted);
             color: #fff;
         }
 
         .btn-secondary:hover {
-            background-color: #545b62;
+            background-color: #4b5563;
         }
 
         .message {
@@ -151,18 +224,25 @@ $allPermissions = $db->query(
             border-radius: 5px;
             margin-bottom: 20px;
             border-left: 4px solid;
+            font-size: 0.92rem;
         }
 
         .message.success {
             background-color: #d4edda;
-            border-color: #28a745;
+            border-color: var(--success-color);
             color: #155724;
         }
 
         .message.error {
             background-color: #f8d7da;
-            border-color: #dc3545;
+            border-color: var(--danger-color);
             color: #721c24;
+        }
+
+        .message.warning {
+            background-color: #fff3cd;
+            border-color: var(--warning-color);
+            color: #856404;
         }
 
         .sticky-top {
@@ -170,39 +250,67 @@ $allPermissions = $db->query(
             top: 0;
             z-index: 90;
             background: #fff;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 1px solid #e5e7eb;
             padding: 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
         }
 
         .sticky-top h2 {
             margin: 0;
-            font-size: 1.3rem;
-            color: #333;
+            font-size: clamp(1rem, 2vw, 1.4rem);
+            color: #1f2937;
         }
 
         .back-link {
-            color: #007bff;
+            color: var(--primary-color);
             text-decoration: none;
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             padding: 8px 12px;
             background: #f8f9fa;
             border-radius: 4px;
             transition: all 0.2s;
+            font-weight: 600;
+            border: 1px solid transparent;
         }
 
         .back-link:hover {
             background: #e9ecef;
-            color: #0056b3;
+            color: #253ea8;
+        }
+
+        @media (max-width: 768px) {
+            .permissions-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .role-selector-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .role-selector-row select {
+                min-width: unset;
+                width: 100%;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .button-group button {
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
     <div class="sticky-top">
-        <h2>Gestión de Permisos por Rol</h2>
-        <a href="admin.php" class="back-link">← Volver</a>
+        <h2>Gestión de Permisos</h2>
+        <a href="admin.php" class="back-link">← Volver al Panel</a>
     </div>
 
     <div class="permissions-container">
@@ -212,47 +320,64 @@ $allPermissions = $db->query(
             </div>
         <?php endif; ?>
 
-        <?php foreach ($roles as $role): ?>
-            <?php
-            $rolePermissions = $db->query(
-                "SELECT permission_id FROM role_permissions WHERE role = ?",
-                [$role],
-                true
-            ) ?: [];
-            $rolePermissionIds = array_map(function($p) { return $p['permission_id']; }, $rolePermissions);
-            $roleLabel = $role === 'admin' ? 'Administrador' : 'Vendedor/Cajero';
-            ?>
-            <div class="role-section">
-                <h3><?php echo htmlspecialchars($roleLabel); ?> (<?php echo htmlspecialchars($role); ?>)</h3>
+        <div class="role-selector-row">
+            <label for="role-select">Selecciona un rol para gestionar permisos:</label>
+            <select id="role-select" onchange="window.location.href='?role=' + this.value">
+                <?php foreach ($roles as $r): ?>
+                    <option value="<?php echo htmlspecialchars($r); ?>" <?php echo $r === $selectedRole ? 'selected' : ''; ?>>
+                        <?php echo $r === 'admin' ? 'Administrador' : 'Vendedor (Cajero)'; ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+
+        <?php
+        $role = $selectedRole;
+        $rolePermissions = $db->query(
+            "SELECT permission_id FROM role_permissions WHERE role = ?",
+            [$role],
+            true
+        ) ?: [];
+        $rolePermissionIds = array_map(function($p) { return $p['permission_id']; }, $rolePermissions);
+        $roleLabel = $role === 'admin' ? 'Administrador' : 'Vendedor (Cajero)';
+        $isAdminRole = $role === 'admin';
+        ?>
+        <div class="role-section">
+            <h3>
+                <?php echo htmlspecialchars($roleLabel); ?>
+                <?php if ($isAdminRole): ?>
+                    <span class="role-status-badge">Permisos fijos</span>
+                <?php endif; ?>
+            </h3>
+            
+            <form method="POST">
+                <input type="hidden" name="role" value="<?php echo htmlspecialchars($role); ?>">
+                <input type="hidden" name="update_permissions" value="1">
                 
-                <form method="POST">
-                    <input type="hidden" name="role" value="<?php echo htmlspecialchars($role); ?>">
-                    <input type="hidden" name="update_permissions" value="1">
-                    
-                    <div class="permissions-grid">
-                        <?php foreach ($allPermissions as $permission): ?>
-                            <div class="permission-item">
-                                <input 
-                                    type="checkbox" 
-                                    name="permissions[]" 
-                                    value="<?php echo intval($permission['id']); ?>"
-                                    id="perm_<?php echo intval($permission['id']); ?>"
-                                    <?php echo in_array($permission['id'], $rolePermissionIds, true) ? 'checked' : ''; ?>
-                                >
-                                <label for="perm_<?php echo intval($permission['id']); ?>" class="permission-label">
-                                    <strong><?php echo htmlspecialchars($permission['name']); ?></strong>
-                                    <small><?php echo htmlspecialchars($permission['description'] ?? ''); ?></small>
-                                </label>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                    
-                    <div class="button-group">
-                        <button type="submit" class="btn-primary">Guardar Permisos</button>
-                    </div>
-                </form>
-            </div>
-        <?php endforeach; ?>
+                <div class="permissions-grid">
+                    <?php foreach ($allPermissions as $permission): ?>
+                        <div class="permission-item">
+                            <input 
+                                type="checkbox" 
+                                name="permissions[]" 
+                                value="<?php echo intval($permission['id']); ?>"
+                                id="perm_<?php echo intval($permission['id']); ?>"
+                                <?php echo $isAdminRole ? 'disabled' : ''; ?>
+                                <?php echo in_array($permission['id'], $rolePermissionIds, true) ? 'checked' : ''; ?>
+                            >
+                            <label for="perm_<?php echo intval($permission['id']); ?>" class="permission-label">
+                                <strong><?php echo htmlspecialchars($permission['name']); ?></strong>
+                                <small><?php echo htmlspecialchars($permission['description'] ?? ''); ?></small>
+                            </label>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+                
+                <div class="button-group">
+                    <button type="submit" class="btn-primary" <?php echo $isAdminRole ? 'disabled' : ''; ?>>Guardar Permisos</button>
+                </div>
+            </form>
+        </div>
     </div>
 </body>
 </html>

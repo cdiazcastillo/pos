@@ -191,7 +191,39 @@ $products = $db->query("SELECT * FROM products ORDER BY id ASC", [], true);
         }
 
         /* Modal Styles */
-        .modal-overlay { display: none; } /* Simplified */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(2px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            z-index: 1400;
+        }
+
+        .modal-overlay.is-open {
+            display: flex;
+        }
+
+        .modal-content.product-modal-content {
+            width: min(500px, 94vw);
+            border-radius: 14px;
+            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.25);
+            animation: modalPopIn 0.2s ease-out;
+        }
+
+        @keyframes modalPopIn {
+            from {
+                opacity: 0;
+                transform: translateY(12px) scale(0.98);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
 
         /* Toast Notification */
         #toast-notification {
@@ -213,6 +245,46 @@ $products = $db->query("SELECT * FROM products ORDER BY id ASC", [], true);
             visibility: visible;
             opacity: 1;
             transform: translateX(0);
+        }
+
+        /* FAB Flotante */
+        .fab-button {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            z-index: 999;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+        }
+
+        .fab-button:hover {
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+            transform: scale(1.1);
+        }
+
+        .fab-button:active {
+            transform: scale(0.95);
+        }
+
+        @media (max-width: 640px) {
+            .fab-button {
+                bottom: 16px;
+                right: 16px;
+                width: 56px;
+                height: 56px;
+                font-size: 20px;
+            }
         }
     </style>
 </head>
@@ -268,8 +340,11 @@ $products = $db->query("SELECT * FROM products ORDER BY id ASC", [], true);
         </div>
     </div>
 
+    <!-- FAB Flotante para Crear Producto -->
+    <button id="fab-create-product" class="fab-button" title="Crear nuevo producto">+</button>
+
     <!-- Product Modal (remains the same) -->
-    <div id="product-modal" class="modal-overlay" style="display: none;">
+    <div id="product-modal" class="modal-overlay" aria-hidden="true">
         <div class="modal-content product-modal-content">
             <h2 id="modal-title">Crear Nuevo Producto</h2>
             <form id="product-form">
@@ -303,6 +378,7 @@ $products = $db->query("SELECT * FROM products ORDER BY id ASC", [], true);
 document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('product-modal');
     const newProductBtn = document.getElementById('new-product-btn');
+    const fabCreateProductBtn = document.getElementById('fab-create-product');
     const cancelBtn = document.getElementById('cancel-btn');
     const productForm = document.getElementById('product-form');
     const modalTitle = document.getElementById('modal-title');
@@ -311,6 +387,33 @@ document.addEventListener('DOMContentLoaded', () => {
     const priceInput = document.getElementById('price');
     const stockLevelInput = document.getElementById('stock_level');
     const minStockWarningInput = document.getElementById('min_stock_warning');
+
+    function openModal() {
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeModal() {
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+    }
+
+    function openCreateModal() {
+        productForm.reset();
+        productIdInput.value = '';
+        modalTitle.textContent = 'Crear Nuevo Producto';
+        openModal();
+    }
+
+    function openEditModal(btn) {
+        modalTitle.textContent = 'Editar Producto';
+        productIdInput.value = btn.dataset.id;
+        document.getElementById('name').value = btn.dataset.name;
+        document.getElementById('price').value = btn.dataset.price;
+        document.getElementById('stock_level').value = btn.dataset.stock;
+        document.getElementById('min_stock_warning').value = btn.dataset.minStock;
+        openModal();
+    }
 
     function forceNumericInput(input) {
         if (!input) return;
@@ -323,15 +426,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Event Listeners ---
 
-    newProductBtn.addEventListener('click', () => {
-        productForm.reset();
-        productIdInput.value = '';
-        modalTitle.textContent = 'Crear Nuevo Producto';
-        modal.style.display = 'flex';
+    newProductBtn.addEventListener('click', openCreateModal);
+
+    fabCreateProductBtn.addEventListener('click', openCreateModal);
+
+    cancelBtn.addEventListener('click', closeModal);
+
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeModal();
+        }
     });
 
-    cancelBtn.addEventListener('click', () => {
-        modal.style.display = 'none';
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('is-open')) {
+            closeModal();
+        }
     });
 
     productGrid.addEventListener('click', (e) => {
@@ -340,13 +450,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (btn.classList.contains('edit-btn')) {
             e.preventDefault();
-            modalTitle.textContent = 'Editar Producto';
-            productIdInput.value = btn.dataset.id;
-            document.getElementById('name').value = btn.dataset.name;
-            document.getElementById('price').value = btn.dataset.price;
-            document.getElementById('stock_level').value = btn.dataset.stock;
-            document.getElementById('min_stock_warning').value = btn.dataset.minStock;
-            modal.style.display = 'flex';
+            openEditModal(btn);
         }
 
         if (btn.classList.contains('toggle-active-btn')) {

@@ -420,6 +420,69 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
             font-weight: 600;
         }
 
+        .close-shift-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+            gap: 16px;
+            margin: 16px 0;
+            padding: 0;
+        }
+
+        .summary-section {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            background: #fff;
+            padding: 14px;
+        }
+
+        .summary-section h3 {
+            margin: 0 0 12px;
+            font-size: 1rem;
+            color: #1f2937;
+            font-weight: 700;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f3f4f6;
+            font-size: 0.9rem;
+        }
+
+        .summary-row:last-child {
+            border-bottom: none;
+        }
+
+        .summary-row.summary-total {
+            background-color: #f0f9ff;
+            padding: 10px 8px;
+            border: 1px solid #bfdbfe;
+            border-radius: 6px;
+            font-weight: 700;
+            margin-top: 8px;
+        }
+
+        .summary-label {
+            color: #6b7280;
+            font-weight: 600;
+        }
+
+        .summary-value {
+            font-weight: 700;
+            color: #1f2937;
+            font-size: 0.95rem;
+        }
+
+        .summary-value.success {
+            color: var(--success-color);
+        }
+
+        .summary-value.danger {
+            color: var(--danger-color);
+        }
+
         .option-row input[type="checkbox"] {
             width: 18px;
             height: 18px;
@@ -771,11 +834,10 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
             </div>
             <div class="header-text">
                 <h1>Panel de Administración</h1>
-                <p>Gestiona productos, turnos y reportes desde un solo lugar.</p>
             </div>
             <div class="status-pill <?php echo $has_active_shift ? 'open' : 'closed'; ?>">
                 <span class="status-dot"></span>
-                <?php echo $has_active_shift ? 'Turno activo' : 'Turno cerrado'; ?>
+                <?php echo $has_active_shift ? ('Turno #' . intval($active_shift['id'])) : 'Turno cerrado'; ?>
             </div>
         </div>
 
@@ -822,9 +884,9 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
                     </a>
                     <?php if ($isAdmin): ?>
                         <a href="#" id="open-security-manager-btn" class="menu-card">
-                            <span class="card-icon">🔐</span>
-                            <span class="card-title">Seguridad</span>
-                            <span class="card-subtitle">Reinicio operativo con clave de seguridad.</span>
+                            <span class="card-icon">📊</span>
+                            <span class="card-title">Cierre de Turnos</span>
+                            <span class="card-subtitle">Cuadre de caja y cierre operativo con resumen financiero.</span>
                         </a>
                         <a href="#" id="open-realtime-insights-btn" class="menu-card">
                             <span class="card-icon">⚡</span>
@@ -870,6 +932,7 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
                 <div class="btn-row">
                     <button id="start-shift-btn" class="menu-button success" <?php if ($has_active_shift) echo 'disabled'; ?>>Iniciar turno</button>
                     <button id="end-shift-btn" class="menu-button danger" <?php if (!$has_active_shift) echo 'disabled'; ?>>Terminar turno</button>
+                    <a href="index.php" class="menu-button secondary">Regresar al inicio</a>
                 </div>
 
                 <?php if ($isAdmin): ?>
@@ -955,8 +1018,51 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
 
             <?php if ($isAdmin): ?>
             <section id="security-manager-panel" class="danger-panel panel-hidden">
-                <h2 class="section-title">Reinicio operativo (día nuevo)</h2>
-                <p>Esta acción cierra todos los turnos abiertos, devuelve stock de ventas completadas y elimina ventas, detalle y gastos para iniciar desde cero.</p>
+                <h2 class="section-title">Cierre de Turnos - Cuadre de Caja</h2>
+                <p>Revisa el resumen financiero del turno actual y cuadra el efectivo. Todos los valores deben coincidir para cerrar correctamente.</p>
+                
+                <div class="close-shift-summary">
+                    <div class="summary-section">
+                        <h3>Resumen Financiero</h3>
+                        <div class="summary-row">
+                            <span class="summary-label">Efectivo inicial del turno:</span>
+                            <span id="close-shift-initial-cash" class="summary-value">$0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Ventas en efectivo:</span>
+                            <span id="close-shift-cash-sales" class="summary-value success">$0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Ventas por transferencia:</span>
+                            <span id="close-shift-transfer-sales" class="summary-value success">$0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Devoluciones/Anulaciones:</span>
+                            <span id="close-shift-returns" class="summary-value danger">($0)</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Otros gastos:</span>
+                            <span id="close-shift-expenses" class="summary-value danger">($0)</span>
+                        </div>
+                        <div class="summary-row summary-total">
+                            <span class="summary-label">Efectivo esperado en caja:</span>
+                            <span id="close-shift-expected-cash" class="summary-value">$0</span>
+                        </div>
+                    </div>
+
+                    <div class="summary-section">
+                        <h3>Cuadre Final</h3>
+                        <div class="field-group">
+                            <label for="close-shift-actual-cash">Efectivo real contado en caja</label>
+                            <input id="close-shift-actual-cash" class="money-input" type="text" inputmode="numeric" pattern="[0-9]*" min="0" step="1" placeholder="Ingresa cantidad total contada">
+                        </div>
+                        <div id="close-shift-difference" class="summary-row">
+                            <span class="summary-label">Diferencia:</span>
+                            <span id="close-shift-diff-value" class="summary-value">$0</span>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="shift-grid">
                     <div class="field-group">
                         <label for="reset-initial-cash">Efectivo inicial del nuevo turno (opcional)</label>
@@ -979,8 +1085,8 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
 
             <?php if ($isAdmin): ?>
             <section id="realtime-insights-panel" class="shift-panel panel-hidden">
-                <h2 class="section-title">Insights en tiempo real</h2>
-                <p class="panel-note">Los otros gastos se descuentan automáticamente de los ingresos netos. Puedes registrar nota y monto aquí mismo.</p>
+                <h2 class="section-title">Resumen de Turno Actual</h2>
+                <p class="panel-note">Ingresos, gastos y productos más/menos vendidos. Los gastos en efectivo se descuentan del ingreso neto.</p>
 
                 <div class="insight-grid">
                     <article class="insight-card">
@@ -1042,8 +1148,9 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
             <?php endif; ?>
 
             <div class="footer-actions">
-                <a href="logout.php" class="menu-button danger" style="margin-right:8px;">Cerrar sesión</a>
+                <button id="end-shift-footer-btn" class="menu-button danger">Terminar turno</button>
                 <a href="index.php" class="menu-button secondary">Volver al POS</a>
+                <a href="logout.php" class="menu-button danger" style="margin-left:8px;">Cerrar sesión</a>
             </div>
         </div>
     </div>
@@ -1224,6 +1331,7 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
         openSecurityManagerBtn?.addEventListener('click', (event) => {
             event.preventDefault();
             showOnlyPanel(securityManagerPanel);
+            loadClosShiftSummary();
         });
 
         openRealtimeInsightsBtn?.addEventListener('click', (event) => {
@@ -1324,6 +1432,50 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
             if (realtimeTimer) {
                 clearInterval(realtimeTimer);
                 realtimeTimer = null;
+            }
+        }
+
+        async function loadClosShiftSummary() {
+            try {
+                const response = await fetch('get_admin_realtime_summary_api.php', { cache: 'no-store' });
+                const payload = await response.json();
+                if (!payload.success) {
+                    return;
+                }
+
+                const income = payload.data?.income || {};
+                const initialCash = income.initial_cash || 0;
+                const cashSales = income.cash_sales || 0;
+                const transferSales = income.transfer_sales || 0;
+                const returns = income.returns || 0;
+                const otherExpenses = income.other_expenses || 0;
+                
+                // Calcular efectivo esperado: inicial + ventas cash + ventas transfer - devoluciones - gastos
+                const expectedCash = initialCash + cashSales + transferSales - returns - otherExpenses;
+
+                document.getElementById('close-shift-initial-cash').textContent = formatClp(initialCash);
+                document.getElementById('close-shift-cash-sales').textContent = formatClp(cashSales);
+                document.getElementById('close-shift-transfer-sales').textContent = formatClp(transferSales);
+                document.getElementById('close-shift-returns').textContent = formatClp(returns);
+                document.getElementById('close-shift-expenses').textContent = formatClp(otherExpenses);
+                document.getElementById('close-shift-expected-cash').textContent = formatClp(expectedCash);
+
+                // Listeners para calcular diferencia cuando se ingresa efectivo real
+                const actualCashInput = document.getElementById('close-shift-actual-cash');
+                actualCashInput.addEventListener('input', () => {
+                    const actual = parseAmount(actualCashInput.value) || 0;
+                    const difference = actual - expectedCash;
+                    const diffElement = document.getElementById('close-shift-diff-value');
+                    diffElement.textContent = formatClp(difference);
+                    diffElement.className = 'summary-value';
+                    if (difference > 0) {
+                        diffElement.classList.add('success');
+                    } else if (difference < 0) {
+                        diffElement.classList.add('danger');
+                    }
+                });
+            } catch (error) {
+                console.error('Error al cargar resumen cuadre:', error);
             }
         }
 

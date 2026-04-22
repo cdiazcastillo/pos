@@ -211,20 +211,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['install'])) {
 
         // 6. Insertar productos de ejemplo
         $products = [
-            ['Café Americano', 3, 50, 10],
-            ['Latte', 4, 30, 10],
-            ['Croissant', 2, 15, 5],
-            ['Jugo de Naranja', 3, 20, 5],
-            ['Sandwich de Pavo', 6, 5, 2],
-            ['Té Verde', 2, 40, 10],
-            ['Muffin de Arándanos', 3, 12, 5],
-            ['Agua Mineral', 2, 0, 10], // Out of stock
+            ['Libro de 1 BÁSICO', 1500, 100, 10],
+            ['Libro de 2 BÁSICO', 1800, 100, 10],
+            ['Libro de 3 BÁSICO', 2000, 100, 10],
+            ['Libro de 4 BÁSICO', 2200, 100, 10],
+            ['Libro de 5 BÁSICO', 2400, 100, 10],
+            ['Libro de 6 BÁSICO', 2600, 100, 10],
+            ['Libro de 7 BÁSICO', 2800, 100, 10],
+            ['Libro de 8 BÁSICO', 3000, 100, 10],
+            ['Libro de 1 MEDIO', 3200, 100, 10],
+            ['Libro de 2 MEDIO', 3400, 100, 10],
+            ['Libro de 3 MEDIO', 3600, 100, 10],
+            ['Libro de 4 MEDIO', 3800, 100, 10],
+            ['Libro de CUENTOS', 1600, 100, 10],
+            ['Libro de REVISTAS', 2500, 100, 10],
+            ['Libro de PACK DE CUENTOS', 4000, 100, 10],
+            ['PROMOCION DE LIBROS', 5000, 100, 10],
         ];
         $stmt = $pdo->prepare("INSERT INTO `products` (name, price, stock_level, min_stock_warning) VALUES (?, ?, ?, ?)");
         foreach ($products as $product) {
             $stmt->execute($product);
         }
-        $message .= "Productos de ejemplo insertados.<br>";
+        $message .= "Productos de libros insertados (16 productos).<br>";
         
         $message .= "<hr><strong>¡Instalación completada con éxito!</strong> Ahora puedes usar la aplicación. Por favor, elimina este archivo por razones de seguridad.";
 

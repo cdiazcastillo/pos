@@ -1,650 +1,815 @@
 <?php
 require_once 'includes/auth.php';
 $currentUser = auth_require_role(['admin'], 'admin_login.php', 'index.php');
-require_once 'includes/notification_helper.php';
 
 $db = Database::getInstance();
-$conn = $db->getConnection();
-ensure_notification_logs_table($conn);
-
 $user = $db->query('SELECT id, role, username FROM users WHERE id = ?', [$_SESSION['user_id']]);
 if (!$user || ($user['role'] ?? '') !== 'admin') {
     die('Acceso denegado. Solo administradores.');
 }
 
-$open_shifts = $db->query("SELECT COUNT(*) as total FROM shifts WHERE status = 'open'");
-$closed_today = $db->query("SELECT COUNT(*) as total FROM shifts WHERE status = 'closed' AND DATE(end_time) = CURDATE()");
+// Obtener datos para el dashboard (valores ENTEROS)
+$openShifts = $db->query("SELECT COUNT(*) as total FROM shifts WHERE status = 'open'");
+$openShiftsCount = intval($openShifts['total'] ?? 0);
 
-$sales_today = $db->query(
-    "SELECT COUNT(*) as total_sales, COALESCE(SUM(total_amount),0) as total_amount
-     FROM sales
-     WHERE status = 'completed' AND DATE(sale_time) = CURDATE()"
+$closedToday = $db->query("SELECT COUNT(*) as total FROM shifts WHERE status = 'closed' AND DATE(end_time) = CURDATE()");
+$closedTodayCount = intval($closedToday['total'] ?? 0);
+
+$salesToday = $db->query(
+    "SELECT COUNT(*) as total_sales, COALESCE(SUM(total_amount), 0) as total_amount FROM sales WHERE status = 'completed' AND DATE(sale_time) = CURDATE()"
 );
+$salesTodayCount = intval($salesToday['total_sales'] ?? 0);
+$salesTodayAmount = intval($salesToday['total_amount'] ?? 0);
 
-$notifications_summary_stmt = $conn->query(
-    "SELECT
-        SUM(CASE WHEN status = 'sent' THEN 1 ELSE 0 END) as sent_total,
-        SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed_total,
-        SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending_total
-     FROM notification_logs"
+$expensesToday = $db->query(
+    "SELECT COALESCE(SUM(amount), 0) as total FROM expenses WHERE DATE(expense_time) = CURDATE() AND sale_id IS NULL"
 );
-$notifications_summary = $notifications_summary_stmt->fetch(PDO::FETCH_ASSOC) ?: ['sent_total' => 0, 'failed_total' => 0, 'pending_total' => 0];
+$expensesTodayAmount = intval($expensesToday['total'] ?? 0);
 
-$notifications_stmt = $conn->query(
-    "SELECT id, notification_type, reference_id, recipient, subject, status, attempts, last_error, last_attempt_at, sent_at, created_at
-     FROM notification_logs
-     ORDER BY id DESC
-     LIMIT 30"
+$returnesToday = $db->query(
+    "SELECT COALESCE(SUM(e.amount), 0) as total FROM expenses e INNER JOIN sales s ON s.id = e.sale_id WHERE e.sale_id IS NOT NULL AND DATE(e.expense_time) = CURDATE()"
 );
-$notifications = $notifications_stmt->fetchAll(PDO::FETCH_ASSOC);
+$returnesTodayAmount = intval($returnesToday['total'] ?? 0);
 
-$basePath = str_replace('\\\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
-$basePath = rtrim($basePath, '/');
-$baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
+$netToday = $salesTodayAmount - $returnesTodayAmount - $expensesTodayAmount;
 
-function format_clp_local($amount) {
-    return '$' . number_format((float)$amount, 0, ',', '.');
-}
+// Top 5 productos vendidos (cantidad ENTERO)
+$topProducts = $db->query(
+    "SELECT p.name, COALESCE(SUM(si.quantity - si.quantity_returned), 0) as qty
+     FROM products p
+     LEFT JOIN sale_items si ON si.product_id = p.id
+     LEFT JOIN sales s ON s.id = si.sale_id AND s.status = 'completed'
+     WHERE DATE(s.sale_time) = CURDATE()
+     GROUP BY p.id, p.name
+     HAVING qty > 0
+     ORDER BY qty DESC LIMIT 5",
+    [],
+    true
+) ?: [];
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control Operativo - 4 Básico A</title>
-    <base href="<?php echo htmlspecialchars($baseHref, ENT_QUOTES, 'UTF-8'); ?>">
+    <title>Monitor Financiero - VentasCAF POS</title>
     <style>
-        :root {
-            --primary: #3457dc;
-            --dark: #1f2937;
-            --muted: #6b7280;
-            --bg: #f4f6fb;
-            --card: #fff;
-            --ok: #1f9d61;
-            --warn: #d97706;
-            --danger: #dc3545;
-            --border: #e5e7eb;
-            --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-        }
-
-        * { box-sizing: border-box; }
-
-        body {
-            margin: 0;
-            font-family: var(--font);
-            background: var(--bg);
-            color: var(--dark);
-            padding: 10px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            gap: 14px;
-        }
-
-        .header {
-            background: linear-gradient(135deg, var(--primary), #4f46e5);
-            color: #fff;
-            border-radius: 14px;
-            padding: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .sticky-top {
-            position: sticky;
-            top: 0;
-            z-index: 90;
-            background: var(--bg);
-            padding: 2px 0 8px;
-        }
-
-        .header h1 { margin: 0; font-size: 1.3rem; }
-        .header p { margin: 6px 0 0; opacity: 0.95; font-size: 0.9rem; }
-
-        .actions { display: flex; gap: 8px; }
-        .btn {
-            border: none;
-            border-radius: 10px;
-            padding: 10px 12px;
-            color: #fff;
-            text-decoration: none;
-            font-weight: 700;
-            cursor: pointer;
-            background: rgba(255,255,255,0.2);
-            border: 1px solid rgba(255,255,255,0.35);
-        }
-
-        .btn.secondary { background: #374151; border-color: #374151; }
-
-                .logo-column img {
-                    width: 62px;
-                    height: 62px;
-                    object-fit: contain;
-                    border-radius: 10px;
-                    border: 1px solid rgba(255,255,255,0.45);
-                    padding: 4px;
-                    background: rgba(255,255,255,0.14);
-                }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 10px;
-        }
-
-        .card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 14px;
-        }
-
-        .card .label { font-size: 0.82rem; color: var(--muted); font-weight: 700; }
-        .card .value { margin-top: 6px; font-size: 1.5rem; font-weight: 800; }
-
-        .value.ok { color: var(--ok); }
-        .value.warn { color: var(--warn); }
-        .value.danger { color: var(--danger); }
-
-        .panel {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 14px;
-        }
-
-        .monitor-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 10px;
-        }
-
-        .metric-card {
-            background: #f9fbff;
-            border: 1px solid #e4e8f7;
-            border-radius: 10px;
-            padding: 12px;
-        }
-
-        .metric-label {
-            margin: 0;
-            font-size: 0.82rem;
-            color: var(--muted);
-            font-weight: 700;
-        }
-
-        .metric-value {
-            margin: 8px 0 0;
-            font-size: 1.35rem;
-            font-weight: 800;
-            color: var(--dark);
-        }
-
-        .monitor-panels {
-            margin-top: 12px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 10px;
-        }
-
-        .subpanel {
-            border: 1px solid #e5e7eb;
-            border-radius: 10px;
-            background: #fff;
-            padding: 12px;
-        }
-
-        .subpanel h3 {
-            margin: 0 0 8px;
-            font-size: 0.92rem;
-        }
-
-        .list-clean {
-            list-style: none;
+        * {
             margin: 0;
             padding: 0;
-            display: grid;
-            gap: 7px;
+            box-sizing: border-box;
         }
 
-        .list-row {
+        :root {
+            --primary: #7c3aed;
+            --bg-app: #f3f0ff;
+            --bg-card: #ffffff;
+            --text-dark: #1e1b4b;
+            --text-muted: #6b7280;
+            --border-soft: #e5e7eb;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Poppins', sans-serif;
+            background: var(--bg-app);
+            color: var(--text-dark);
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* Header Premium */
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, #a855f7 100%);
+            padding: 20px 24px;
+            color: white;
+            box-shadow: 0 4px 20px rgba(124, 58, 237, 0.15);
             display: flex;
             justify-content: space-between;
-            gap: 8px;
             align-items: center;
-            border-bottom: 1px solid #f1f3f9;
-            padding-bottom: 6px;
-            font-size: 0.84rem;
         }
 
-        .list-row:last-child {
-            border-bottom: none;
-            padding-bottom: 0;
+        header h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
         }
 
-        .mini-badge {
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-header {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            text-decoration: none;
             display: inline-flex;
             align-items: center;
-            border-radius: 999px;
-            padding: 3px 8px;
-            font-size: 0.74rem;
-            font-weight: 700;
-            background: #eef2ff;
-            color: #334155;
+            gap: 6px;
         }
 
-        .mini-badge.warn { background: #ffedd5; color: #9a3412; }
-        .mini-badge.danger { background: #fee2e2; color: #991b1b; }
-
-        .tiny-muted {
-            margin: 8px 0 0;
-            color: var(--muted);
-            font-size: 0.8rem;
+        .btn-header:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
         }
 
-        .panel-head {
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+            align-content: start;
+        }
+
+        /* Card Base Style - iOS inspired */
+        .card {
+            background: var(--bg-card);
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 4px 16px rgba(124, 58, 237, 0.08);
+            border: 1px solid rgba(124, 58, 237, 0.06);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(124, 58, 237, 0.12);
+        }
+
+        .card.card-full {
+            grid-column: 1 / -1;
+        }
+
+        /* Card Header con Emoji Icon */
+        .card-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin-bottom: 10px;
+            align-items: flex-start;
+            margin-bottom: 16px;
         }
 
-        .panel-head h2 { margin: 0; font-size: 1rem; }
-        .panel-head p { margin: 0; color: var(--muted); font-size: 0.88rem; }
-
-        .btn-retry {
-            border: none;
-            background: var(--primary);
-            color: #fff;
-            border-radius: 8px;
-            padding: 8px 12px;
-            font-weight: 700;
-            cursor: pointer;
+        .card-icon-large {
+            font-size: 2.5rem;
+            opacity: 0.8;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.86rem;
+        .card-meta {
+            flex: 1;
         }
 
-        th, td {
-            border-bottom: 1px solid var(--border);
-            text-align: left;
-            padding: 8px 6px;
-            vertical-align: top;
-        }
-
-        th { color: var(--muted); font-size: 0.8rem; }
-
-        .badge {
-            padding: 4px 8px;
-            border-radius: 999px;
+        .card-label {
             font-size: 0.75rem;
             font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .card-value {
+            font-size: 2.25rem;
+            font-weight: 800;
+            color: var(--primary);
+            font-variant-numeric: tabular-nums;
+            line-height: 1.2;
+        }
+
+        .card-value.success { color: var(--success); }
+        .card-value.danger { color: var(--danger); }
+        .card-value.warning { color: var(--warning); }
+
+        .card-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 10px;
+        }
+
+        /* Badges/Pills */
+        .badge {
             display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-top: 12px;
+            width: fit-content;
         }
 
-        .badge.sent { background: #dcfce7; color: #166534; }
-        .badge.failed { background: #fee2e2; color: #991b1b; }
-        .badge.pending { background: #fef3c7; color: #92400e; }
+        .badge.success { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .badge.danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+        .badge.warning { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+        .badge.info { background: rgba(59, 130, 246, 0.1); color: var(--info); }
 
-        #toast {
+        /* Stats Row */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-top: 14px;
+        }
+
+        .stat-item {
+            background: var(--bg-app);
+            padding: 12px;
+            border-radius: 14px;
+            text-align: center;
+            border: 1px solid rgba(124, 58, 237, 0.1);
+        }
+
+        .stat-item-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            letter-spacing: 0.3px;
+        }
+
+        .stat-item-value {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Progress Bar Rounded */
+        .progress-container {
+            margin-top: 16px;
+        }
+
+        .progress-bar-bg {
+            height: 8px;
+            background: rgba(124, 58, 237, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #7c3aed, #a855f7);
+            border-radius: 10px;
+            transition: width 0.4s ease;
+        }
+
+        /* Product Grid */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .product-tile {
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.05), rgba(168, 85, 247, 0.05));
+            border: 1px solid rgba(124, 58, 237, 0.15);
+            border-radius: 16px;
+            padding: 14px 10px;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .product-tile:hover {
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(168, 85, 247, 0.1));
+            transform: scale(1.04);
+        }
+
+        .product-tile-name {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            line-height: 1.3;
+            margin-bottom: 8px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .product-tile-qty {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--primary);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .product-tile-unit {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        /* Button con Action */
+        .btn-action {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, var(--primary), #a855f7);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(124, 58, 237, 0.3);
+        }
+
+        /* FAB Floating Action Button */
+        .fab {
             position: fixed;
-            right: 16px;
-            bottom: 16px;
-            background: #111827;
-            color: #fff;
-            padding: 10px 14px;
-            border-radius: 8px;
-            opacity: 0;
-            transform: translateY(6px);
-            transition: all .2s ease;
+            bottom: 32px;
+            right: 32px;
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), #a855f7);
+            color: white;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 100;
         }
 
-        #toast.show { opacity: 1; transform: translateY(0); }
-
-        @media (max-width: 700px) {
-            body { padding: 10px; }
-            table { font-size: 0.8rem; }
+        .fab:hover {
+            transform: scale(1.12) translateY(-3px);
+            box-shadow: 0 12px 32px rgba(124, 58, 237, 0.45);
         }
+
+        .fab:active {
+            transform: scale(0.96);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 12px;
+            opacity: 0.6;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .main-content {
+                grid-template-columns: 1fr;
+                padding: 16px;
+                gap: 14px;
+            }
+
+            .card {
+                padding: 16px;
+                border-radius: 20px;
+            }
+
+            .card-value {
+                font-size: 1.8rem;
+            }
+
+            .fab {
+                bottom: 20px;
+                right: 20px;
+                width: 56px;
+                height: 56px;
+                font-size: 24px;
+            }
+
+            header h1 {
+                font-size: 1.4rem;
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card { animation: fadeIn 0.4s ease forwards; }
+        .card:nth-child(2) { animation-delay: 0.05s; }
+        .card:nth-child(3) { animation-delay: 0.1s; }
+        .card:nth-child(4) { animation-delay: 0.15s; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>📊 Monitor Financiero</h1>
+            <div class="header-actions">
+                <a href="admin.php" class="btn-header">← Panel Admin</a>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- Turno Activo -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-meta">
+                        <div class="card-label">Turnos Activos</div>
+                        <div class="card-value"><?php echo $openShiftsCount; ?></div>
+                    </div>
+                    <div class="card-icon-large">⏱️</div>
+                </div>
+                <div class="card-subtitle">Turno(s) abierto(s) ahora</div>
+                <div class="badge success">Activos en vivo</div>
+            </div>
+
+            <!-- Ventas Hoy -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-meta">
+                        <div class="card-label">Transacciones Hoy</div>
+                        <div class="card-value"><?php echo $salesTodayCount; ?></div>
+                    </div>
+                    <div class="card-icon-large">🛍️</div>
+                </div>
+                <div class="card-subtitle">Ventas completadas</div>
+                <div class="stats-row">
+                    <div class="stat-item">
+                        <div class="stat-item-label">Monto Total</div>
+                        <div class="stat-item-value">$<?php echo number_format($salesTodayAmount, 0, '', '.'); ?></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ingresos Netos -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-meta">
+                        <div class="card-label">Ingreso Neto</div>
+                        <div class="card-value <?php echo ($netToday >= 0) ? 'success' : 'danger'; ?>">$<?php echo number_format($netToday, 0, '', '.'); ?></div>
+                    </div>
+                    <div class="card-icon-large">💰</div>
+                </div>
+                <div class="card-subtitle">Después de gastos y devoluciones</div>
+                <?php if ($netToday < 0): ?>
+                    <div class="badge danger">Negativo</div>
+                <?php else: ?>
+                    <div class="badge success">Positivo</div>
+                <?php endif; ?>
+            </div>
+
+            <!-- Devoluciones -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-meta">
+                        <div class="card-label">Devoluciones</div>
+                        <div class="card-value danger">$<?php echo number_format($returnesTodayAmount, 0, '', '.'); ?></div>
+                    </div>
+                    <div class="card-icon-large">↩️</div>
+                </div>
+                <div class="card-subtitle">Reintegros procesados</div>
+                <div class="badge warning">-$<?php echo number_format($returnesTodayAmount, 0, '', '.'); ?></div>
+            </div>
+
+            <!-- Otros Gastos -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-meta">
+                        <div class="card-label">Otros Gastos</div>
+                        <div class="card-value warning">$<?php echo number_format($expensesTodayAmount, 0, '', '.'); ?></div>
+                    </div>
+                    <div class="card-icon-large">🔧</div>
+                </div>
+                <div class="card-subtitle">Gastos operativos</div>
+                <button class="btn-action" onclick="location.href='expenses.php'">Ver Detalles →</button>
+            </div>
+
+            <!-- Turnos Cerrados -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-meta">
+                        <div class="card-label">Cerrados Hoy</div>
+                        <div class="card-value success"><?php echo $closedTodayCount; ?></div>
+                    </div>
+                    <div class="card-icon-large">✓</div>
+                </div>
+                <div class="card-subtitle">Turnos finalizados</div>
+                <div class="badge success">Completados</div>
+            </div>
+
+            <!-- Top 5 Productos Full Width -->
+            <div class="card card-full">
+                <div class="card-header">
+                    <div class="card-meta">
+                        <div class="card-label">Top 5 Productos</div>
+                    </div>
+                    <div class="card-icon-large">⭐</div>
+                </div>
+                <?php if (count($topProducts) > 0): ?>
+                <div class="products-grid">
+                    <?php foreach ($topProducts as $product): ?>
+                    <div class="product-tile">
+                        <div class="product-tile-name"><?php echo htmlspecialchars(substr($product['name'], 0, 18)); ?></div>
+                        <div class="product-tile-qty"><?php echo intval($product['qty']); ?></div>
+                        <div class="product-tile-unit">Vendidas</div>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+                <?php else: ?>
+                <div class="empty-state">
+                    <div class="empty-state-icon">📈</div>
+                    <p>Sin ventas registradas hoy</p>
+                </div>
+                <?php endif; ?>
+            </div>
+
+            <!-- Resumen Diario Full Width -->
+            <div class="card card-full">
+                <div class="card-header">
+                    <div class="card-meta">
+                        <div class="card-label">Resumen Diario</div>
+                    </div>
+                    <div class="card-icon-large">📊</div>
+                </div>
+                <div class="stats-row">
+                    <div class="stat-item">
+                        <div class="stat-item-label">Bruta</div>
+                        <div class="stat-item-value">$<?php echo number_format($salesTodayAmount, 0, '', '.'); ?></div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-item-label">Devoluciones</div>
+                        <div class="stat-item-value danger">-$<?php echo number_format($returnesTodayAmount, 0, '', '.'); ?></div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-item-label">Gastos</div>
+                        <div class="stat-item-value warning">-$<?php echo number_format($expensesTodayAmount, 0, '', '.'); ?></div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-item-label">Neto Final</div>
+                        <div class="stat-item-value" style="color: <?php echo ($netToday >= 0) ? 'var(--success)' : 'var(--danger)'; ?>">$<?php echo number_format($netToday, 0, '', '.'); ?></div>
+                    </div>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" style="width: <?php echo ($salesTodayAmount > 0) ? min(100, max(5, ($netToday / $salesTodayAmount) * 100)) : 0; ?>%"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- FAB -->
+    <button class="fab" onclick="location.href='admin.php'" title="Volver al panel">📋</button>
+
+    <script>
+        // Auto-refresh cada 30 segundos
+        setInterval(() => { location.reload(); }, 30000);
+    </script>
+</body>
+</html>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #7c3aed;
+            --primary-light: #a78bfa;
+            --bg-light: #f3f0ff;
+            --bg-white: #ffffff;
+            --text-dark: #1f2937;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+
+        html, body { width: 100%; height: 100%; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; background: var(--bg-light); color: var(--text-dark); overflow: hidden; }
+        .container { display: flex; height: 100vh; flex-direction: column; }
+        header { background: var(--bg-white); border-bottom: 1px solid var(--border); padding: 18px 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
+        header h1 { font-size: 1.5rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+        .header-buttons { display: flex; gap: 8px; }
+        .btn-header { padding: 8px 14px; border: none; border-radius: 6px; background: var(--text-muted); color: var(--bg-white); font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
+        .btn-header:hover { background: #4b5563; transform: translateY(-1px); }
+        .main-content { flex: 1; overflow-y: auto; padding: 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .card { background: var(--bg-white); border-radius: 20px; padding: 20px; box-shadow: 0 4px 12px rgba(124,58,237,0.08); border: 1px solid rgba(124,58,237,0.1); transition: all 0.3s; display: flex; flex-direction: column; }
+        .card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(124,58,237,0.12); }
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+        .card-title { font-size: 0.95rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .card-icon { font-size: 1.8rem; }
+        .card-value { font-size: 2.5rem; font-weight: 800; color: var(--primary); margin: 8px 0; font-variant-numeric: tabular-nums; }
+        .card-subtitle { font-size: 0.85rem; color: var(--text-muted); margin-top: 8px; }
+        .card-badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; margin-top: 8px; width: fit-content; }
+        .badge-success { background: rgba(16,185,129,0.1); color: var(--success); }
+        .badge-danger { background: rgba(239,68,68,0.1); color: var(--danger); }
+        .badge-warning { background: rgba(245,158,11,0.1); color: var(--warning); }
+        .card-full { grid-column: 1 / -1; }
+        .products-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; }
+        .product-item { background: var(--bg-light); border-radius: 12px; padding: 12px; text-align: center; border: 1px solid rgba(124,58,237,0.2); transition: all 0.2s; }
+        .product-item:hover { background: rgba(124,58,237,0.05); transform: scale(1.02); }
+        .product-name { font-size: 0.8rem; font-weight: 600; color: var(--text-dark); margin-bottom: 6px; line-height: 1.2; }
+        .product-qty { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-top: 12px; }
+        .stat-mini { background: var(--bg-light); padding: 12px; border-radius: 10px; border: 1px solid rgba(124,58,237,0.15); }
+        .stat-label { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-bottom: 4px; }
+        .stat-value { font-size: 1.3rem; font-weight: 700; color: var(--primary); font-variant-numeric: tabular-nums; }
+        .progress-bar { height: 6px; background: rgba(124,58,237,0.1); border-radius: 3px; overflow: hidden; margin-top: 8px; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--primary-light)); border-radius: 3px; transition: width 0.3s ease; }
+        .fab { position: fixed; bottom: 30px; right: 30px; width: 56px; height: 56px; background: linear-gradient(135deg, var(--primary), var(--primary-light)); border-radius: 50%; border: none; color: var(--bg-white); font-size: 1.5rem; cursor: pointer; box-shadow: 0 8px 24px rgba(124,58,237,0.4); transition: all 0.3s; z-index: 100; display: flex; align-items: center; justify-content: center; }
+        .fab:hover { transform: scale(1.1) rotate(90deg); box-shadow: 0 12px 32px rgba(124,58,237,0.5); }
+        .fab:active { transform: scale(0.95); }
+        @media (max-width: 768px) { header { flex-direction: column; align-items: flex-start; gap: 12px; } .main-content { grid-template-columns: 1fr; padding: 16px; gap: 16px; } .card { padding: 16px; border-radius: 16px; } .card-value { font-size: 2rem; } .fab { bottom: 20px; right: 20px; width: 48px; height: 48px; font-size: 1.2rem; } }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="sticky-top">
-            <header class="header">
-                <div>
-                    <h1>Control Operativo Resumido</h1>
-                    <p>Puntos clave del día y monitoreo de correos de cierre.</p>
-                </div>
-                <div class="logo-column">
-                    <img src="img/logo.png" alt="Logo">
-                </div>
-                <div class="actions">
-                    <a href="index.php" class="btn secondary">Regresar al POS</a>
-                </div>
-            </header>
-        </div>
+        <header>
+            <h1>📊 Monitor en Tiempo Real</h1>
+            <div class="header-buttons">
+                <a href="admin.php" class="btn-header">← Volver al Panel</a>
+            </div>
+        </header>
 
-        <section class="grid">
-            <article class="card">
-                <div class="label">Turnos abiertos</div>
-                <div class="value <?php echo intval($open_shifts['total'] ?? 0) > 0 ? 'warn' : 'ok'; ?>"><?php echo intval($open_shifts['total'] ?? 0); ?></div>
-            </article>
-            <article class="card">
-                <div class="label">Turnos cerrados hoy</div>
-                <div class="value"><?php echo intval($closed_today['total'] ?? 0); ?></div>
-            </article>
-            <article class="card">
-                <div class="label">Ventas completadas hoy</div>
-                <div class="value"><?php echo intval($sales_today['total_sales'] ?? 0); ?></div>
-            </article>
-            <article class="card">
-                <div class="label">Monto vendido hoy</div>
-                <div class="value"><?php echo format_clp_local($sales_today['total_amount'] ?? 0); ?></div>
-            </article>
-            <article class="card">
-                <div class="label">Correos enviados</div>
-                <div class="value ok"><?php echo intval($notifications_summary['sent_total'] ?? 0); ?></div>
-            </article>
-            <article class="card">
-                <div class="label">Correos con fallo</div>
-                <div class="value danger"><?php echo intval($notifications_summary['failed_total'] ?? 0); ?></div>
-            </article>
-        </section>
+        <main class="main-content">
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Turnos Activos</div>
+                        <div class="card-value"><?php echo $openShiftsCount; ?></div>
+                    </div>
+                    <div class="card-icon">⏱️</div>
+                </div>
+                <div class="card-subtitle">Turno(s) abierto(s) en el sistema</div>
+                <div class="card-badge badge-success">Activos en vivo</div>
+            </div>
 
-        <section class="panel">
-            <div class="panel-head">
-                <div>
-                    <h2>Monitores útiles en tiempo real</h2>
-                    <p>Indicadores financieros, stock crítico, top productos y tendencia semanal.</p>
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Ventas Hoy</div>
+                        <div class="card-value"><?php echo $salesTodayCount; ?></div>
+                    </div>
+                    <div class="card-icon">🛍️</div>
+                </div>
+                <div class="card-subtitle">Transacciones completadas</div>
+                <div class="stats-row">
+                    <div class="stat-mini">
+                        <div class="stat-label">Total</div>
+                        <div class="stat-value">$<?php echo number_format($salesTodayAmount, 0, '', '.'); ?></div>
+                    </div>
                 </div>
             </div>
 
-            <div class="monitor-grid">
-                <article class="metric-card">
-                    <p class="metric-label">Ingreso neto hoy</p>
-                    <p class="metric-value" id="metric-net-income">$0</p>
-                </article>
-                <article class="metric-card">
-                    <p class="metric-label">Otros gastos hoy</p>
-                    <p class="metric-value danger" id="metric-other-expenses">$0</p>
-                </article>
-                <article class="metric-card">
-                    <p class="metric-label">Ticket promedio hoy</p>
-                    <p class="metric-value" id="metric-avg-ticket">$0</p>
-                </article>
-                <article class="metric-card">
-                    <p class="metric-label">Ventas última hora</p>
-                    <p class="metric-value" id="metric-last-hour">0</p>
-                </article>
-                <article class="metric-card">
-                    <p class="metric-label">Productos stock bajo</p>
-                    <p class="metric-value warn" id="metric-low-stock">0</p>
-                </article>
-                <article class="metric-card">
-                    <p class="metric-label">Productos sin stock</p>
-                    <p class="metric-value danger" id="metric-out-stock">0</p>
-                </article>
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Ingresos Netos</div>
+                        <div class="card-value">$<?php echo number_format($netToday, 0, '', '.'); ?></div>
+                    </div>
+                    <div class="card-icon">💰</div>
+                </div>
+                <div class="card-subtitle">Después de devoluciones y gastos</div>
+                <?php if ($netToday < 0): ?>
+                    <div class="card-badge badge-danger">Negativo</div>
+                <?php else: ?>
+                    <div class="card-badge badge-success">Positivo</div>
+                <?php endif; ?>
             </div>
 
-            <div class="monitor-panels">
-                <div class="subpanel">
-                    <h3>Alertas de stock</h3>
-                    <ul id="stock-alerts-list" class="list-clean">
-                        <li class="list-row"><span>Cargando alertas...</span></li>
-                    </ul>
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Devoluciones</div>
+                        <div class="card-value">$<?php echo number_format($returnesTodayAmount, 0, '', '.'); ?></div>
+                    </div>
+                    <div class="card-icon">↩️</div>
                 </div>
-                <div class="subpanel">
-                    <h3>Productos top del día</h3>
-                    <ul id="top-products-list" class="list-clean">
-                        <li class="list-row"><span>Cargando ranking...</span></li>
-                    </ul>
-                </div>
-                <div class="subpanel">
-                    <h3>Últimos otros gastos</h3>
-                    <ul id="latest-expenses-list" class="list-clean">
-                        <li class="list-row"><span>Cargando gastos...</span></li>
-                    </ul>
-                </div>
-                <div class="subpanel">
-                    <h3>Método de pago hoy</h3>
-                    <ul id="payment-mix-list" class="list-clean">
-                        <li class="list-row"><span>Cargando distribución...</span></li>
-                    </ul>
-                </div>
-                <div class="subpanel">
-                    <h3>Tendencia neta (7 días)</h3>
-                    <ul id="trend-list" class="list-clean">
-                        <li class="list-row"><span>Cargando tendencia...</span></li>
-                    </ul>
-                </div>
-                <div class="subpanel">
-                    <h3>Estado de turno abierto</h3>
-                    <ul id="open-shift-list" class="list-clean">
-                        <li class="list-row"><span>Sin datos todavía...</span></li>
-                    </ul>
-                </div>
+                <div class="card-subtitle">Reintegros de hoy</div>
+                <div class="card-badge badge-warning">-$<?php echo number_format($returnesTodayAmount, 0, '', '.'); ?></div>
             </div>
 
-            <p id="monitor-updated-at" class="tiny-muted">Actualizando monitores...</p>
-        </section>
-
-        <section class="panel">
-            <div class="panel-head">
-                <div>
-                    <h2>Notificaciones de correo</h2>
-                    <p>Últimos 30 envíos registrados. Puedes reintentar fallidos/pending.</p>
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Otros Gastos</div>
+                        <div class="card-value">$<?php echo number_format($expensesTodayAmount, 0, '', '.'); ?></div>
+                    </div>
+                    <div class="card-icon">🔧</div>
                 </div>
-                <button id="retry-btn" class="btn-retry">Reintentar fallidos</button>
+                <div class="card-subtitle">Gastos operativos hoy</div>
+                <a href="expenses.php" style="margin-top: 10px; text-decoration: none;">
+                    <button style="width: 100%; padding: 8px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">Ver Detalles →</button>
+                </a>
             </div>
 
-            <div style="overflow:auto;">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Tipo</th>
-                            <th>Referencia</th>
-                            <th>Destino</th>
-                            <th>Estado</th>
-                            <th>Intentos</th>
-                            <th>Último error</th>
-                            <th>Último intento</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (empty($notifications)): ?>
-                            <tr>
-                                <td colspan="8">Sin registros todavía.</td>
-                            </tr>
-                        <?php else: ?>
-                            <?php foreach ($notifications as $row): ?>
-                                <tr>
-                                    <td>#<?php echo intval($row['id']); ?></td>
-                                    <td><?php echo htmlspecialchars($row['notification_type']); ?></td>
-                                    <td><?php echo htmlspecialchars((string)($row['reference_id'] ?? '-')); ?></td>
-                                    <td><?php echo htmlspecialchars($row['recipient']); ?></td>
-                                    <td><span class="badge <?php echo htmlspecialchars($row['status']); ?>"><?php echo htmlspecialchars($row['status']); ?></span></td>
-                                    <td><?php echo intval($row['attempts']); ?></td>
-                                    <td><?php echo htmlspecialchars($row['last_error'] ?? '-'); ?></td>
-                                    <td><?php echo htmlspecialchars($row['last_attempt_at'] ?? '-'); ?></td>
-                                </tr>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Cerrados Hoy</div>
+                        <div class="card-value"><?php echo $closedTodayCount; ?></div>
+                    </div>
+                    <div class="card-icon">✓</div>
+                </div>
+                <div class="card-subtitle">Turnos finalizados</div>
+                <div class="card-badge badge-success">Completados</div>
             </div>
-        </section>
+
+            <div class="card card-full">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Top 5 Productos Vendidos</div>
+                    </div>
+                    <div class="card-icon">⭐</div>
+                </div>
+                <?php if (count($topProducts) > 0): ?>
+                <div class="products-grid">
+                    <?php foreach ($topProducts as $i => $product): ?>
+                    <div class="product-item">
+                        <div class="product-name"><?php echo htmlspecialchars(substr($product['name'], 0, 20)); ?></div>
+                        <div class="product-qty"><?php echo intval($product['qty']); ?></div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">unidades</div>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+                <?php else: ?>
+                <div style="text-align: center; padding: 20px; color: var(--text-muted);">
+                    <p>Sin ventas registradas hoy</p>
+                </div>
+                <?php endif; ?>
+            </div>
+
+            <div class="card card-full">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Resumen del Día</div>
+                    </div>
+                    <div class="card-icon">📈</div>
+                </div>
+                <div class="stats-row">
+                    <div class="stat-mini">
+                        <div class="stat-label">Venta Bruta</div>
+                        <div class="stat-value">$<?php echo number_format($salesTodayAmount, 0, '', '.'); ?></div>
+                    </div>
+                    <div class="stat-mini">
+                        <div class="stat-label">Devoluciones</div>
+                        <div class="stat-value">-$<?php echo number_format($returnesTodayAmount, 0, '', '.'); ?></div>
+                    </div>
+                    <div class="stat-mini">
+                        <div class="stat-label">Gastos</div>
+                        <div class="stat-value">-$<?php echo number_format($expensesTodayAmount, 0, '', '.'); ?></div>
+                    </div>
+                    <div class="stat-mini">
+                        <div class="stat-label">Neto Final</div>
+                        <div class="stat-value" style="color: <?php echo ($netToday >= 0) ? 'var(--success)' : 'var(--danger)'; ?>">$<?php echo number_format($netToday, 0, '', '.'); ?></div>
+                    </div>
+                </div>
+                <div class="progress-bar" style="margin-top: 14px;">
+                    <div class="progress-fill" style="width: <?php echo ($salesTodayAmount > 0) ? min(100, max(10, ($netToday / $salesTodayAmount) * 100)) : 0; ?>%"></div>
+                </div>
+            </div>
+        </main>
     </div>
 
-    <div id="toast"></div>
+    <button class="fab" onclick="location.href='admin.php'" title="Ir al panel de admin">📋</button>
 
     <script>
-        const retryBtn = document.getElementById('retry-btn');
-        const toast = document.getElementById('toast');
-        const metricNetIncome = document.getElementById('metric-net-income');
-        const metricOtherExpenses = document.getElementById('metric-other-expenses');
-        const metricAvgTicket = document.getElementById('metric-avg-ticket');
-        const metricLastHour = document.getElementById('metric-last-hour');
-        const metricLowStock = document.getElementById('metric-low-stock');
-        const metricOutStock = document.getElementById('metric-out-stock');
-        const stockAlertsList = document.getElementById('stock-alerts-list');
-        const topProductsList = document.getElementById('top-products-list');
-        const latestExpensesList = document.getElementById('latest-expenses-list');
-        const paymentMixList = document.getElementById('payment-mix-list');
-        const trendList = document.getElementById('trend-list');
-        const openShiftList = document.getElementById('open-shift-list');
-        const monitorUpdatedAt = document.getElementById('monitor-updated-at');
-
-        function formatClp(value) {
-            return `$${Number(value || 0).toLocaleString('es-CL')}`;
-        }
-
-        function escapeHtml(value) {
-            return String(value ?? '')
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#039;');
-        }
-
-        function formatDateLocal(value) {
-            if (!value) return '-';
-            const parsed = new Date(String(value).replace(' ', 'T'));
-            if (Number.isNaN(parsed.getTime())) return String(value);
-            return parsed.toLocaleString('es-CL');
-        }
-
-        function elapsedTextSince(value) {
-            if (!value) return 'Sin turnos abiertos';
-            const start = new Date(String(value).replace(' ', 'T'));
-            if (Number.isNaN(start.getTime())) return 'Sin datos de inicio';
-            const diffMs = Date.now() - start.getTime();
-            const totalMinutes = Math.max(0, Math.floor(diffMs / 60000));
-            const hours = Math.floor(totalMinutes / 60);
-            const minutes = totalMinutes % 60;
-            return `${hours}h ${minutes}m abierto`;
-        }
-
-        function showToast(message) {
-            toast.textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 2600);
-        }
-
-        function renderList(container, items, emptyText) {
-            if (!container) return;
-            if (!Array.isArray(items) || items.length === 0) {
-                container.innerHTML = `<li class="list-row"><span>${emptyText}</span></li>`;
-                return;
-            }
-            container.innerHTML = items.join('');
-        }
-
-        async function loadMonitorSummary() {
-            try {
-                const response = await fetch('get_monitor_summary_api.php', { cache: 'no-store' });
-                const payload = await response.json();
-                if (!payload.success) {
-                    showToast(payload.message || 'No se pudieron cargar los monitores.');
-                    return;
-                }
-
-                const data = payload.data || {};
-                const kpis = data.kpis || {};
-                const paymentMix = data.payment_mix_today || {};
-
-                metricNetIncome.textContent = formatClp(kpis.net_income_today || 0);
-                metricOtherExpenses.textContent = formatClp(kpis.other_expenses_today || 0);
-                metricAvgTicket.textContent = formatClp(kpis.avg_ticket_today || 0);
-                metricLastHour.textContent = Number(kpis.sales_last_hour || 0).toLocaleString('es-CL');
-                metricLowStock.textContent = Number(kpis.low_stock_count || 0).toLocaleString('es-CL');
-                metricOutStock.textContent = Number(kpis.out_stock_count || 0).toLocaleString('es-CL');
-
-                const stockAlertsRows = (data.stock_alerts || []).map(item => {
-                    const stock = Number(item.stock_level || 0);
-                    const warning = Number(item.min_stock_warning || 0);
-                    const badgeClass = stock <= 0 ? 'danger' : 'warn';
-                    const badgeText = stock <= 0 ? 'Sin stock' : 'Bajo stock';
-                    return `<li class="list-row"><span>${escapeHtml(item.name)} (${stock}/${warning})</span><span class="mini-badge ${badgeClass}">${badgeText}</span></li>`;
-                });
-                renderList(stockAlertsList, stockAlertsRows, 'Sin alertas de stock.');
-
-                const topProductsRows = (data.top_products_today || []).map(item => (
-                    `<li class="list-row"><span>${escapeHtml(item.name)}</span><strong>${Number(item.sold_qty || 0).toLocaleString('es-CL')} uds</strong></li>`
-                ));
-                renderList(topProductsList, topProductsRows, 'No hay ventas hoy para ranking.');
-
-                const latestExpensesRows = (data.latest_other_expenses || []).map(item => (
-                    `<li class="list-row"><span>${escapeHtml(item.description)}</span><strong>${formatClp(item.amount || 0)}</strong></li>`
-                ));
-                renderList(latestExpensesList, latestExpensesRows, 'Sin otros gastos registrados.');
-
-                const paymentMixRows = [
-                    `<li class="list-row"><span>Efectivo</span><strong>${formatClp(paymentMix.cash?.amount || 0)} (${Number(paymentMix.cash?.qty || 0).toLocaleString('es-CL')})</strong></li>`,
-                    `<li class="list-row"><span>Transferencia</span><strong>${formatClp(paymentMix.transfer?.amount || 0)} (${Number(paymentMix.transfer?.qty || 0).toLocaleString('es-CL')})</strong></li>`
-                ];
-                renderList(paymentMixList, paymentMixRows, 'Sin datos de método de pago.');
-
-                const trendRows = (data.activity_trend_7d || []).map(item => (
-                    `<li class="list-row"><span>${escapeHtml(item.day)}</span><strong>${formatClp(item.net || 0)}</strong></li>`
-                ));
-                renderList(trendList, trendRows, 'Sin actividad suficiente para tendencia.');
-
-                const shiftRows = [
-                    `<li class="list-row"><span>Turnos abiertos</span><strong>${Number(kpis.open_shifts || 0).toLocaleString('es-CL')}</strong></li>`,
-                    `<li class="list-row"><span>Duración estimada</span><strong>${escapeHtml(elapsedTextSince(kpis.open_shift_earliest_start || null))}</strong></li>`,
-                    `<li class="list-row"><span>Inicio más antiguo</span><strong>${escapeHtml(formatDateLocal(kpis.open_shift_earliest_start || null))}</strong></li>`
-                ];
-                renderList(openShiftList, shiftRows, 'Sin información de turnos abiertos.');
-
-                monitorUpdatedAt.textContent = `Monitores actualizados: ${formatDateLocal(data.updated_at || null)}`;
-            } catch (error) {
-                showToast('Error de conexión cargando monitores.');
-            }
-        }
-
-        loadMonitorSummary();
-        setInterval(loadMonitorSummary, 20000);
-
-        retryBtn.addEventListener('click', async () => {
-            retryBtn.disabled = true;
-            try {
-                const formData = new FormData();
-                formData.append('limit', '30');
-
-                const response = await fetch('retry_notifications_api.php', {
-                    method: 'POST',
-                    body: formData
-                });
-                const data = await response.json();
-
-                if (data.success) {
-                    const processed = data.data?.processed ?? 0;
-                    const sent = data.data?.sent ?? 0;
-                    const failed = data.data?.failed ?? 0;
-                    showToast(`Reintento OK: ${sent} enviados, ${failed} fallidos, ${processed} procesados.`);
-                    setTimeout(() => window.location.reload(), 900);
-                } else {
-                    showToast(data.message || 'No fue posible reintentar envíos.');
-                }
-            } catch (error) {
-                showToast('Error de conexión al reintentar notificaciones.');
-            } finally {
-                retryBtn.disabled = false;
-            }
-        });
+        setInterval(() => { location.reload(); }, 30000);
     </script>
 </body>
 </html>

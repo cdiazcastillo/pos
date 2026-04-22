@@ -12,6 +12,22 @@ try {
     $db = Database::getInstance();
     $hasExpensePaymentMethod = $db->query("SHOW COLUMNS FROM expenses LIKE 'payment_method'");
 
+    // Obtener turno activo del usuario
+    $userId = intval($_SESSION['user_id'] ?? 0);
+    $activeShift = $db->query(
+        "SELECT id, initial_cash FROM shifts WHERE user_id = ? AND status = 'open' ORDER BY start_time DESC LIMIT 1",
+        [$userId]
+    );
+    $initialCash = $activeShift ? intval($activeShift['initial_cash'] ?? 0) : 0;
+
+    // Ventas completadas por método de pago
+    $cashSalesSummary = $db->query(
+        "SELECT COALESCE(SUM(total_amount), 0) AS total FROM sales WHERE payment_method = 'cash' AND status = 'completed'"
+    ) ?: ['total' => 0];
+    $transferSalesSummary = $db->query(
+        "SELECT COALESCE(SUM(total_amount), 0) AS total FROM sales WHERE payment_method = 'transfer' AND status = 'completed'"
+    ) ?: ['total' => 0];
+
     $salesSummary = $db->query(
         "SELECT COALESCE(SUM(total_amount), 0) AS gross_sales
          FROM sales
@@ -98,6 +114,9 @@ try {
     $response['message'] = 'Resumen en tiempo real cargado.';
     $response['data'] = [
         'income' => [
+            'initial_cash' => $initialCash,
+            'cash_sales' => intval($cashSalesSummary['total'] ?? 0),
+            'transfer_sales' => intval($transferSalesSummary['total'] ?? 0),
             'gross_sales' => $grossSales,
             'returns' => $totalReturns,
             'net_sales_before_expenses' => $netSalesBeforeExpenses,

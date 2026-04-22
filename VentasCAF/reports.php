@@ -11,9 +11,11 @@ $currentUser = auth_require_role(['admin'], 'admin_login.php', 'index.php');
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="reports.css">
     <style>
-        .btn { padding: 8px 12px; border: none; border-radius: 8px; cursor: pointer; text-decoration: none; font-size: 0.92rem; font-weight: 700; color: white !important; display: inline-block; text-align: center; white-space: nowrap; }
-        .btn-secondary { background-color: var(--secondary-color) !important; }
-        .btn-success { background-color: var(--success-color) !important; }
+        .btn { padding: 10px 16px; border: none; border-radius: 10px; cursor: pointer; text-decoration: none; font-size: 0.92rem; font-weight: 700; color: white !important; display: inline-block; text-align: center; white-space: nowrap; transition: all 0.2s; }
+        .btn:hover { transform: translateY(-1px); opacity: 0.9; }
+        .btn-secondary { background-color: #6b7280 !important; }
+        .btn-success { background-color: #1f9d61 !important; }
+        .btn-primary { background-color: #3457dc !important; }
     </style>
 </head>
 <body>
@@ -29,8 +31,9 @@ $currentUser = auth_require_role(['admin'], 'admin_login.php', 'index.php');
                 </div>
             </div>
             <div class="top-menu-row reports-actions">
-                <button id="export-all-btn" class="btn btn-success">Exportar Todo a Excel</button>
-                <a href="index.php" class="btn btn-secondary">Regresar al POS</a>
+                <button id="export-all-btn" class="btn btn-success">Exportar a Excel</button>
+                <a href="admin.php" class="btn btn-primary">Menú</a>
+                <a href="index.php" class="btn btn-secondary">Volver al POS</a>
             </div>
         </div>
         <div class="reports-container" role="region" aria-label="Listado de turnos">
