@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Equipo de trabajo - 4 Básico A</title>
+    <title>Administración - 4 Básico A</title>
     <style>
         :root {
             --primary: #7c3aed;
@@ -63,14 +63,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .card { width: min(560px, 96vw); background: var(--bg-card); border: 1px solid #ece8ff; border-radius: 24px; padding: clamp(16px, 3vw, 24px); box-shadow: var(--shadow-soft); }
         .logo-wrap { display: flex; justify-content: center; margin-bottom: 16px; }
         .logo-image {
-            width: 160px;
-            height: 160px;
+            width: 500px;
+            height: 500px;
+            max-width: 90vw;
+            max-height: 60vh;
             object-fit: contain;
             border-radius: 1.2rem;
             background: #fff;
             border: 1px solid #dbe4ff;
             padding: 10px;
             box-shadow: 0 0.7rem 1.8rem rgba(30, 27, 75, 0.18);
+            display: block;
+            margin: 0 auto 16px auto;
         }
         h1 { margin: 0 0 6px; font-size: 1.3rem; color: var(--text-dark); text-align: center; }
         p { margin: 0 0 12px; color: var(--text-muted); font-size: .9rem; text-align: center; }
@@ -96,7 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="logo-wrap">
                 <img src="img/logo.png" alt="Logo" class="logo-image">
             </div>
-            <h1>Equipo de trabajo</h1>
+            <!-- Título removido -->
             <div class="field">
                 <label for="password">Clave</label>
                 <input id="password" name="password" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" minlength="4" required>
@@ -108,8 +112,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
 
             <div class="links">
-                <a href="vendedor_login.php" class="link-btn vendor">Regresar a vendedor</a>
-                <a href="index.php" class="link-btn pos">Ir al POS</a>
+                <a href="vendedor_login.php" class="link-btn vendor" style="font-size:1.05rem;background:#7c3aed;color:#fff;">Vendedor</a>
+                <a href="index.php" class="link-btn pos" style="font-size:1.05rem;background:#16a34a;color:#fff;">Punto de Venta</a>
             </div>
         </form>
     </main>

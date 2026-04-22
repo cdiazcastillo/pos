@@ -93,14 +93,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         .logo-image {
-            width: 160px;
-            height: 160px;
+            width: 500px;
+            height: 500px;
+            max-width: 90vw;
+            max-height: 60vh;
             object-fit: contain;
             border-radius: 1.1rem;
             background: #fff;
             border: 1px solid #dbe4ff;
             padding: 10px;
             box-shadow: 0 0.7rem 1.8rem rgba(30, 27, 75, 0.18);
+            display: block;
+            margin: 0 auto 16px auto;
         }
 
         .btn {
@@ -153,14 +157,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </style>
 </head>
 <body>
-    <div class="app">
+    <div class="app" style="background:#fff;min-height:100vh;">
         <main class="wrap">
         <form class="card" method="POST" autocomplete="off" novalidate>
             <div class="logo-wrap">
                 <img src="img/logo.png" alt="Logo" class="logo-image">
             </div>
             <button type="submit" class="btn btn-primary">Iniciar Ventas</button>
-            <a href="admin_login.php" class="btn-green">Equipo de trabajo</a>
+            <a href="admin_login.php" class="btn-green">Administración</a>
             <?php if ($error !== ''): ?>
                 <div class="error"><?php echo htmlspecialchars($error); ?></div>
             <?php endif; ?>

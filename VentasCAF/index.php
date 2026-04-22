@@ -281,9 +281,9 @@ function get_stock_semaphore_class($product) {
         #cart-items {
             min-height: 0;
             overflow-y: scroll;
-            padding: 6px 2px;
+            padding: 2px 0;
             display: grid;
-            gap: 4px;
+            gap: 2px;
             scrollbar-gutter: stable;
             scrollbar-width: auto;
             scrollbar-color: #9db0f6 #eef2fb;
@@ -316,30 +316,33 @@ function get_stock_semaphore_class($product) {
         .cart-item {
             display: flex;
             justify-content: flex-start;
-            gap: 8px;
-            padding: 8px;
+            gap: 4px;
+            padding: 2px 5px;
             align-items: center;
-            border-radius: 10px;
+            border-radius: 7px;
             background-color: #f8faff;
             border: 1px solid #eef2fb;
+            min-height: 24px;
+            font-size: 13px;
         }
 
         .cart-item-name {
             flex-grow: 1;
-            font-size: 0.92rem;
+            font-size: 0.82rem;
             font-weight: 600;
+            line-height: 1.1;
         }
 
         .cart-item-qty {
-            margin: 0 6px;
+            margin: 0 4px;
             color: var(--muted);
             font-weight: 700;
-            font-size: 0.86rem;
+            font-size: 0.74rem;
         }
 
         .cart-item-price {
             font-weight: 700;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
         }
 
         .remove-item-btn {
@@ -347,8 +350,11 @@ function get_stock_semaphore_class($product) {
             color: var(--danger-color);
             background: none;
             border: none;
-            font-size: 1.05rem;
+            font-size: 0.95rem;
             line-height: 1;
+            width: 20px;
+            height: 20px;
+            padding: 0;
         }
 
         #cart-summary {
@@ -380,20 +386,23 @@ function get_stock_semaphore_class($product) {
 
         #cart-actions {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
             margin-top: 0;
-            padding-top: 8px;
+            padding-top: 6px;
             border-top: 1px solid #eef2fb;
             background: #fff;
+            position: sticky;
+            bottom: 0;
+            z-index: 10;
         }
 
         .action-btn {
-            padding: 10px 6px;
+            padding: 8px 4px;
             border: none;
             border-radius: 10px;
             cursor: pointer;
-            font-size: 0.78rem;
+            font-size: 0.72rem;
             font-weight: 800;
             text-align: center;
             text-decoration: none;
@@ -548,14 +557,15 @@ function get_stock_semaphore_class($product) {
             }
 
             #cart-actions {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 6px;
-                margin-top: 8px;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 4px;
+                margin-top: 4px;
+                padding-top: 4px;
             }
 
             .action-btn {
-                font-size: 0.74rem;
-                padding: 9px 6px;
+                font-size: 0.68rem;
+                padding: 7px 3px;
             }
         }
 
@@ -615,10 +625,6 @@ function get_stock_semaphore_class($product) {
                 <div id="cart-items">
                 </div>
                 <div id="cart-summary" class="cart-sticky-summary">
-                    <div class="summary-row">
-                        <span>Productos:</span>
-                        <span id="cart-total-items">0</span>
-                    </div>
                     <div class="summary-row total">
                         <span>Total:</span>
                         <span id="cart-total">$0</span>
@@ -627,8 +633,7 @@ function get_stock_semaphore_class($product) {
                 <div id="cart-actions">
                     <button id="cash-payment-btn" class="action-btn primary">EFECTIVO</button>
                     <button id="transfer-payment-btn" class="action-btn success">TRANSFERENCIA</button>
-                    <button id="clear-cart-btn" class="action-btn danger">LIMPIAR</button>
-                    <a href="admin.php" id="main-menu-btn" class="action-btn secondary">MENÚ</a>
+                    <button id="clear-cart-btn" class="action-btn danger">🧹</button>
                 </div>
             </aside>
         </main>
