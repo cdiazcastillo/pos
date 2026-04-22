@@ -79,6 +79,9 @@ $products = $db->query("SELECT * FROM products ORDER BY id ASC", [], true);
         .btn-success { background-color: var(--success-color) !important; }
         .btn-danger { background-color: var(--danger-color) !important; }
         .btn-warning { background-color: var(--warning-color) !important; }
+        .btn-menu { background-color: #16a34a !important; }
+        .btn-pos { background-color: #dc2626 !important; }
+        .btn-logout { background-color: #2563eb !important; }
 
         .product-modal-content {
             background: #fff;
@@ -301,7 +304,9 @@ $products = $db->query("SELECT * FROM products ORDER BY id ASC", [], true);
                 </div>
             </div>
             <div class="top-menu-row">
-                <a href="index.php" class="btn btn-secondary">Regresar al POS</a>
+                <a href="admin.php" class="btn btn-menu">Menú</a>
+                <a href="index.php" class="btn btn-pos">Regresar al POS</a>
+                <a href="logout.php" class="btn btn-logout">Cerrar sesión</a>
                 <button id="new-product-btn" class="btn btn-primary">Crear Nuevo Producto</button>
             </div>
         </div>

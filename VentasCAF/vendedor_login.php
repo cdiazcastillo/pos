@@ -42,81 +42,170 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Acceso Vendedor - 4 Básico A</title>
     <style>
+        :root {
+            --primary: #7c3aed;
+            --bg-app: #f3f0ff;
+            --bg-card: #ffffff;
+            --text-dark: #1e1b4b;
+            --text-muted: #6b7280;
+            --danger: #dc2626;
+            --success: #16a34a;
+            --blue: #2563eb;
+            --shadow-soft: 0 8px 24px rgba(30, 27, 75, 0.1);
+        }
+
+        * { box-sizing: border-box; }
+
         body {
             margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-            background: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Inter", "Poppins", "Segoe UI", Roboto, Arial, sans-serif;
+            background: var(--bg-app);
+            color: var(--text-dark);
         }
-        .wrap {
-            min-height: 100vh;
-            display: grid;
-            place-items: center;
-            padding: 14px;
-            background: #ffffff;
-        }
-        .card {
-            width: min(460px, 100%);
-            background: #ffffff;
-            border: none;
-            border-radius: 14px;
-            padding: 14px;
-            text-align: center;
-        }
-        .logo-wrap {
+
+        .app {
+            min-height: 100svh;
             display: flex;
+            flex-direction: column;
+        }
+
+        .top-nav {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: rgba(124, 58, 237, 0.94);
+            backdrop-filter: blur(4px);
+            padding: 10px 12px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
             justify-content: center;
-            margin-bottom: 16px;
         }
-        .logo-wrap img {
-            width: min(320px, 88vw);
-            height: auto;
-            object-fit: contain;
-        }
-        .btn {
-            width: min(320px, 100%);
-            height: 46px;
+
+        .nav-btn {
             border: none;
-            border-radius: 10px;
-            background: #2563eb;
-            color: #fff;
+            border-radius: 999px;
+            padding: 8px 12px;
+            font-size: 0.82rem;
             font-weight: 700;
-            font-size: 1rem;
-            cursor: pointer;
-        }
-        .btn-green {
+            color: #fff;
+            text-decoration: none;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: min(320px, 100%);
-            height: 46px;
+            min-height: 38px;
+        }
+
+        .nav-btn.menu { background: var(--success); }
+        .nav-btn.pos { background: var(--danger); }
+        .nav-btn.logout { background: var(--blue); }
+
+        .wrap {
+            flex: 1;
+            display: grid;
+            place-items: center;
+            padding: 16px;
+        }
+
+        .card {
+            width: min(460px, 100%);
+            background: var(--bg-card);
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: var(--shadow-soft);
+            text-align: center;
+        }
+
+        .label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 800;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .logo-wrap {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .logo-wrap img {
+            width: min(280px, 78vw);
+            height: auto;
+            object-fit: contain;
+        }
+
+        .big-number {
+            font-size: clamp(1.8rem, 4vw, 2.4rem);
+            font-weight: 800;
+            line-height: 1.1;
+            margin: 4px 0 16px;
+            color: var(--text-dark);
+        }
+
+        .btn {
+            width: 100%;
+            min-height: 48px;
             border: none;
-            border-radius: 10px;
-            background: #16a34a;
-            color: #fff;
+            border-radius: 14px;
             font-weight: 700;
             font-size: 1rem;
+            cursor: pointer;
             text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), #8b5cf6);
+            color: #fff;
+        }
+
+        .btn-green {
+            background: var(--success);
+            color: #fff;
             margin-top: 10px;
         }
+
         .error {
-            margin-top: 10px;
+            margin-top: 12px;
             color: #b91c1c;
-            font-size: .88rem;
+            font-size: .9rem;
+            font-weight: 600;
+        }
+
+        @media (max-width: 520px) {
+            .card { border-radius: 20px; padding: 16px; }
+            .top-nav { justify-content: stretch; }
+            .nav-btn { flex: 1; }
         }
     </style>
 </head>
 <body>
-    <div class="wrap">
-        <form class="card" method="POST" autocomplete="off">
+    <div class="app">
+        <div class="top-nav">
+            <a href="admin.php" class="nav-btn menu">Menú</a>
+            <a href="index.php" class="nav-btn pos">Volver al POS</a>
+            <a href="logout.php" class="nav-btn logout">Cerrar sesión</a>
+        </div>
+
+        <div class="wrap">
+        <form class="card" method="POST" autocomplete="off" novalidate>
+            <div class="label">Acceso rápido</div>
             <div class="logo-wrap">
                 <img src="img/logo.png" alt="Logo 4 Básico A">
             </div>
-            <button type="submit" class="btn">Iniciar Ventas</button>
+            <div class="big-number">Vendedor</div>
+            <button type="submit" class="btn btn-primary">Iniciar Ventas</button>
             <a href="admin_login.php" class="btn-green">Equipo de trabajo</a>
             <?php if ($error !== ''): ?>
                 <div class="error"><?php echo htmlspecialchars($error); ?></div>
             <?php endif; ?>
         </form>
+        </div>
     </div>
 </body>
 </html>

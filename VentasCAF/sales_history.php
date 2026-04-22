@@ -45,6 +45,56 @@ if (!empty($sql_where)) {
 $sql .= " ORDER BY sale_time DESC";
 $sales = $db->query($sql, $params, true);
 
+$expensesWhere = ["sale_id IS NULL"];
+$expensesParams = [];
+
+if (!$isAdmin) {
+    if ($activeShift && isset($activeShift['id'])) {
+        $expensesWhere[] = "shift_id = ?";
+        $expensesParams[] = intval($activeShift['id']);
+    } else {
+        $expensesWhere[] = "1 = 0";
+    }
+}
+
+if (in_array($filter, ['cash', 'transfer'], true)) {
+    $expensesWhere[] = "payment_method = ?";
+    $expensesParams[] = $filter;
+}
+
+$other_expenses = [];
+if ($filter !== 'voided') {
+    $expensesSql = "SELECT id, shift_id, description, amount, payment_method, expense_time FROM expenses";
+    if (!empty($expensesWhere)) {
+        $expensesSql .= " WHERE " . implode(' AND ', $expensesWhere);
+    }
+    $expensesSql .= " ORDER BY expense_time DESC";
+    $other_expenses = $db->query($expensesSql, $expensesParams, true) ?: [];
+}
+
+$timeline = [];
+foreach (($sales ?: []) as $saleRow) {
+    $timeline[] = [
+        'type' => 'sale',
+        'time' => (string)($saleRow['sale_time'] ?? ''),
+        'sale' => $saleRow
+    ];
+}
+
+foreach ($other_expenses as $expenseRow) {
+    $timeline[] = [
+        'type' => 'expense',
+        'time' => (string)($expenseRow['expense_time'] ?? ''),
+        'expense' => $expenseRow
+    ];
+}
+
+usort($timeline, static function ($a, $b) {
+    $timeA = strtotime((string)($a['time'] ?? '')) ?: 0;
+    $timeB = strtotime((string)($b['time'] ?? '')) ?: 0;
+    return $timeB <=> $timeA;
+});
+
 // --- Data Fetching for Details ---
 $sale_items_grouped = [];
 $returns_grouped = [];
@@ -143,7 +193,10 @@ function format_payment_method($method) {
         .btn-secondary { background-color: var(--secondary-color) !important; }
         .btn-danger { background-color: var(--danger-color) !important; }
         .btn-warning { background-color: #ffc107 !important; }
-        .btn-info { background-color: var(--info-color) !important; }
+        .btn-info { background-color: var(--danger-color) !important; }
+        .btn-menu { background-color: #16a34a !important; }
+        .btn-pos { background-color: #dc2626 !important; }
+        .btn-logout { background-color: #2563eb !important; }
 
         .filter-buttons {
             display: grid;
@@ -216,6 +269,10 @@ function format_payment_method($method) {
             background-color: #f8f9fa;
             opacity: 0.7;
         }
+        .sale-card.expense {
+            border-left-color: #f97316;
+            background: #fff7ed;
+        }
         .card-main-info { padding: 20px; }
         .card-header {
             display: flex;
@@ -236,6 +293,7 @@ function format_payment_method($method) {
         }
         .status-badge.completed { background-color: var(--success-color); }
         .status-badge.voided { background-color: var(--danger-color); }
+        .status-badge.expense { background-color: #f97316; }
         
         .sale-details { font-size: 0.9rem; color: var(--secondary-color); }
         .sale-total { margin-top: 10px; }
@@ -258,7 +316,11 @@ function format_payment_method($method) {
             <div class="header">
                 <div class="title-wrap">
                     <h1>Historial de Ventas</h1>
-                    <a href="index.php" class="btn btn-info">Ir POS</a>
+                    <div class="top-menu-row">
+                        <a href="admin.php" class="btn btn-menu">Menú</a>
+                        <a href="index.php" class="btn btn-pos">Ir POS</a>
+                        <a href="logout.php" class="btn btn-logout">Cerrar sesión</a>
+                    </div>
                 </div>
                 <div class="logo-column">
                     <img src="img/logo.png" alt="Logo">
@@ -279,52 +341,89 @@ function format_payment_method($method) {
         </div>
 
         <div id="sales-card-grid">
-            <?php foreach($sales as $sale): ?>
-            <div class="sale-card <?php echo $sale['status']; ?>" id="sale-<?php echo $sale['id']; ?>">
-                <div class="card-main-info">
-                    <div class="card-header">
-                        <h2>Venta #<?php echo $sale['id']; ?></h2>
-                        <span class="status-badge <?php echo $sale['status']; ?>">
-                            <?php echo $sale['status'] === 'completed' ? 'Completada' : 'Anulada'; ?>
-                        </span>
-                    </div>
-                    <p class="sale-details">
-                        <?php echo date('d/m/Y h:i A', strtotime($sale['sale_time'])); ?>
-                        <br>
-                        <strong><?php echo format_payment_method($sale['payment_method'] ?? null); ?></strong>
-                    </p>
-                    <div class="sale-total">
-                        <?php 
-                            $total_returned = $returns_grouped[$sale['id']] ?? 0;
-                            if ($total_returned > 0) {
-                                echo '<p class="original">Total Original: $' . number_format($sale['total_amount'], 0, ',', '.') . '</p>';
-                                echo '<p class="returns">Devoluciones: -$' . number_format($total_returned, 0, ',', '.') . '</p>';
-                                echo '<p class="net">Neto: $' . number_format($sale['total_amount'] - $total_returned, 0, ',', '.') . '</p>';
-                            } else {
-                                echo '<p class="net">Total: $' . number_format($sale['total_amount'], 0, ',', '.') . '</p>';
-                            }
-                        ?>
+            <?php if (empty($timeline)): ?>
+                <div class="sale-card" style="grid-column: 1 / -1; border-left-color:#9ca3af;">
+                    <div class="card-main-info">
+                        <h2>Sin movimientos</h2>
+                        <p class="sale-details">No hay ventas ni gastos para el filtro seleccionado.</p>
                     </div>
                 </div>
-                <div class="card-items-list">
-                    <strong>Items:</strong>
-                    <ul>
-                        <?php if (isset($sale_items_grouped[$sale['id']])): ?>
-                            <?php foreach($sale_items_grouped[$sale['id']] as $item): ?>
-                                <li><?php echo $item['quantity']; ?>x <?php echo htmlspecialchars($item['product_name']); ?></li>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <li>No se encontraron items.</li>
-                        <?php endif; ?>
-                    </ul>
-                </div>
-                <div class="card-footer">
-                    <?php if ($sale['status'] === 'completed'): ?>
-                        <a href="return.php?sale_id=<?php echo $sale['id']; ?>" class="btn btn-warning">Procesar Devolución</a>
-                        <button class="btn btn-danger void-sale-btn" data-id="<?php echo $sale['id']; ?>">Anular Venta Completa</button>
-                    <?php endif; ?>
-                </div>
-            </div>
+            <?php endif; ?>
+
+            <?php foreach($timeline as $entry): ?>
+                <?php if (($entry['type'] ?? '') === 'sale'): ?>
+                    <?php $sale = $entry['sale']; ?>
+                    <div class="sale-card <?php echo $sale['status']; ?>" id="sale-<?php echo $sale['id']; ?>">
+                        <div class="card-main-info">
+                            <div class="card-header">
+                                <h2>Venta #<?php echo $sale['id']; ?></h2>
+                                <span class="status-badge <?php echo $sale['status']; ?>">
+                                    <?php echo $sale['status'] === 'completed' ? 'Completada' : 'Anulada'; ?>
+                                </span>
+                            </div>
+                            <p class="sale-details">
+                                <?php echo date('d/m/Y h:i A', strtotime($sale['sale_time'])); ?>
+                                <br>
+                                <strong><?php echo format_payment_method($sale['payment_method'] ?? null); ?></strong>
+                            </p>
+                            <div class="sale-total">
+                                <?php 
+                                    $total_returned = $returns_grouped[$sale['id']] ?? 0;
+                                    if ($total_returned > 0) {
+                                        echo '<p class="original">Total Original: $' . number_format($sale['total_amount'], 0, ',', '.') . '</p>';
+                                        echo '<p class="returns">Devoluciones: -$' . number_format($total_returned, 0, ',', '.') . '</p>';
+                                        echo '<p class="net">Neto: $' . number_format($sale['total_amount'] - $total_returned, 0, ',', '.') . '</p>';
+                                    } else {
+                                        echo '<p class="net">Total: $' . number_format($sale['total_amount'], 0, ',', '.') . '</p>';
+                                    }
+                                ?>
+                            </div>
+                        </div>
+                        <div class="card-items-list">
+                            <strong>Items:</strong>
+                            <ul>
+                                <?php if (isset($sale_items_grouped[$sale['id']])): ?>
+                                    <?php foreach($sale_items_grouped[$sale['id']] as $item): ?>
+                                        <li><?php echo $item['quantity']; ?>x <?php echo htmlspecialchars($item['product_name']); ?></li>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <li>No se encontraron items.</li>
+                                <?php endif; ?>
+                            </ul>
+                        </div>
+                        <div class="card-footer">
+                            <?php if ($sale['status'] === 'completed'): ?>
+                                <a href="return.php?sale_id=<?php echo $sale['id']; ?>" class="btn btn-warning">Procesar Devolución</a>
+                                <button class="btn btn-danger void-sale-btn" data-id="<?php echo $sale['id']; ?>">Anular Venta Completa</button>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <?php $expense = $entry['expense']; ?>
+                    <div class="sale-card expense" id="expense-<?php echo intval($expense['id']); ?>">
+                        <div class="card-main-info">
+                            <div class="card-header">
+                                <h2>OTROS GASTOS</h2>
+                                <span class="status-badge expense">Gasto</span>
+                            </div>
+                            <p class="sale-details">
+                                <?php echo date('d/m/Y h:i A', strtotime((string)$expense['expense_time'])); ?>
+                                <br>
+                                <strong><?php echo format_payment_method($expense['payment_method'] ?? null); ?></strong>
+                            </p>
+                            <div class="sale-total">
+                                <p class="returns">Detalle: <?php echo htmlspecialchars((string)($expense['description'] ?? 'Sin detalle')); ?></p>
+                                <p class="net">Monto: -$<?php echo number_format(intval($expense['amount'] ?? 0), 0, ',', '.'); ?></p>
+                            </div>
+                        </div>
+                        <div class="card-items-list">
+                            <strong>Registro:</strong>
+                            <ul>
+                                <li>Movimiento operacional registrado como OTROS GASTOS.</li>
+                            </ul>
+                        </div>
+                    </div>
+                <?php endif; ?>
             <?php endforeach; ?>
         </div>
     </div>

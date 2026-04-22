@@ -125,6 +125,33 @@ $basePath = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
             background: #4b5563;
         }
 
+        .btn-menu {
+            background: #16a34a;
+            color: #fff;
+        }
+
+        .btn-menu:hover {
+            background: #15803d;
+        }
+
+        .btn-pos {
+            background: #dc2626;
+            color: #fff;
+        }
+
+        .btn-pos:hover {
+            background: #b91c1c;
+        }
+
+        .btn-logout {
+            background: #2563eb;
+            color: #fff;
+        }
+
+        .btn-logout:hover {
+            background: #1d4ed8;
+        }
+
         .main {
             flex: 1;
             padding: 24px 16px;
@@ -378,8 +405,9 @@ $basePath = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
         <div class="header-content">
             <h1>⏱️ Gestión de Turno</h1>
             <div class="header-buttons">
-                <a href="admin.php" class="btn btn-secondary">📋 Menú</a>
-                <a href="index.php" class="btn btn-secondary">🛒 POS</a>
+                <a href="admin.php" class="btn btn-menu">📋 Menú</a>
+                <a href="index.php" class="btn btn-pos">🛒 POS</a>
+                <a href="logout.php" class="btn btn-logout">🚪 Cerrar sesión</a>
             </div>
         </div>
     </header>

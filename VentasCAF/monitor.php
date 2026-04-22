@@ -626,6 +626,9 @@ $topProducts = $db->query(
         header h1 { font-size: 1.5rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px; }
         .header-buttons { display: flex; gap: 8px; }
         .btn-header { padding: 8px 14px; border: none; border-radius: 6px; background: var(--text-muted); color: var(--bg-white); font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
+        .btn-menu { background: #16a34a; color: #fff; }
+        .btn-pos { background: #dc2626; color: #fff; }
+        .btn-logout { background: #2563eb; color: #fff; }
         .btn-header:hover { background: #4b5563; transform: translateY(-1px); }
         .main-content { flex: 1; overflow-y: auto; padding: 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
         .card { background: var(--bg-white); border-radius: 20px; padding: 20px; box-shadow: 0 4px 12px rgba(124,58,237,0.08); border: 1px solid rgba(124,58,237,0.1); transition: all 0.3s; display: flex; flex-direction: column; }
@@ -662,7 +665,9 @@ $topProducts = $db->query(
         <header>
             <h1>📊 Monitor en Tiempo Real</h1>
             <div class="header-buttons">
-                <a href="admin.php" class="btn-header">← Volver al Panel</a>
+                <a href="admin.php" class="btn-header btn-menu">Menú</a>
+                <a href="index.php" class="btn-header btn-pos">Volver al POS</a>
+                <a href="logout.php" class="btn-header btn-logout">Cerrar sesión</a>
             </div>
         </header>
 
@@ -733,7 +738,7 @@ $topProducts = $db->query(
                     <div class="card-icon">🔧</div>
                 </div>
                 <div class="card-subtitle">Gastos operativos hoy</div>
-                <a href="expenses.php" style="margin-top: 10px; text-decoration: none;">
+                <a href="expenses.php" style="margin-top: 10px;">
                     <button style="width: 100%; padding: 8px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">Ver Detalles →</button>
                 </a>
             </div>

@@ -609,6 +609,10 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
             transition: all 0.2s ease;
             color: #fff;
             background-color: var(--primary-color);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .menu-button:hover {
@@ -653,6 +657,30 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
 
         .menu-button.secondary:hover {
             background-color: #5a6268;
+        }
+
+        .menu-button.menu-green {
+            background-color: var(--success-color);
+        }
+
+        .menu-button.menu-green:hover {
+            background-color: #168553;
+        }
+
+        .menu-button.pos-red {
+            background-color: var(--danger-color);
+        }
+
+        .menu-button.pos-red:hover {
+            background-color: #b82331;
+        }
+
+        .menu-button.end-blue {
+            background-color: #2563eb;
+        }
+
+        .menu-button.end-blue:hover {
+            background-color: #1d4ed8;
         }
 
         #toast {
@@ -877,10 +905,10 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
                             <span class="card-subtitle">Resumen clave y monitoreo de correos.</span>
                         </a>
                     <?php endif; ?>
-                    <a href="#" id="open-shift-manager-btn" class="menu-card">
-                        <span class="card-icon">⏱️</span>
-                        <span class="card-title">Gestión de turno</span>
-                        <span class="card-subtitle">Abrir panel práctico para iniciar o terminar turno.</span>
+                    <a href="expenses.php" class="menu-card">
+                        <span class="card-icon">💸</span>
+                        <span class="card-title">OTROS GASTOS</span>
+                        <span class="card-subtitle">Abrir página nueva para registrar, editar y eliminar gastos.</span>
                     </a>
                     <?php if ($isAdmin): ?>
                         <a href="#" id="open-security-manager-btn" class="menu-card">
@@ -931,7 +959,7 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
 
                 <div class="btn-row">
                     <button id="start-shift-btn" class="menu-button success" <?php if ($has_active_shift) echo 'disabled'; ?>>Iniciar turno</button>
-                    <button id="end-shift-btn" class="menu-button danger" <?php if (!$has_active_shift) echo 'disabled'; ?>>Terminar turno</button>
+                    <button id="end-shift-btn" class="menu-button end-blue" <?php if (!$has_active_shift) echo 'disabled'; ?>>Terminar turno</button>
                     <a href="index.php" class="menu-button secondary">Regresar al inicio</a>
                 </div>
 
@@ -985,7 +1013,7 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
                                                     </button>
                                                     <button
                                                         type="button"
-                                                        class="menu-button danger row-action-btn quick-close-shift-btn"
+                                                        class="menu-button end-blue row-action-btn quick-close-shift-btn"
                                                         data-shift-id="<?php echo $rowShiftId; ?>"
                                                     >
                                                         Cerrar turno
@@ -1148,8 +1176,8 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
             <?php endif; ?>
 
             <div class="footer-actions">
-                <button id="end-shift-footer-btn" class="menu-button danger">Terminar turno</button>
-                <a href="index.php" class="menu-button secondary">Volver al POS</a>
+                <button id="end-shift-footer-btn" class="menu-button end-blue">Terminar turno</button>
+                <a href="index.php" class="menu-button pos-red">Volver al POS</a>
                 <a href="logout.php" class="menu-button danger" style="margin-left:8px;">Cerrar sesión</a>
             </div>
         </div>

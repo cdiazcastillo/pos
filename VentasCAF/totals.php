@@ -81,6 +81,9 @@ $currentUser = auth_require_role(['admin'], 'admin_login.php', 'index.php');
         .btn-secondary {
             background-color: var(--secondary-color) !important;
         }
+        .btn-menu { background-color: #16a34a !important; }
+        .btn-pos { background-color: #dc2626 !important; }
+        .btn-logout { background-color: #2563eb !important; }
         .kpi-card {
             background-color: #fff;
             padding: 25px;
@@ -127,7 +130,9 @@ $currentUser = auth_require_role(['admin'], 'admin_login.php', 'index.php');
                 </div>
             </div>
             <div class="top-menu-row">
-                <a href="index.php" class="btn btn-secondary">Regresar al POS</a>
+                <a href="admin.php" class="btn btn-menu">Menú</a>
+                <a href="index.php" class="btn btn-pos">Regresar al POS</a>
+                <a href="logout.php" class="btn btn-logout">Cerrar sesión</a>
             </div>
         </div>
 

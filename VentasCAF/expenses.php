@@ -110,6 +110,7 @@ $basePath = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
             display: inline-flex;
             align-items: center;
             gap: 6px;
+            text-decoration: none;
         }
 
         .btn-primary {
@@ -133,6 +134,33 @@ $basePath = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
 
         .btn-secondary:hover {
             background: #4b5563;
+        }
+
+        .btn-menu {
+            background: #16a34a;
+            color: #fff;
+        }
+
+        .btn-menu:hover {
+            background: #15803d;
+        }
+
+        .btn-pos {
+            background: #dc2626;
+            color: #fff;
+        }
+
+        .btn-pos:hover {
+            background: #b91c1c;
+        }
+
+        .btn-logout {
+            background: #2563eb;
+            color: #fff;
+        }
+
+        .btn-logout:hover {
+            background: #1d4ed8;
         }
 
         .btn-danger {
@@ -245,36 +273,47 @@ $basePath = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
             margin-top: 16px;
         }
 
-        .expenses-table-wrap {
-            overflow-x: auto;
-            margin-top: 20px;
+        .expenses-grid {
+            margin-top: 16px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 14px;
         }
 
-        .expenses-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.9rem;
+        .expense-card {
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+            display: grid;
+            gap: 10px;
         }
 
-        .expenses-table thead {
-            background-color: var(--light-bg);
-            border-bottom: 2px solid var(--border-color);
+        .expense-card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
         }
 
-        .expenses-table th {
-            padding: 12px;
-            text-align: left;
+        .expense-title {
             font-weight: 700;
             color: var(--dark-gray);
+            font-size: 1rem;
+            word-break: break-word;
         }
 
-        .expenses-table td {
-            padding: 12px;
-            border-bottom: 1px solid var(--border-color);
+        .expense-meta {
+            color: var(--muted);
+            font-size: 0.86rem;
         }
 
-        .expenses-table tbody tr:hover {
-            background-color: var(--light-bg);
+        .expense-card-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
         }
 
         .method-badge {
@@ -313,6 +352,49 @@ $basePath = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
 
         .expense-delete-btn:hover {
             background: #dc2626;
+        }
+
+        .expense-edit-btn {
+            padding: 6px 10px;
+            font-size: 0.8rem;
+            background: #2563eb;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .expense-edit-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(17, 24, 39, 0.45);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            z-index: 1100;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-card {
+            width: min(500px, 96vw);
+            background: #fff;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            padding: 18px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+        }
+
+        .modal-card h3 {
+            margin-bottom: 12px;
         }
 
         .summary-box {
@@ -407,13 +489,8 @@ $basePath = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
                 grid-template-columns: 1fr;
             }
 
-            .expenses-table {
-                font-size: 0.8rem;
-            }
-
-            .expenses-table th,
-            .expenses-table td {
-                padding: 8px;
+            .expense-card-actions button {
+                flex: 1;
             }
         }
     </style>
@@ -423,14 +500,15 @@ $basePath = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
         <div class="header-content">
             <h1>💰 Otros Gastos</h1>
             <div class="header-buttons">
-                <a href="admin.php" class="btn btn-secondary">📋 Menú</a>
-                <a href="index.php" class="btn btn-secondary">🛒 POS</a>
+                <a href="admin.php" class="btn btn-menu">📋 Regresar al Menú</a>
+                <a href="index.php" class="btn btn-pos">🛒 Regresar al POS</a>
+                <a href="logout.php" class="btn btn-logout">🚪 Cerrar sesión</a>
             </div>
         </div>
     </header>
 
     <main class="main">
-        <div class="page-title">Registrar Otros Gastos</div>
+        <div class="page-title">Otros gastos rápidos</div>
 
         <?php if (!$hasActiveShift): ?>
             <div class="alert alert-warning">
@@ -443,11 +521,11 @@ $basePath = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
         <?php endif; ?>
 
         <div class="card">
-            <h2 class="card-title">Nuevo Gasto</h2>
+            <h2 class="card-title">Registra un gasto indicando si salió de efectivo o transferencia</h2>
 
             <div class="form-group">
-                <label for="expense-description">Descripción del Gasto</label>
-                <textarea id="expense-description" placeholder="Ej: Compra de bolsas, cambio, transporte, alquileres, etc." maxlength="255"></textarea>
+                <label for="expense-description">Detalle</label>
+                <textarea id="expense-description" placeholder="Ej: Servilletas" maxlength="255"></textarea>
             </div>
 
             <div class="form-row">
@@ -473,35 +551,35 @@ $basePath = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
         <div class="card">
             <h2 class="card-title">Gastos Registrados (<?php echo count($expenses); ?>)</h2>
 
-            <div class="expenses-table-wrap">
-                <table class="expenses-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 25%;">Descripción</th>
-                            <th style="width: 15%;">Monto</th>
-                            <th style="width: 15%;">Método</th>
-                            <th style="width: 30%;">Hora</th>
-                            <th style="width: 15%;">Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($expenses as $expense): ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($expense['description'] ?? 'Sin descripción'); ?></td>
-                            <td class="expense-amount">$<?php echo number_format(intval($expense['amount']), 0, '', '.'); ?></td>
-                            <td>
-                                <span class="method-badge method-<?php echo ($expense['payment_method'] === 'cash') ? 'cash' : 'transfer'; ?>">
-                                    <?php echo ($expense['payment_method'] === 'cash') ? 'Efectivo' : 'Transferencia'; ?>
-                                </span>
-                            </td>
-                            <td><?php echo date('d/m/Y H:i', strtotime($expense['expense_time'])); ?></td>
-                            <td>
-                                <button class="expense-delete-btn" onclick="deleteExpense(<?php echo intval($expense['id']); ?>)">🗑️ Borrar</button>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+            <div class="expenses-grid">
+                <?php foreach ($expenses as $expense): ?>
+                <article class="expense-card">
+                    <div class="expense-card-top">
+                        <div class="expense-title"><?php echo htmlspecialchars($expense['description'] ?? 'Sin descripción'); ?></div>
+                        <div class="expense-amount">-$<?php echo number_format(intval($expense['amount']), 0, '', '.'); ?></div>
+                    </div>
+                    <div class="expense-meta">
+                        <?php echo date('d/m/Y H:i', strtotime($expense['expense_time'])); ?>
+                    </div>
+                    <div>
+                        <span class="method-badge method-<?php echo ($expense['payment_method'] === 'cash') ? 'cash' : 'transfer'; ?>">
+                            <?php echo ($expense['payment_method'] === 'cash') ? 'Efectivo' : 'Transferencia'; ?>
+                        </span>
+                    </div>
+                    <div class="expense-card-actions">
+                        <button
+                            class="expense-edit-btn"
+                            type="button"
+                            data-id="<?php echo intval($expense['id']); ?>"
+                            data-description="<?php echo htmlspecialchars($expense['description'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
+                            data-amount="<?php echo intval($expense['amount']); ?>"
+                            data-method="<?php echo htmlspecialchars($expense['payment_method'] ?? 'cash', ENT_QUOTES, 'UTF-8'); ?>"
+                            onclick="openEditExpenseModal(this)"
+                        >✏️ Editar</button>
+                        <button class="expense-delete-btn" type="button" onclick="deleteExpense(<?php echo intval($expense['id']); ?>)">🗑️ Quitar</button>
+                    </div>
+                </article>
+                <?php endforeach; ?>
             </div>
 
             <div class="summary-box">
@@ -529,6 +607,34 @@ $basePath = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
 
     <div id="toast" class="toast"></div>
 
+    <div id="edit-expense-modal" class="modal-overlay" aria-hidden="true">
+        <div class="modal-card">
+            <h3>Editar gasto</h3>
+            <input type="hidden" id="edit-expense-id" value="">
+            <div class="form-group">
+                <label for="edit-expense-description">Detalle</label>
+                <textarea id="edit-expense-description" maxlength="255" placeholder="Ej: Servilletas"></textarea>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="edit-expense-amount">Monto</label>
+                    <input id="edit-expense-amount" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="Ej: 5000">
+                </div>
+                <div class="form-group">
+                    <label for="edit-expense-method">Método de Pago</label>
+                    <select id="edit-expense-method">
+                        <option value="cash">💵 Efectivo</option>
+                        <option value="transfer">🏦 Transferencia</option>
+                    </select>
+                </div>
+            </div>
+            <div class="button-group">
+                <button type="button" class="btn btn-secondary" onclick="closeEditExpenseModal()">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="save-edit-expense-btn" onclick="updateExpense()">Guardar cambios</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         function showToast(message, isError = false) {
             const toast = document.getElementById('toast');
@@ -541,6 +647,22 @@ $basePath = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
             const normalized = String(value).replace(/\D/g, '');
             const amount = Number(normalized);
             return Number.isInteger(amount) ? amount : NaN;
+        }
+
+        function openEditExpenseModal(button) {
+            const modal = document.getElementById('edit-expense-modal');
+            document.getElementById('edit-expense-id').value = button.dataset.id || '';
+            document.getElementById('edit-expense-description').value = button.dataset.description || '';
+            document.getElementById('edit-expense-amount').value = button.dataset.amount || '';
+            document.getElementById('edit-expense-method').value = (button.dataset.method === 'transfer') ? 'transfer' : 'cash';
+            modal.classList.add('show');
+            modal.setAttribute('aria-hidden', 'false');
+        }
+
+        function closeEditExpenseModal() {
+            const modal = document.getElementById('edit-expense-modal');
+            modal.classList.remove('show');
+            modal.setAttribute('aria-hidden', 'true');
         }
 
         async function postForm(url, payload) {
@@ -598,28 +720,96 @@ $basePath = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
         }
 
         async function deleteExpense(expenseId) {
-            if (confirm('¿Confirmas que quieres eliminar este gasto?')) {
-                try {
-                    const data = await postForm('register_expense_api.php', {
-                        mode: 'delete',
-                        expense_id: expenseId
-                    });
+            try {
+                const data = await postForm('register_expense_api.php', {
+                    mode: 'delete',
+                    expense_id: expenseId
+                });
 
-                    if (data.success) {
-                        showToast('Gasto eliminado.');
-                        setTimeout(() => window.location.reload(), 600);
-                    } else {
-                        showToast(data.message || 'No se pudo eliminar el gasto.', true);
-                    }
-                } catch (error) {
-                    showToast('Error al eliminar el gasto.', true);
-                    console.error(error);
+                if (data.success) {
+                    showToast('Gasto eliminado.');
+                    setTimeout(() => window.location.reload(), 500);
+                } else {
+                    showToast(data.message || 'No se pudo eliminar el gasto.', true);
                 }
+            } catch (error) {
+                showToast('Error al eliminar el gasto.', true);
+                console.error(error);
+            }
+        }
+
+        async function updateExpense() {
+            const expenseId = Number(document.getElementById('edit-expense-id').value || 0);
+            const description = document.getElementById('edit-expense-description').value.trim();
+            const amount = parseAmount(document.getElementById('edit-expense-amount').value);
+            const method = document.getElementById('edit-expense-method').value;
+
+            if (!Number.isInteger(expenseId) || expenseId <= 0) {
+                showToast('Gasto inválido.', true);
+                return;
+            }
+
+            if (!description) {
+                showToast('Ingresa un detalle.', true);
+                return;
+            }
+
+            if (isNaN(amount) || amount <= 0) {
+                showToast('Ingresa un monto válido mayor a $0.', true);
+                return;
+            }
+
+            const saveBtn = document.getElementById('save-edit-expense-btn');
+            saveBtn.disabled = true;
+
+            try {
+                const data = await postForm('register_expense_api.php', {
+                    mode: 'update',
+                    expense_id: expenseId,
+                    description: description,
+                    amount: amount,
+                    payment_method: method
+                });
+
+                if (data.success) {
+                    showToast('Gasto actualizado.');
+                    closeEditExpenseModal();
+                    setTimeout(() => window.location.reload(), 500);
+                } else {
+                    showToast(data.message || 'No se pudo actualizar el gasto.', true);
+                }
+            } catch (error) {
+                showToast('Error al actualizar el gasto.', true);
+                console.error(error);
+            } finally {
+                saveBtn.disabled = false;
             }
         }
 
         document.getElementById('expense-amount').addEventListener('input', function() {
             this.value = String(this.value).replace(/\D/g, '');
+        });
+
+        const editExpenseAmount = document.getElementById('edit-expense-amount');
+        if (editExpenseAmount) {
+            editExpenseAmount.addEventListener('input', function() {
+                this.value = String(this.value).replace(/\D/g, '');
+            });
+        }
+
+        const editModal = document.getElementById('edit-expense-modal');
+        if (editModal) {
+            editModal.addEventListener('click', (event) => {
+                if (event.target === editModal) {
+                    closeEditExpenseModal();
+                }
+            });
+        }
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && editModal && editModal.classList.contains('show')) {
+                closeEditExpenseModal();
+            }
         });
     </script>
 </body>
