@@ -10,6 +10,7 @@ $response = [
 
 try {
     $db = Database::getInstance();
+    $hasExpensePaymentMethod = $db->query("SHOW COLUMNS FROM expenses LIKE 'payment_method'");
 
     $salesSummary = $db->query(
         "SELECT COALESCE(SUM(total_amount), 0) AS gross_sales
@@ -30,15 +31,27 @@ try {
          WHERE sale_id IS NULL"
     ) ?: ['total_other_expenses' => 0];
 
-    $otherExpensesList = $db->query(
-        "SELECT id, description, amount, expense_time
-         FROM expenses
-         WHERE sale_id IS NULL
-         ORDER BY expense_time DESC
-         LIMIT 20",
-        [],
-        true
-    ) ?: [];
+    if ($hasExpensePaymentMethod) {
+        $otherExpensesList = $db->query(
+            "SELECT id, description, amount, payment_method, expense_time
+             FROM expenses
+             WHERE sale_id IS NULL
+             ORDER BY expense_time DESC
+             LIMIT 20",
+            [],
+            true
+        ) ?: [];
+    } else {
+        $otherExpensesList = $db->query(
+            "SELECT id, description, amount, 'cash' AS payment_method, expense_time
+             FROM expenses
+             WHERE sale_id IS NULL
+             ORDER BY expense_time DESC
+             LIMIT 20",
+            [],
+            true
+        ) ?: [];
+    }
 
     $productSales = $db->query(
         "SELECT

@@ -5,9 +5,25 @@ $currentUser = auth_require_role(['cashier', 'admin'], 'vendedor_login.php', 've
 $db = Database::getInstance();
 $conn = $db->getConnection();
 
-// Check for an active shift for the current user
-$active_shift = $db->query("SELECT id FROM shifts WHERE user_id = ? AND status = 'open'", [$_SESSION['user_id']]);
-$is_shift_open = $active_shift !== false;
+// Check for selected active shift (shared for admin) or fallback to own shift
+$active_shift = null;
+$selectedShiftId = intval($_SESSION['selected_shift_id'] ?? 0);
+if ($selectedShiftId > 0) {
+    $active_shift = $db->query("SELECT id, user_id FROM shifts WHERE id = ? AND status = 'open'", [$selectedShiftId]);
+    if ($active_shift && (($currentUser['role'] ?? '') !== 'admin') && intval($active_shift['user_id']) !== intval($_SESSION['user_id'])) {
+        $active_shift = null;
+        unset($_SESSION['selected_shift_id']);
+    }
+}
+
+if (!$active_shift) {
+    $active_shift = $db->query("SELECT id, user_id FROM shifts WHERE user_id = ? AND status = 'open'", [$_SESSION['user_id']]);
+    if ($active_shift) {
+        $_SESSION['selected_shift_id'] = intval($active_shift['id']);
+    }
+}
+
+$is_shift_open = is_array($active_shift) && isset($active_shift['id']);
 
 // --- Fetch Products ---
 $products = $db->query(
@@ -189,6 +205,8 @@ function get_stock_semaphore_class($product) {
             scrollbar-width: auto;
             scrollbar-color: #9db0f6 #eef2fb;
             -webkit-overflow-scrolling: touch;
+            touch-action: pan-y;
+            overscroll-behavior-y: contain;
         }
 
         #cart {
@@ -544,7 +562,9 @@ function get_stock_semaphore_class($product) {
             }
 
             #sales-interface {
-                flex-direction: column;
+                display: grid;
+                grid-template-rows: minmax(0, 1fr) auto;
+                height: calc(var(--app-height) - 56px);
                 min-height: 0;
                 gap: 6px;
             }
@@ -552,14 +572,14 @@ function get_stock_semaphore_class($product) {
             .products-panel {
                 flex: 1;
                 min-height: 0;
+                overflow: hidden;
             }
 
             #cart {
                 flex: 0 0 auto;
-                min-height: 320px;
-                max-height: 46vh;
-                position: sticky;
-                bottom: 0;
+                min-height: 260px;
+                max-height: 42vh;
+                position: relative;
                 z-index: 5;
                 box-shadow: 0 -8px 20px rgba(15, 23, 42, 0.08);
             }
@@ -567,6 +587,10 @@ function get_stock_semaphore_class($product) {
             #product-grid {
                 grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
                 gap: 8px;
+                padding-bottom: 14px;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                overscroll-behavior-y: contain;
             }
 
             #cart-items {
@@ -633,6 +657,7 @@ function get_stock_semaphore_class($product) {
                              data-id="<?php echo $product['id']; ?>"
                              data-name="<?php echo htmlspecialchars($product['name']); ?>"
                              data-price="<?php echo $product['price']; ?>"
+                                data-stock="<?php echo intval($product['stock_level']); ?>"
                              <?php echo ($stock_class === 'stock-empty') ? 'disabled' : ''; ?>>
 
                             <div class="product-info">
@@ -679,7 +704,7 @@ function get_stock_semaphore_class($product) {
                 <form id="start-shift-form">
                     <div class="form-group">
                         <label for="initial_cash">Efectivo Inicial:</label>
-                        <input type="number" id="initial_cash" name="initial_cash" step="1" min="0" required>
+                        <input type="text" id="initial_cash" name="initial_cash" inputmode="numeric" pattern="[0-9]*" required>
                     </div>
                     <button type="submit" class="primary">Iniciar Turno</button>
                 </form>

@@ -32,6 +32,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['install'])) {
         $pdo->exec("DROP TABLE IF EXISTS `products`;");
         $pdo->exec("DROP TABLE IF EXISTS `shifts`;");
         $pdo->exec("DROP TABLE IF EXISTS `users`;");
+        $pdo->exec("DROP TABLE IF EXISTS `role_permissions`;");
+        $pdo->exec("DROP TABLE IF EXISTS `permissions`;");
         $pdo->exec("SET FOREIGN_KEY_CHECKS = 1;"); // Reactivar FKs
         $message .= "Tablas existentes eliminadas (si existían).<br>";
 
@@ -115,6 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['install'])) {
                 `sale_id` INT NULL, -- Link to a sale for returns/voids
                 `description` VARCHAR(255) NOT NULL,
                 `amount` INT NOT NULL,
+                `payment_method` ENUM('cash', 'transfer') NOT NULL DEFAULT 'cash',
                 `expense_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (`shift_id`) REFERENCES `shifts`(`id`),
                 FOREIGN KEY (`sale_id`) REFERENCES `sales`(`id`) ON DELETE SET NULL
@@ -205,14 +208,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['install'])) {
         $stmt = $pdo->prepare("INSERT INTO `users` (username, password_hash, role) VALUES (?, ?, 'cashier')");
         $stmt->execute([$legacy_cashier_user, $legacy_cashier_hash]);
         $message .= "Usuario de compatibilidad creado (usuario: 'vendedor', clave: 'vendedor123').<br>";
-
-        // 5b. Insertar usuario vendedor por defecto
-        $cashier_user = 'vendedor';
-        $cashier_pass = 'vendedor123';
-        $cashier_hash = password_hash($cashier_pass, PASSWORD_DEFAULT);
-        $stmt = $pdo->prepare("INSERT INTO `users` (username, password_hash, role) VALUES (?, ?, 'cashier')");
-        $stmt->execute([$cashier_user, $cashier_hash]);
-        $message .= "Usuario vendedor por defecto creado (usuario: 'vendedor', clave: 'vendedor123').<br>";
 
         // 6. Insertar productos de ejemplo
         $products = [

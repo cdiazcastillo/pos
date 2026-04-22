@@ -231,15 +231,15 @@ $products = $db->query("SELECT * FROM products ORDER BY id ASC", [], true);
                 </div>
                 <div class="form-group" style="margin-bottom: 15px;">
                     <label for="price" style="display: block; margin-bottom: 5px; font-weight: 600;">Precio</label>
-                    <input type="number" id="price" name="price" step="1" min="0" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;">
+                    <input type="text" id="price" name="price" inputmode="numeric" pattern="[0-9]*" step="1" min="0" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;">
                 </div>
                 <div class="form-group" style="margin-bottom: 15px;">
                     <label for="stock_level" style="display: block; margin-bottom: 5px; font-weight: 600;">Stock Actual</label>
-                    <input type="number" id="stock_level" name="stock_level" step="1" min="0" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;">
+                    <input type="text" id="stock_level" name="stock_level" inputmode="numeric" pattern="[0-9]*" step="1" min="0" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;">
                 </div>
                 <div class="form-group" style="margin-bottom: 15px;">
                     <label for="min_stock_warning" style="display: block; margin-bottom: 5px; font-weight: 600;">Alerta de Stock Mínimo</label>
-                    <input type="number" id="min_stock_warning" name="min_stock_warning" step="1" min="0" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;">
+                    <input type="text" id="min_stock_warning" name="min_stock_warning" inputmode="numeric" pattern="[0-9]*" step="1" min="0" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;">
                 </div>
                 <div class="modal-actions" style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
                     <button type="button" id="cancel-btn" class="btn btn-secondary">Cancelar</button>
@@ -259,6 +259,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalTitle = document.getElementById('modal-title');
     const productIdInput = document.getElementById('product-id');
     const productGrid = document.getElementById('product-card-grid');
+    const priceInput = document.getElementById('price');
+    const stockLevelInput = document.getElementById('stock_level');
+    const minStockWarningInput = document.getElementById('min_stock_warning');
+
+    function forceNumericInput(input) {
+        if (!input) return;
+        input.addEventListener('input', () => {
+            input.value = String(input.value || '').replace(/\D/g, '');
+        });
+    }
+
+    [priceInput, stockLevelInput, minStockWarningInput].forEach(forceNumericInput);
 
     // --- Event Listeners ---
 
@@ -299,6 +311,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     productForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+
+        if (!/^\d+$/.test(String(priceInput.value || '')) || !/^\d+$/.test(String(stockLevelInput.value || '')) || !/^\d+$/.test(String(minStockWarningInput.value || ''))) {
+            showToast('Precio, stock y alerta deben contener solo números.', true);
+            return;
+        }
+
         const formData = new FormData(productForm);
         const id = formData.get('id');
         const endpoint = id ? 'update_product_api.php' : 'add_product_api.php';

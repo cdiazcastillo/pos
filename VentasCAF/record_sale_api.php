@@ -41,12 +41,30 @@ try {
     // 2. Business Logic in a Transaction
     $db->beginTransaction();
 
-    // 2a. Check for active shift
-    $shift_id_result = $db->query("SELECT id FROM shifts WHERE user_id = ? AND status = 'open'", [$_SESSION['user_id']]);
+    // 2a. Check for active shift (supports selected shared shift for admin)
+    $user = $db->query("SELECT id, role FROM users WHERE id = ?", [$_SESSION['user_id']]);
+    $isAdmin = (($user['role'] ?? '') === 'admin');
+    $selected_shift_id = intval($_SESSION['selected_shift_id'] ?? 0);
+
+    $shift_id_result = null;
+    if ($selected_shift_id > 0) {
+        $shift_id_result = $db->query("SELECT id, user_id FROM shifts WHERE id = ? AND status = 'open'", [$selected_shift_id]);
+        if ($shift_id_result && !$isAdmin && intval($shift_id_result['user_id']) !== intval($_SESSION['user_id'])) {
+            $shift_id_result = null;
+        }
+    }
+
+    if (!$shift_id_result) {
+        $shift_id_result = $db->query("SELECT id, user_id FROM shifts WHERE user_id = ? AND status = 'open'", [$_SESSION['user_id']]);
+        if ($shift_id_result) {
+            $_SESSION['selected_shift_id'] = intval($shift_id_result['id']);
+        }
+    }
+
     if (!$shift_id_result) {
         throw new Exception('No active shift found. Please start a shift to record sales.');
     }
-    $shift_id = $shift_id_result['id'];
+    $shift_id = intval($shift_id_result['id']);
 
     // 2b. Verify product stock and calculate total (Server-side)
     $server_total = 0;

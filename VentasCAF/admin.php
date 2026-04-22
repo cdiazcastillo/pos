@@ -4,8 +4,48 @@ $currentUser = auth_require_role(['cashier', 'admin'], 'admin_login.php', 'index
 $isAdmin = (($currentUser['role'] ?? '') === 'admin');
 
 $db = Database::getInstance();
-$active_shift = $db->query("SELECT id FROM shifts WHERE user_id = ? AND status = 'open'", [$_SESSION['user_id']]);
+$selectedShiftId = intval($_SESSION['selected_shift_id'] ?? 0);
+$active_shift = null;
+
+if ($selectedShiftId > 0) {
+    $active_shift = $db->query(
+        "SELECT s.id, s.user_id, s.start_time, u.username
+         FROM shifts s
+         JOIN users u ON u.id = s.user_id
+         WHERE s.id = ? AND s.status = 'open'",
+        [$selectedShiftId]
+    );
+
+    if (!$active_shift) {
+        unset($_SESSION['selected_shift_id']);
+    }
+}
+
+if (!$active_shift) {
+    $active_shift = $db->query(
+        "SELECT s.id, s.user_id, s.start_time, u.username
+         FROM shifts s
+         JOIN users u ON u.id = s.user_id
+         WHERE s.user_id = ? AND s.status = 'open'",
+        [$_SESSION['user_id']]
+    );
+    if ($active_shift) {
+        $_SESSION['selected_shift_id'] = intval($active_shift['id']);
+    }
+}
+
 $has_active_shift = $active_shift && isset($active_shift['id']);
+$open_shifts_for_admin = $isAdmin
+    ? ($db->query(
+        "SELECT s.id, s.start_time, u.username
+         FROM shifts s
+         JOIN users u ON u.id = s.user_id
+         WHERE s.status = 'open'
+         ORDER BY s.start_time ASC",
+        [],
+        true
+    ) ?: [])
+    : [];
 
 $basePath = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
 $basePath = rtrim($basePath, '/');
@@ -735,17 +775,44 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
                 <div class="shift-grid">
                     <div class="field-group">
                         <label for="initial-cash">Efectivo inicial para abrir turno</label>
-                        <input id="initial-cash" class="money-input" type="number" min="0" step="1" placeholder="Ej: 50000">
+                        <input id="initial-cash" class="money-input" type="text" inputmode="numeric" pattern="[0-9]*" min="0" step="1" placeholder="Ej: 50000">
                     </div>
                     <div class="field-group">
                         <label for="final-cash">Efectivo final para cerrar turno</label>
-                        <input id="final-cash" class="money-input" type="number" min="0" step="1" placeholder="Ej: 145000">
+                        <input id="final-cash" class="money-input" type="text" inputmode="numeric" pattern="[0-9]*" min="0" step="1" placeholder="Ej: 145000">
                     </div>
+                    <?php if ($isAdmin): ?>
+                    <div class="field-group">
+                        <label for="admin-shift-target">Turno para trabajar</label>
+                        <select id="admin-shift-target" class="money-input" style="height:42px;">
+                            <option value="new">Crear mi propio turno</option>
+                            <?php foreach ($open_shifts_for_admin as $openShift): ?>
+                                <option value="<?php echo intval($openShift['id']); ?>" <?php echo ($has_active_shift && intval($active_shift['id'] ?? 0) === intval($openShift['id'])) ? 'selected' : ''; ?>>
+                                    Turno #<?php echo intval($openShift['id']); ?> · <?php echo htmlspecialchars($openShift['username']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <?php endif; ?>
                 </div>
 
                 <div class="btn-row">
                     <button id="start-shift-btn" class="menu-button success" <?php if ($has_active_shift) echo 'disabled'; ?>>Iniciar turno</button>
                     <button id="end-shift-btn" class="menu-button danger" <?php if (!$has_active_shift) echo 'disabled'; ?>>Terminar turno</button>
+                </div>
+
+                <div class="insight-block" style="margin-top:14px;">
+                    <h3>Otros gastos rápidos</h3>
+                    <p class="panel-note">Registra un gasto indicando si salió de efectivo o transferencia.</p>
+                    <div class="expense-form">
+                        <input id="shift-expense-note-input" type="text" maxlength="255" placeholder="Ej: Servilletas">
+                        <input id="shift-expense-amount-input" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="Monto">
+                        <select id="shift-expense-method-input" class="money-input" style="height:40px;">
+                            <option value="cash">Efectivo</option>
+                            <option value="transfer">Transferencia</option>
+                        </select>
+                        <button id="shift-save-expense-btn" type="button">Guardar gasto</button>
+                    </div>
                 </div>
             </section>
 
@@ -756,7 +823,7 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
                 <div class="shift-grid">
                     <div class="field-group">
                         <label for="reset-initial-cash">Efectivo inicial del nuevo turno (opcional)</label>
-                        <input id="reset-initial-cash" class="money-input" type="number" min="0" step="1" placeholder="Si lo ingresas, abre un turno nuevo automáticamente">
+                        <input id="reset-initial-cash" class="money-input" type="text" inputmode="numeric" pattern="[0-9]*" min="0" step="1" placeholder="Si lo ingresas, abre un turno nuevo automáticamente">
                     </div>
                     <div class="field-group">
                         <label for="reset-security-key">Clave de seguridad</label>
@@ -802,7 +869,7 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
                         <h3>Otros gastos (nota + monto)</h3>
                         <div class="expense-form">
                             <input id="expense-note-input" type="text" maxlength="255" placeholder="Ej: Compra de bolsas, cambio, transporte...">
-                            <input id="expense-amount-input" type="number" min="1" step="1" placeholder="Monto">
+                            <input id="expense-amount-input" type="text" inputmode="numeric" pattern="[0-9]*" min="1" step="1" placeholder="Monto">
                             <button id="save-expense-btn" type="button">Guardar</button>
                         </div>
                         <div class="expense-table-wrap">
@@ -810,12 +877,13 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
                                 <thead>
                                     <tr>
                                         <th>Fecha</th>
+                                        <th>Tipo</th>
                                         <th>Nota</th>
                                         <th>Monto</th>
                                     </tr>
                                 </thead>
                                 <tbody id="other-expenses-body">
-                                    <tr><td colspan="3">Cargando gastos...</td></tr>
+                                    <tr><td colspan="4">Cargando gastos...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -866,6 +934,8 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
 
     <script>
         const hasActiveShift = <?php echo $has_active_shift ? 'true' : 'false'; ?>;
+        const isAdminUser = <?php echo $isAdmin ? 'true' : 'false'; ?>;
+        const selectedShiftId = <?php echo intval($active_shift['id'] ?? 0); ?>;
         const startShiftBtn = document.getElementById('start-shift-btn');
         const endShiftBtn = document.getElementById('end-shift-btn');
         const initialCashInput = document.getElementById('initial-cash');
@@ -891,6 +961,10 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
         const expenseNoteInput = document.getElementById('expense-note-input');
         const expenseAmountInput = document.getElementById('expense-amount-input');
         const saveExpenseBtn = document.getElementById('save-expense-btn');
+        const shiftExpenseNoteInput = document.getElementById('shift-expense-note-input');
+        const shiftExpenseAmountInput = document.getElementById('shift-expense-amount-input');
+        const shiftExpenseMethodInput = document.getElementById('shift-expense-method-input');
+        const shiftSaveExpenseBtn = document.getElementById('shift-save-expense-btn');
         const toast = document.getElementById('toast');
         const actionModal = document.getElementById('action-modal');
         const modalTitle = document.getElementById('modal-title');
@@ -900,6 +974,8 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
         const modalInput = document.getElementById('modal-input');
         const modalCancelBtn = document.getElementById('modal-cancel-btn');
         const modalConfirmBtn = document.getElementById('modal-confirm-btn');
+        const adminShiftTarget = document.getElementById('admin-shift-target');
+        const canLoadRealtimeSummary = isAdminUser && !!realtimeInsightsPanel;
 
         function showToast(message, isError = false) {
             toast.textContent = message;
@@ -910,9 +986,22 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
         }
 
         function parseAmount(value) {
-            const amount = parseInt(String(value).replace(/\./g, '').trim(), 10);
+            const normalized = String(value).replace(/\./g, '').replace(/\s+/g, '').trim();
+            if (!/^\d+$/.test(normalized)) {
+                return NaN;
+            }
+            const amount = Number(normalized);
             return Number.isInteger(amount) ? amount : NaN;
         }
+
+        function bindNumericInput(inputElement) {
+            if (!inputElement) return;
+            inputElement.addEventListener('input', () => {
+                inputElement.value = String(inputElement.value).replace(/\D/g, '');
+            });
+        }
+
+        [initialCashInput, finalCashInput, resetInitialCashInput, resetSecurityKeyInput, expenseAmountInput, shiftExpenseAmountInput].forEach(bindNumericInput);
 
         function formatClp(value) {
             return `$${Number(value || 0).toLocaleString('es-CL')}`;
@@ -995,7 +1084,7 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
             if (!otherExpensesBody) return;
             const data = Array.isArray(rows) ? rows : [];
             if (data.length === 0) {
-                otherExpensesBody.innerHTML = '<tr><td colspan="3">Sin gastos registrados.</td></tr>';
+                otherExpensesBody.innerHTML = '<tr><td colspan="4">Sin gastos registrados.</td></tr>';
                 return;
             }
 
@@ -1005,9 +1094,11 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
                     ? dateValue.toLocaleString('es-CL')
                     : (row.expense_time || '-');
                 const note = String(row.description || '-').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                const paymentMethod = row.payment_method === 'transfer' ? 'Transferencia' : 'Efectivo';
                 return `
                     <tr>
                         <td>${formattedDate}</td>
+                        <td>${paymentMethod}</td>
                         <td>${note}</td>
                         <td>${formatClp(row.amount || 0)}</td>
                     </tr>
@@ -1016,6 +1107,9 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
         }
 
         async function loadRealtimeSummary() {
+            if (!canLoadRealtimeSummary) {
+                return;
+            }
             try {
                 const response = await fetch('get_admin_realtime_summary_api.php', { cache: 'no-store' });
                 const payload = await response.json();
@@ -1076,7 +1170,8 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
             try {
                 const data = await postForm('register_expense_api.php', {
                     description,
-                    amount: amountValue
+                    amount: amountValue,
+                    payment_method: 'cash'
                 });
 
                 if (!data.success) {
@@ -1092,6 +1187,50 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
                 showToast('Error de conexión al guardar el gasto.', true);
             } finally {
                 saveExpenseBtn.disabled = false;
+            }
+        });
+
+        shiftSaveExpenseBtn?.addEventListener('click', async () => {
+            const description = shiftExpenseNoteInput.value.trim();
+            const amountValue = parseAmount(shiftExpenseAmountInput.value);
+            const paymentMethod = shiftExpenseMethodInput.value === 'transfer' ? 'transfer' : 'cash';
+
+            if (!description) {
+                showToast('Escribe la nota del gasto.', true);
+                shiftExpenseNoteInput.focus();
+                return;
+            }
+
+            if (!Number.isFinite(amountValue) || amountValue <= 0) {
+                showToast('Ingresa un monto válido para el gasto.', true);
+                shiftExpenseAmountInput.focus();
+                return;
+            }
+
+            shiftSaveExpenseBtn.disabled = true;
+            try {
+                const data = await postForm('register_expense_api.php', {
+                    description,
+                    amount: amountValue,
+                    payment_method: paymentMethod
+                });
+
+                if (!data.success) {
+                    showToast(data.message || 'No se pudo guardar el gasto.', true);
+                    return;
+                }
+
+                shiftExpenseNoteInput.value = '';
+                shiftExpenseAmountInput.value = '';
+                shiftExpenseMethodInput.value = 'cash';
+                showToast('Gasto guardado correctamente.');
+                if (canLoadRealtimeSummary) {
+                    await loadRealtimeSummary();
+                }
+            } catch (error) {
+                showToast('Error de conexión al guardar el gasto.', true);
+            } finally {
+                shiftSaveExpenseBtn.disabled = false;
             }
         });
 
@@ -1167,8 +1306,29 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
         }
 
         startShiftBtn.addEventListener('click', async () => {
-            if (hasActiveShift) {
+            if (!isAdminUser && hasActiveShift) {
                 showToast('Ya existe un turno activo.', true);
+                return;
+            }
+
+            if (isAdminUser && adminShiftTarget && adminShiftTarget.value !== 'new') {
+                startShiftBtn.disabled = true;
+                try {
+                    const data = await postForm('start_shift_api.php', {
+                        mode: 'join',
+                        shift_id: adminShiftTarget.value
+                    });
+                    if (data.success) {
+                        showToast('Turno compartido seleccionado correctamente.');
+                        setTimeout(() => window.location.reload(), 600);
+                        return;
+                    }
+                    showToast(data.message ? `Error: ${data.message}` : 'No se pudo seleccionar el turno.', true);
+                } catch (error) {
+                    showToast('Error de conexión al seleccionar el turno.', true);
+                } finally {
+                    startShiftBtn.disabled = false;
+                }
                 return;
             }
 
@@ -1191,7 +1351,7 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
 
             startShiftBtn.disabled = true;
             try {
-                const data = await postForm('start_shift_api.php', { initial_cash: amount });
+                const data = await postForm('start_shift_api.php', { initial_cash: amount, mode: 'own' });
                 if (data.success) {
                     showToast('Turno iniciado correctamente.');
                     setTimeout(() => window.location.reload(), 700);

@@ -20,15 +20,15 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-$final_cash = $_POST['final_cash'] ?? null;
+$final_cash_raw = trim((string)($_POST['final_cash'] ?? ''));
 
-if ($final_cash === null || !is_numeric($final_cash) || floatval($final_cash) < 0) {
+if ($final_cash_raw === '' || !preg_match('/^\d+$/', $final_cash_raw)) {
     $response['message'] = 'Invalid final cash amount provided. It must be a non-negative number.';
     echo json_encode($response);
     exit;
 }
 
-$final_cash = floatval($final_cash);
+$final_cash = intval($final_cash_raw);
 $user_id = $_SESSION['user_id'];
 
 $db = Database::getInstance();
@@ -37,8 +37,17 @@ try {
     // 2. Business Logic in a Transaction
     $db->beginTransaction();
 
+    $user = $db->query("SELECT id, role FROM users WHERE id = ?", [$user_id]);
+    $isAdmin = (($user['role'] ?? '') === 'admin');
+
+    $selected_shift_id = intval($_SESSION['selected_shift_id'] ?? 0);
+    if ($isAdmin && $selected_shift_id > 0) {
+        $shift = $db->query("SELECT id, initial_cash, start_time FROM shifts WHERE id = ? AND status = 'open'", [$selected_shift_id]);
+    } else {
+        $shift = $db->query("SELECT id, initial_cash, start_time FROM shifts WHERE user_id = ? AND status = 'open'", [$user_id]);
+    }
+
     // 2a. Find Active Shift
-    $shift = $db->query("SELECT id, initial_cash, start_time FROM shifts WHERE user_id = ? AND status = 'open'", [$user_id]);
     if (!$shift) {
         throw new Exception('No active shift found to close.');
     }
@@ -88,6 +97,10 @@ try {
 
     if ($affected_rows === 0) {
         throw new Exception('Failed to update the shift record in the database.');
+    }
+
+    if (intval($_SESSION['selected_shift_id'] ?? 0) === intval($shift_id)) {
+        unset($_SESSION['selected_shift_id']);
     }
 
     // Commit the transaction

@@ -53,6 +53,9 @@ $currentUser = auth_require_role(['admin'], 'admin_login.php', 'index.php');
                 </tbody>
             </table>
         </div>
+        <div id="reports-summary" class="report-details" style="display:block; margin-top:12px;">
+            <strong>Total turnos cargados:</strong> <span id="total-shifts-count">0</span>
+        </div>
         <div id="report-details" class="report-details" style="display: none;">
             <!-- Los detalles del reporte se poblarán aquí -->
         </div>

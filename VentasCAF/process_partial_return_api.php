@@ -2,7 +2,7 @@
 header('Content-Type: application/json');
 
 require_once 'includes/auth.php';
-auth_require_api_role(['admin']);
+auth_require_api_role(['cashier', 'admin']);
 
 $response = ['success' => false, 'message' => 'An unknown error occurred.'];
 
@@ -29,7 +29,7 @@ try {
     $db->beginTransaction();
 
     // 2a. Fetch original sale to get the shift_id
-    $sale = $db->query("SELECT shift_id FROM sales WHERE id = ?", [$sale_id]);
+    $sale = $db->query("SELECT shift_id, payment_method FROM sales WHERE id = ?", [$sale_id]);
     if (!$sale) {
         throw new Exception("Sale #{$sale_id} not found.");
     }
@@ -85,10 +85,18 @@ try {
 
     // 2g. Record an expense for the refund
     $expense_description = "Devolución Parcial Venta #" . $sale_id;
-    $db->execute(
-        "INSERT INTO expenses (shift_id, sale_id, description, amount) VALUES (?, ?, ?, ?)",
-        [$shift_id, $sale_id, $expense_description, $total_refund_amount]
-    );
+    $hasExpensePaymentMethod = $db->query("SHOW COLUMNS FROM expenses LIKE 'payment_method'");
+    if ($hasExpensePaymentMethod) {
+        $db->execute(
+            "INSERT INTO expenses (shift_id, sale_id, description, amount, payment_method) VALUES (?, ?, ?, ?, ?)",
+            [$shift_id, $sale_id, $expense_description, $total_refund_amount, $sale['payment_method'] ?? 'cash']
+        );
+    } else {
+        $db->execute(
+            "INSERT INTO expenses (shift_id, sale_id, description, amount) VALUES (?, ?, ?, ?)",
+            [$shift_id, $sale_id, $expense_description, $total_refund_amount]
+        );
+    }
 
     // 2h. Check if all items for this sale are now returned, and if so, void the sale
     $remaining_items = $db->query(

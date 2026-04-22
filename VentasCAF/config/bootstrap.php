@@ -38,6 +38,9 @@ load_env_from_candidates([
     __DIR__ . '/env.local'
 ]);
 
+$appTimezone = $_ENV['APP_TIMEZONE'] ?? getenv('APP_TIMEZONE') ?: 'America/Santiago';
+date_default_timezone_set($appTimezone);
+
 // Puedes añadir una bandera para entornos de testing si es necesario más adelante
 // if (isset($_ENV['APP_ENV']) && $_ENV['APP_ENV'] === 'testing') {
 //     load_env(__DIR__ . '/../.env.testing');

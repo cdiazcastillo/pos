@@ -14,6 +14,7 @@ $net_returns_on_completed_sales_cash = 0;
 $net_returns_on_completed_sales_transfer = 0;
 
 $other_expenses_amount = 0;
+$other_expenses_cash_amount = 0;
 
 $net_cash_sales = 0;
 $net_transfer_sales = 0;
@@ -54,12 +55,31 @@ try {
         }
 
         // 3. Other Expenses (not linked to sales)
-        $other_expenses_query_sql = "SELECT SUM(amount) AS total_other_expenses
-                                 FROM expenses
-                                 WHERE shift_id = ? AND sale_id IS NULL";
-        $other_expenses_query = $db->query($other_expenses_query_sql, [$shift_id]);
-        if ($other_expenses_query) {
-            $other_expenses_amount = $other_expenses_query['total_other_expenses'] ?? 0;
+        $hasExpensePaymentMethod = $db->query("SHOW COLUMNS FROM expenses LIKE 'payment_method'");
+        if ($hasExpensePaymentMethod) {
+            $other_expenses_query = $db->query(
+                "SELECT
+                    SUM(amount) AS total_other_expenses,
+                    SUM(CASE WHEN payment_method = 'cash' THEN amount ELSE 0 END) AS total_other_expenses_cash
+                 FROM expenses
+                 WHERE shift_id = ? AND sale_id IS NULL",
+                [$shift_id]
+            );
+            if ($other_expenses_query) {
+                $other_expenses_amount = $other_expenses_query['total_other_expenses'] ?? 0;
+                $other_expenses_cash_amount = $other_expenses_query['total_other_expenses_cash'] ?? 0;
+            }
+        } else {
+            $other_expenses_query = $db->query(
+                "SELECT SUM(amount) AS total_other_expenses
+                 FROM expenses
+                 WHERE shift_id = ? AND sale_id IS NULL",
+                [$shift_id]
+            );
+            if ($other_expenses_query) {
+                $other_expenses_amount = $other_expenses_query['total_other_expenses'] ?? 0;
+                $other_expenses_cash_amount = $other_expenses_amount;
+            }
         }
 
         // --- Final KPI Calculations ---
@@ -80,7 +100,7 @@ try {
         // Initial Cash
         // + Venta por Efectivo (NET)
         // - Otros Gastos
-        $expected_cash_in_drawer = $initial_cash + $net_cash_sales - $other_expenses_amount;
+        $expected_cash_in_drawer = $initial_cash + $net_cash_sales - $other_expenses_cash_amount;
 
 
     }

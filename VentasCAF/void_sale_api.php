@@ -2,7 +2,7 @@
 header('Content-Type: application/json');
 
 require_once 'includes/auth.php';
-auth_require_api_role(['admin']);
+auth_require_api_role(['cashier', 'admin']);
 
 $response = ['success' => false, 'message' => 'An unknown error occurred.'];
 
@@ -29,7 +29,7 @@ try {
     $db->beginTransaction();
 
     // 2a. Fetch and validate the sale
-    $sale = $db->query("SELECT id, total_amount, shift_id, status FROM sales WHERE id = ?", [$sale_id]);
+    $sale = $db->query("SELECT id, total_amount, shift_id, status, payment_method FROM sales WHERE id = ?", [$sale_id]);
 
 
     if (!$sale) {
@@ -83,10 +83,18 @@ try {
     // Only record if there's an actual amount to void (i.e., not fully returned already)
     if ($net_void_amount > 0) {
         $expense_description = "Anulación Venta Completa #" . $sale_id;
-        $db->execute(
-            "INSERT INTO expenses (shift_id, sale_id, description, amount) VALUES (?, ?, ?, ?)",
-            [$sale['shift_id'], $sale_id, $expense_description, $net_void_amount]
-        );
+        $hasExpensePaymentMethod = $db->query("SHOW COLUMNS FROM expenses LIKE 'payment_method'");
+        if ($hasExpensePaymentMethod) {
+            $db->execute(
+                "INSERT INTO expenses (shift_id, sale_id, description, amount, payment_method) VALUES (?, ?, ?, ?, ?)",
+                [$sale['shift_id'], $sale_id, $expense_description, $net_void_amount, $sale['payment_method'] ?? 'cash']
+            );
+        } else {
+            $db->execute(
+                "INSERT INTO expenses (shift_id, sale_id, description, amount) VALUES (?, ?, ?, ?)",
+                [$sale['shift_id'], $sale_id, $expense_description, $net_void_amount]
+            );
+        }
 
     }
 

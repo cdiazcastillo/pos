@@ -4,7 +4,7 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 require_once 'includes/auth.php';
-$currentUser = auth_require_role(['admin'], 'admin_login.php', 'index.php');
+$currentUser = auth_require_role(['cashier', 'admin'], 'admin_login.php', 'index.php');
 
 $sale_id = filter_input(INPUT_GET, 'sale_id', FILTER_VALIDATE_INT);
 if (!$sale_id) {
@@ -256,6 +256,8 @@ $items = $db->query(
                                        class="return-qty-input" 
                                        name="items[<?php echo $item['id']; ?>]"
                                        value="0" 
+                                        inputmode="numeric"
+                                        pattern="[0-9]*"
                                        min="0" 
                                        max="<?php echo $max_returnable; ?>"
                                        data-price="<?php echo $item['price_per_unit']; ?>">
@@ -298,7 +300,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     inputs.forEach(input => {
-        input.addEventListener('input', calculateTotalRefund);
+        input.addEventListener('input', () => {
+            const max = parseInt(input.getAttribute('max'), 10) || 0;
+            const cleanValue = String(input.value || '').replace(/\D/g, '');
+            const parsed = cleanValue === '' ? 0 : parseInt(cleanValue, 10);
+            input.value = String(Math.min(Math.max(parsed, 0), max));
+            calculateTotalRefund();
+        });
     });
 
     form.addEventListener('submit', async (e) => {

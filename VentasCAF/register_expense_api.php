@@ -20,7 +20,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $description = $_POST['description'] ?? '';
-$amount = $_POST['amount'] ?? '';
+$amount_raw = trim((string)($_POST['amount'] ?? ''));
+$payment_method = trim((string)($_POST['payment_method'] ?? 'cash'));
 
 if (empty(trim($description))) {
     $response['message'] = 'Expense description cannot be empty.';
@@ -28,13 +29,19 @@ if (empty(trim($description))) {
     exit;
 }
 
-if (!is_numeric($amount) || floatval($amount) <= 0) {
+if ($amount_raw === '' || !preg_match('/^\d+$/', $amount_raw) || intval($amount_raw) <= 0) {
     $response['message'] = 'Invalid expense amount. It must be a positive number.';
     echo json_encode($response);
     exit;
 }
 
-$amount = floatval($amount);
+if (!in_array($payment_method, ['cash', 'transfer'], true)) {
+    $response['message'] = 'Invalid payment method. Use cash or transfer.';
+    echo json_encode($response);
+    exit;
+}
+
+$amount = intval($amount_raw);
 $user_id = $_SESSION['user_id'];
 
 try {
@@ -51,8 +58,20 @@ try {
     $shift_id = $shift_result['id'];
 
     // 3. Business Logic: Insert the expense
-    $sql = "INSERT INTO expenses (shift_id, description, amount) VALUES (?, ?, ?)";
-    $affected_rows = $db->execute($sql, [$shift_id, trim($description), $amount]);
+    $hasExpensePaymentMethod = $db->query("SHOW COLUMNS FROM expenses LIKE 'payment_method'");
+    if (!$hasExpensePaymentMethod) {
+        $db->execute("ALTER TABLE expenses ADD COLUMN payment_method ENUM('cash', 'transfer') NOT NULL DEFAULT 'cash' AFTER amount");
+        $hasExpensePaymentMethod = $db->query("SHOW COLUMNS FROM expenses LIKE 'payment_method'");
+    }
+
+    if ($hasExpensePaymentMethod) {
+        $sql = "INSERT INTO expenses (shift_id, description, amount, payment_method) VALUES (?, ?, ?, ?)";
+        $affected_rows = $db->execute($sql, [$shift_id, trim($description), $amount, $payment_method]);
+    } else {
+        $sql = "INSERT INTO expenses (shift_id, description, amount) VALUES (?, ?, ?)";
+        $descriptionWithMethod = '[' . strtoupper($payment_method === 'cash' ? 'EFECTIVO' : 'TRANSFERENCIA') . '] ' . trim($description);
+        $affected_rows = $db->execute($sql, [$shift_id, $descriptionWithMethod, $amount]);
+    }
 
     if ($affected_rows > 0) {
         $response['success'] = true;

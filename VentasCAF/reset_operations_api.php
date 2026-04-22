@@ -30,12 +30,13 @@ if ($security_key !== '250012') {
 
 $initial_cash = null;
 if ($initial_cash_input !== null && $initial_cash_input !== '') {
-    if (!is_numeric($initial_cash_input) || floatval($initial_cash_input) < 0) {
+    $initial_cash_raw = trim((string)$initial_cash_input);
+    if (!preg_match('/^\d+$/', $initial_cash_raw)) {
         $response['message'] = 'El efectivo inicial del nuevo turno es inválido.';
         echo json_encode($response);
         exit;
     }
-    $initial_cash = floatval($initial_cash_input);
+    $initial_cash = intval($initial_cash_raw);
 }
 
 $db = Database::getInstance();

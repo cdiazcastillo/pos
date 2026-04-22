@@ -34,7 +34,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const product = {
                     id: card.dataset.id,
                     name: card.dataset.name,
-                    price: parseInt(card.dataset.price, 10)
+                    price: parseInt(card.dataset.price, 10),
+                    stock: parseInt(card.dataset.stock || '0', 10)
                 };
                 addToCart(product);
             }
@@ -69,12 +70,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Handle "Start Shift" form submission
     if (startShiftForm) {
+        const initialCashInput = document.getElementById('initial_cash');
+        initialCashInput?.addEventListener('input', () => {
+            initialCashInput.value = String(initialCashInput.value).replace(/\D/g, '');
+        });
+
         startShiftForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            const initialCash = document.getElementById('initial_cash').value;
-            if (initialCash !== '' && parseInt(initialCash, 10) >= 0) {
-                startShift(initialCash);
+            const initialCash = String(document.getElementById('initial_cash').value || '').trim();
+            if (!/^\d+$/.test(initialCash)) {
+                showToast('Ingresa solo números en efectivo inicial.', true);
+                return;
             }
+            startShift(initialCash);
         });
     }
 
@@ -86,8 +94,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function addToCart(product) {
+        const maxStock = Number.isInteger(product.stock) ? product.stock : 0;
+        if (maxStock <= 0) {
+            showToast('Sin stock disponible para este producto.', true);
+            return;
+        }
+
         const existingItem = cart.find(item => item.id === product.id);
         if (existingItem) {
+            if (existingItem.quantity >= maxStock) {
+                showToast(`Stock máximo alcanzado para ${product.name}.`, true);
+                return;
+            }
             existingItem.quantity++;
         } else {
             cart.push({ ...product, quantity: 1 });

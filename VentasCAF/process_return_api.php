@@ -2,7 +2,7 @@
 header('Content-Type: application/json');
 
 require_once 'includes/auth.php';
-auth_require_api_role(['admin']);
+auth_require_api_role(['cashier', 'admin']);
 
 // Define the master key for overrides. In a real app, this should be in a config file.
 define('MASTER_KEY', '1234');
@@ -40,6 +40,11 @@ try {
     }
     $shift_id = $shift['id'];
     $initial_cash = floatval($shift['initial_cash']);
+
+    $sale = $db->query("SELECT payment_method FROM sales WHERE id = ?", [$sale_id]);
+    if (!$sale) {
+        throw new Exception("Sale #{$sale_id} not found.");
+    }
 
     // 2b. Verify Original Sale Item
     $sale_item = $db->query(
@@ -80,8 +85,14 @@ try {
     
     // We register the refund as a positive expense to simplify accounting.
     // This correctly subtracts from the cash balance.
-    $expense_sql = "INSERT INTO expenses (shift_id, description, amount) VALUES (?, ?, ?)";
-    $db->execute($expense_sql, [$shift_id, $refund_description, $total_refund_amount]);
+    $hasExpensePaymentMethod = $db->query("SHOW COLUMNS FROM expenses LIKE 'payment_method'");
+    if ($hasExpensePaymentMethod) {
+        $expense_sql = "INSERT INTO expenses (shift_id, description, amount, payment_method) VALUES (?, ?, ?, ?)";
+        $db->execute($expense_sql, [$shift_id, $refund_description, $total_refund_amount, $sale['payment_method'] ?? 'cash']);
+    } else {
+        $expense_sql = "INSERT INTO expenses (shift_id, description, amount) VALUES (?, ?, ?)";
+        $db->execute($expense_sql, [$shift_id, $refund_description, $total_refund_amount]);
+    }
     
     // 2e. Update Stock Level
     $stock_sql = "UPDATE products SET stock_level = stock_level + ? WHERE id = ?";

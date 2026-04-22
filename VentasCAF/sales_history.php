@@ -320,10 +320,8 @@ function format_payment_method($method) {
                 </div>
                 <div class="card-footer">
                     <?php if ($sale['status'] === 'completed'): ?>
-                        <?php if ($isAdmin): ?>
-                            <a href="return.php?sale_id=<?php echo $sale['id']; ?>" class="btn btn-warning">Procesar Devolución</a>
-                            <button class="btn btn-danger void-sale-btn" data-id="<?php echo $sale['id']; ?>">Anular Venta Completa</button>
-                        <?php endif; ?>
+                        <a href="return.php?sale_id=<?php echo $sale['id']; ?>" class="btn btn-warning">Procesar Devolución</a>
+                        <button class="btn btn-danger void-sale-btn" data-id="<?php echo $sale['id']; ?>">Anular Venta Completa</button>
                     <?php endif; ?>
                 </div>
             </div>

@@ -40,6 +40,22 @@ try {
     ");
     $message .= "✓ Tabla 'role_permissions' verificada/creada.<br>";
 
+    // Asegurar columna payment_method en expenses
+    $stmt = $pdo->prepare(
+        "SELECT COUNT(*) AS total
+         FROM information_schema.COLUMNS
+         WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'expenses' AND COLUMN_NAME = 'payment_method'"
+    );
+    $stmt->execute([$_ENV['DB_NAME']]);
+    $hasPaymentMethod = intval(($stmt->fetch(PDO::FETCH_ASSOC)['total'] ?? 0)) > 0;
+
+    if (!$hasPaymentMethod) {
+        $pdo->exec("ALTER TABLE `expenses` ADD COLUMN `payment_method` ENUM('cash', 'transfer') NOT NULL DEFAULT 'cash' AFTER `amount`");
+        $message .= "✓ Columna 'payment_method' agregada a expenses.<br>";
+    } else {
+        $message .= "ℹ️ Columna 'payment_method' ya existe en expenses.<br>";
+    }
+
     // Insertar permisos base (si no existen)
     $permissions = [
         ['pos', 'Punto de Venta (POS)', 'Acceso a la pantalla de ventas'],
