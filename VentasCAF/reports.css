@@ -162,6 +162,21 @@ body {
     word-break: break-word;
 }
 
+.report-details-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+.report-details-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
 /* Button styles from reports.php */
 .btn-secondary { background-color: var(--secondary-color) !important; }
 .btn-success { background-color: var(--success-color) !important; }
@@ -226,6 +241,23 @@ body {
 
     .report-details {
         padding: 12px;
+    }
+
+    .report-details-head {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .report-details-actions {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .report-details-actions .btn {
+        width: 100%;
+        text-align: center;
     }
 
     #shifts-table {

@@ -465,6 +465,77 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
             margin-top: 14px;
         }
 
+        .active-shifts-panel {
+            margin-top: 14px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            background: #fff;
+            padding: 12px;
+        }
+
+        .active-shifts-head h3 {
+            margin: 0;
+            font-size: 0.96rem;
+        }
+
+        .active-shifts-head p {
+            margin: 6px 0 0;
+            color: var(--muted);
+            font-size: 0.86rem;
+        }
+
+        .active-shifts-table-wrap {
+            margin-top: 10px;
+            border: 1px solid #eef2f7;
+            border-radius: 10px;
+            overflow: auto;
+        }
+
+        .active-shifts-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.86rem;
+        }
+
+        .active-shifts-table th,
+        .active-shifts-table td {
+            padding: 9px 8px;
+            border-bottom: 1px solid #eef2f7;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        .active-shifts-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .shift-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 999px;
+            font-size: 0.76rem;
+            font-weight: 700;
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .shift-chip.selected {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .shift-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .row-action-btn {
+            padding: 8px 10px;
+            font-size: 0.82rem;
+        }
+
         .menu-button {
             border: none;
             border-radius: 10px;
@@ -801,6 +872,72 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
                     <button id="end-shift-btn" class="menu-button danger" <?php if (!$has_active_shift) echo 'disabled'; ?>>Terminar turno</button>
                 </div>
 
+                <?php if ($isAdmin): ?>
+                <div class="active-shifts-panel">
+                    <div class="active-shifts-head">
+                        <h3>Turnos activos del equipo</h3>
+                        <p>Usa estas acciones rápidas para trabajar o cerrar un turno específico.</p>
+                    </div>
+                    <?php if (empty($open_shifts_for_admin)): ?>
+                        <p class="panel-note" style="margin-top:10px;">No hay turnos activos en este momento.</p>
+                    <?php else: ?>
+                        <div class="active-shifts-table-wrap">
+                            <table class="active-shifts-table">
+                                <thead>
+                                    <tr>
+                                        <th>Turno</th>
+                                        <th>Usuario</th>
+                                        <th>Inicio</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($open_shifts_for_admin as $openShift): ?>
+                                        <?php
+                                            $rowShiftId = intval($openShift['id'] ?? 0);
+                                            $isRowSelected = (intval($active_shift['id'] ?? 0) === $rowShiftId);
+                                            $rowStartRaw = (string)($openShift['start_time'] ?? '');
+                                            $rowStartTs = strtotime($rowStartRaw);
+                                            $rowStartLabel = $rowStartTs ? date('d-m-Y H:i', $rowStartTs) : $rowStartRaw;
+                                        ?>
+                                        <tr>
+                                            <td>#<?php echo $rowShiftId; ?></td>
+                                            <td><?php echo htmlspecialchars((string)($openShift['username'] ?? 'usuario')); ?></td>
+                                            <td><?php echo htmlspecialchars($rowStartLabel); ?></td>
+                                            <td>
+                                                <span class="shift-chip <?php echo $isRowSelected ? 'selected' : ''; ?>">
+                                                    <?php echo $isRowSelected ? 'En uso' : 'Disponible'; ?>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="shift-actions">
+                                                    <button
+                                                        type="button"
+                                                        class="menu-button secondary row-action-btn quick-use-shift-btn"
+                                                        data-shift-id="<?php echo $rowShiftId; ?>"
+                                                        <?php echo $isRowSelected ? 'disabled' : ''; ?>
+                                                    >
+                                                        <?php echo $isRowSelected ? 'En uso' : 'Usar este turno'; ?>
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        class="menu-button danger row-action-btn quick-close-shift-btn"
+                                                        data-shift-id="<?php echo $rowShiftId; ?>"
+                                                    >
+                                                        Cerrar turno
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php endif; ?>
+                </div>
+                <?php endif; ?>
+
                 <div class="insight-block" style="margin-top:14px;">
                     <h3>Otros gastos rápidos</h3>
                     <p class="panel-note">Registra un gasto indicando si salió de efectivo o transferencia.</p>
@@ -975,7 +1112,10 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
         const modalCancelBtn = document.getElementById('modal-cancel-btn');
         const modalConfirmBtn = document.getElementById('modal-confirm-btn');
         const adminShiftTarget = document.getElementById('admin-shift-target');
+        const quickUseShiftButtons = document.querySelectorAll('.quick-use-shift-btn');
+        const quickCloseShiftButtons = document.querySelectorAll('.quick-close-shift-btn');
         const canLoadRealtimeSummary = isAdminUser && !!realtimeInsightsPanel;
+        let currentSelectedShiftId = Number(selectedShiftId) || 0;
 
         function showToast(message, isError = false) {
             toast.textContent = message;
@@ -1017,6 +1157,43 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
             });
 
             return response.json();
+        }
+
+        function syncAdminShiftTarget(shiftId) {
+            if (!adminShiftTarget) return;
+            const targetValue = String(shiftId || 'new');
+            const hasOption = Array.from(adminShiftTarget.options).some(option => option.value === targetValue);
+            adminShiftTarget.value = hasOption ? targetValue : 'new';
+        }
+
+        async function selectShiftForWork(shiftId, showSuccessToast = true) {
+            const shiftNumber = Number(shiftId);
+            if (!Number.isInteger(shiftNumber) || shiftNumber <= 0) {
+                showToast('Selecciona un turno válido.', true);
+                return false;
+            }
+
+            try {
+                const data = await postForm('start_shift_api.php', {
+                    mode: 'join',
+                    shift_id: shiftNumber
+                });
+
+                if (!data.success) {
+                    showToast(data.message ? `Error: ${data.message}` : 'No se pudo seleccionar el turno.', true);
+                    return false;
+                }
+
+                currentSelectedShiftId = shiftNumber;
+                syncAdminShiftTarget(shiftNumber);
+                if (showSuccessToast) {
+                    showToast('Turno compartido seleccionado correctamente.');
+                }
+                return true;
+            } catch (error) {
+                showToast('Error de conexión al seleccionar el turno.', true);
+                return false;
+            }
         }
 
         function showOnlyPanel(panelToShow) {
@@ -1149,6 +1326,96 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
                 realtimeTimer = null;
             }
         }
+
+        quickUseShiftButtons.forEach(button => {
+            button.addEventListener('click', async () => {
+                const shiftId = Number(button.dataset.shiftId || 0);
+                if (!shiftId) {
+                    showToast('Turno inválido.', true);
+                    return;
+                }
+
+                if (shiftId === currentSelectedShiftId) {
+                    showToast('Ese turno ya está en uso.');
+                    return;
+                }
+
+                const confirmSwitch = await openActionModal({
+                    title: 'Usar turno activo',
+                    message: `Trabajarás sobre el turno <strong>#${shiftId}</strong>.`,
+                    confirmText: 'Usar turno',
+                    confirmDanger: false
+                });
+                if (!confirmSwitch.confirmed) {
+                    return;
+                }
+
+                button.disabled = true;
+                try {
+                    const selected = await selectShiftForWork(shiftId, false);
+                    if (!selected) {
+                        return;
+                    }
+
+                    showToast('Turno seleccionado correctamente.');
+                    setTimeout(() => window.location.reload(), 600);
+                } finally {
+                    button.disabled = false;
+                }
+            });
+        });
+
+        quickCloseShiftButtons.forEach(button => {
+            button.addEventListener('click', async () => {
+                const shiftId = Number(button.dataset.shiftId || 0);
+                if (!shiftId) {
+                    showToast('Turno inválido.', true);
+                    return;
+                }
+
+                const closePrompt = await openActionModal({
+                    title: `Cerrar turno #${shiftId}`,
+                    message: 'Ingresa el efectivo final para cerrar este turno.',
+                    confirmText: 'Cerrar turno',
+                    confirmDanger: true,
+                    inputLabel: 'Efectivo final',
+                    inputPlaceholder: 'Ej: 145000',
+                    requireInput: true
+                });
+                if (!closePrompt.confirmed) {
+                    return;
+                }
+
+                const finalCashAmount = parseAmount(closePrompt.value);
+                if (!Number.isFinite(finalCashAmount) || finalCashAmount < 0) {
+                    showToast('Ingresa un efectivo final válido.', true);
+                    return;
+                }
+
+                button.disabled = true;
+                try {
+                    if (shiftId !== currentSelectedShiftId) {
+                        const selected = await selectShiftForWork(shiftId, false);
+                        if (!selected) {
+                            return;
+                        }
+                    }
+
+                    const data = await postForm('end_shift_api.php', { final_cash: finalCashAmount });
+                    if (data.success) {
+                        showToast(`Turno #${shiftId} cerrado correctamente.`);
+                        setTimeout(() => window.location.reload(), 700);
+                        return;
+                    }
+
+                    showToast(data.message ? `Error: ${data.message}` : 'No se pudo cerrar el turno.', true);
+                } catch (error) {
+                    showToast('Error de conexión al cerrar el turno.', true);
+                } finally {
+                    button.disabled = false;
+                }
+            });
+        });
 
         saveExpenseBtn?.addEventListener('click', async () => {
             const description = expenseNoteInput.value.trim();
@@ -1314,18 +1581,11 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
             if (isAdminUser && adminShiftTarget && adminShiftTarget.value !== 'new') {
                 startShiftBtn.disabled = true;
                 try {
-                    const data = await postForm('start_shift_api.php', {
-                        mode: 'join',
-                        shift_id: adminShiftTarget.value
-                    });
-                    if (data.success) {
-                        showToast('Turno compartido seleccionado correctamente.');
+                    const selected = await selectShiftForWork(adminShiftTarget.value, true);
+                    if (selected) {
                         setTimeout(() => window.location.reload(), 600);
                         return;
                     }
-                    showToast(data.message ? `Error: ${data.message}` : 'No se pudo seleccionar el turno.', true);
-                } catch (error) {
-                    showToast('Error de conexión al seleccionar el turno.', true);
                 } finally {
                     startShiftBtn.disabled = false;
                 }

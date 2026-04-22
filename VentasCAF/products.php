@@ -80,6 +80,55 @@ $products = $db->query("SELECT * FROM products ORDER BY id ASC", [], true);
         .btn-danger { background-color: var(--danger-color) !important; }
         .btn-warning { background-color: var(--warning-color) !important; }
 
+        .product-modal-content {
+            background: #fff;
+            padding: clamp(16px, 3vw, 30px);
+            border-radius: 10px;
+            width: min(500px, 94vw);
+            max-height: 92vh;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+
+        .product-modal-content .form-group {
+            margin-bottom: 15px;
+        }
+
+        .product-modal-content label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .product-modal-content input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 0.95rem;
+        }
+
+        .product-modal-actions {
+            margin-top: 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 640px) {
+            .product-modal-actions {
+                display: grid;
+                grid-template-columns: 1fr;
+            }
+
+            .product-modal-actions .btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
         /* New Card Grid Layout */
         #product-card-grid {
             display: grid;
@@ -220,28 +269,28 @@ $products = $db->query("SELECT * FROM products ORDER BY id ASC", [], true);
     </div>
 
     <!-- Product Modal (remains the same) -->
-    <div id="product-modal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 1001;">
-        <div class="modal-content" style="background: white; padding: 30px; border-radius: 8px; width: 90%; max-width: 500px;">
+    <div id="product-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content product-modal-content">
             <h2 id="modal-title">Crear Nuevo Producto</h2>
             <form id="product-form">
                 <input type="hidden" id="product-id" name="id">
-                <div class="form-group" style="margin-bottom: 15px;">
-                    <label for="name" style="display: block; margin-bottom: 5px; font-weight: 600;">Nombre del Producto</label>
-                    <input type="text" id="name" name="name" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;">
+                <div class="form-group">
+                    <label for="name">Nombre del Producto</label>
+                    <input type="text" id="name" name="name" required>
                 </div>
-                <div class="form-group" style="margin-bottom: 15px;">
-                    <label for="price" style="display: block; margin-bottom: 5px; font-weight: 600;">Precio</label>
-                    <input type="text" id="price" name="price" inputmode="numeric" pattern="[0-9]*" step="1" min="0" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;">
+                <div class="form-group">
+                    <label for="price">Precio</label>
+                    <input type="text" id="price" name="price" inputmode="numeric" pattern="[0-9]*" step="1" min="0" required>
                 </div>
-                <div class="form-group" style="margin-bottom: 15px;">
-                    <label for="stock_level" style="display: block; margin-bottom: 5px; font-weight: 600;">Stock Actual</label>
-                    <input type="text" id="stock_level" name="stock_level" inputmode="numeric" pattern="[0-9]*" step="1" min="0" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;">
+                <div class="form-group">
+                    <label for="stock_level">Stock Actual</label>
+                    <input type="text" id="stock_level" name="stock_level" inputmode="numeric" pattern="[0-9]*" step="1" min="0" required>
                 </div>
-                <div class="form-group" style="margin-bottom: 15px;">
-                    <label for="min_stock_warning" style="display: block; margin-bottom: 5px; font-weight: 600;">Alerta de Stock Mínimo</label>
-                    <input type="text" id="min_stock_warning" name="min_stock_warning" inputmode="numeric" pattern="[0-9]*" step="1" min="0" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;">
+                <div class="form-group">
+                    <label for="min_stock_warning">Alerta de Stock Mínimo</label>
+                    <input type="text" id="min_stock_warning" name="min_stock_warning" inputmode="numeric" pattern="[0-9]*" step="1" min="0" required>
                 </div>
-                <div class="modal-actions" style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+                <div class="modal-actions product-modal-actions">
                     <button type="button" id="cancel-btn" class="btn btn-secondary">Cancelar</button>
                     <button type="submit" class="btn btn-primary">Guardar</button>
                 </div>

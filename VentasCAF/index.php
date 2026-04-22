@@ -108,48 +108,6 @@ function get_stock_semaphore_class($product) {
             position: relative;
         }
 
-        .school-badge {
-            position: absolute;
-            top: 10px;
-            left: 12px;
-            z-index: 20;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(255, 255, 255, 0.9);
-            border: 1px solid #dbe5ff;
-            border-radius: 999px;
-            padding: 6px 12px 6px 7px;
-            box-shadow: 0 6px 18px rgba(52, 87, 220, 0.2);
-            backdrop-filter: blur(4px);
-        }
-
-        .school-badge img {
-            width: 38px;
-            height: 38px;
-            object-fit: contain;
-            border-radius: 999px;
-            background: #fff;
-            border: 1px solid #e5e7eb;
-            padding: 3px;
-        }
-
-        .school-badge span {
-            font-size: 0.84rem;
-            font-weight: 800;
-            color: #1f3b9f;
-            letter-spacing: 0.2px;
-        }
-
-        .school-badge a {
-            text-decoration: none;
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: #111827;
-            background: #e5e7eb;
-            border-radius: 999px;
-            padding: 4px 8px;
-        }
 
         .products-panel::before {
             content: '';
@@ -541,26 +499,6 @@ function get_stock_semaphore_class($product) {
                 padding: 4px;
             }
 
-            .school-badge {
-                top: 6px;
-                left: 6px;
-                padding: 5px 10px 5px 6px;
-            }
-
-            .school-badge img {
-                width: 30px;
-                height: 30px;
-            }
-
-            .school-badge span {
-                font-size: 0.74rem;
-            }
-
-            .school-badge a {
-                font-size: 0.68rem;
-                padding: 3px 7px;
-            }
-
             #sales-interface {
                 display: grid;
                 grid-template-rows: minmax(0, 1fr) auto;
@@ -642,12 +580,6 @@ function get_stock_semaphore_class($product) {
 </head>
 <body ontouchstart="">
     <div id="pos-container" class="<?php echo !$is_shift_open ? 'shift-closed' : ''; ?>">
-        <div class="school-badge">
-            <img src="img/logo.png" alt="Logo">
-            <span>4 Básico A</span>
-                <a href="logout.php">Salir</a>
-        </div>
-
         <main id="sales-interface">
             <section class="products-panel">
                 <div id="product-grid">

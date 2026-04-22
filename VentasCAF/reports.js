@@ -1,5 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     const shiftsTableBody = document.querySelector('#shifts-table tbody');
+    const reportsContainer = document.querySelector('.reports-container');
+    const reportsSummary = document.getElementById('reports-summary');
     const reportDetailsContainer = document.getElementById('report-details');
     const exportAllBtn = document.getElementById('export-all-btn');
     const totalShiftsCount = document.getElementById('total-shifts-count');
@@ -47,6 +49,33 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 
+    function showListView() {
+        if (reportsContainer) {
+            reportsContainer.style.display = 'block';
+        }
+        if (reportsSummary) {
+            reportsSummary.style.display = 'block';
+        }
+        if (reportDetailsContainer) {
+            reportDetailsContainer.style.display = 'none';
+            reportDetailsContainer.innerHTML = '';
+        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function showDetailView() {
+        if (reportsContainer) {
+            reportsContainer.style.display = 'none';
+        }
+        if (reportsSummary) {
+            reportsSummary.style.display = 'none';
+        }
+        if (reportDetailsContainer) {
+            reportDetailsContainer.style.display = 'block';
+            reportDetailsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
     shiftsTableBody.addEventListener('click', function(event) {
         if (event.target.classList.contains('view-report-btn')) {
             const shiftId = event.target.dataset.shiftId;
@@ -61,8 +90,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.success) {
                     const report = data.data;
                     reportDetailsContainer.innerHTML = `
-                        <h2>Reporte de Turno (ID: ${report.shift_id})</h2>
-                        <button id="export-single-btn" class="btn btn-success" data-shift-id="${report.shift_id}">Exportar a Excel</button>
+                        <div class="report-details-head">
+                            <h2>Reporte de Turno (ID: ${report.shift_id})</h2>
+                            <div class="report-details-actions">
+                                <button id="back-to-list-btn" class="btn btn-secondary" type="button">Volver al listado</button>
+                                <button id="export-single-btn" class="btn btn-success" data-shift-id="${report.shift_id}" type="button">Exportar a Excel</button>
+                            </div>
+                        </div>
                         <p><strong>Usuario:</strong> ${report.username}</p>
                         <p><strong>Hora de Inicio:</strong> ${formatDateTime(report.start_time)}</p>
                         <p><strong>Hora de Fin:</strong> ${formatDateTime(report.end_time)}</p>
@@ -75,7 +109,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         <p><strong>Efectivo Final:</strong> ${formatCurrency(report.final_cash)}</p>
                         <p><strong>Diferencia:</strong> ${formatCurrency(report.difference)}</p>
                     `;
-                    reportDetailsContainer.style.display = 'block';
+                    showDetailView();
+
+                    document.getElementById('back-to-list-btn').addEventListener('click', function() {
+                        showListView();
+                    });
 
                     document.getElementById('export-single-btn').addEventListener('click', function() {
                         exportSingleShift(report);
@@ -128,6 +166,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     fetchShifts();
+    showListView();
 });
 
 
