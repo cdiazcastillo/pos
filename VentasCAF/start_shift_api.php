@@ -28,6 +28,12 @@ try {
     $user = $db->query("SELECT id, role FROM users WHERE id = ?", [$user_id]);
     $role = (string)($user['role'] ?? 'cashier');
 
+    if ($role === 'admin' && $mode !== 'join') {
+        $response['message'] = 'La modalidad de crear turno para administración ya no está disponible. Selecciona un turno activo.';
+        echo json_encode($response);
+        exit;
+    }
+
     if ($mode === 'join') {
         if ($role !== 'admin') {
             $response['message'] = 'Solo equipo de trabajo puede unirse a turnos activos.';

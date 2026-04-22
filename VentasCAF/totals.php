@@ -121,14 +121,6 @@ $currentUser = auth_require_role(['admin'], 'admin_login.php', 'index.php');
     <?php $activePage = 'totals'; include 'top-nav.php'; ?>
     <div class="container">
         <div class="sticky-top">
-            <div class="header">
-                <div class="title-wrap">
-                    <h1>Ventas Totales</h1>
-                </div>
-                <div class="logo-column">
-                    <img src="img/logo.png" alt="Logo">
-                </div>
-            </div>
         </div>
 
         <div id="dashboard-grid">

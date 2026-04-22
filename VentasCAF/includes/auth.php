@@ -10,6 +10,7 @@ function auth_login_user(array $user): void {
     $_SESSION['user_id'] = intval($user['id']);
     $_SESSION['user_role'] = (string)($user['role'] ?? 'cashier');
     $_SESSION['username'] = (string)($user['username'] ?? '');
+    unset($_SESSION['is_super_admin']);
 }
 
 function auth_logout_user(): void {
@@ -89,6 +90,11 @@ function auth_require_api_role(array $roles): array {
     }
 
     return $user;
+}
+
+function auth_is_super_admin(): bool {
+    $role = (string)($_SESSION['user_role'] ?? '');
+    return ($role === 'admin') && !empty($_SESSION['is_super_admin']);
 }
 
 function auth_has_permission(string $permissionKey): bool {

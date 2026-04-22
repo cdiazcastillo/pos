@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         body {
             margin: 0;
             font-family: -apple-system, BlinkMacSystemFont, "Inter", "Poppins", "Segoe UI", Roboto, Arial, sans-serif;
-            background: var(--bg-app);
+            background: #ffffff;
             color: var(--text-dark);
             overflow-x: hidden;
         }
@@ -68,6 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             min-height: 100svh;
             display: flex;
             flex-direction: column;
+            background: #ffffff;
         }
 
         .wrap {
@@ -81,15 +82,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             width: min(760px, 100%);
             background: var(--bg-card);
             border-radius: 24px;
-            padding: 20px;
+            padding: 22px;
             box-shadow: var(--shadow-soft);
             text-align: center;
+            display: grid;
+            justify-items: center;
+            gap: 10px;
         }
 
         .logo-wrap {
             display: flex;
             justify-content: center;
-            margin-bottom: 16px;
+            width: 100%;
+            margin: 0 auto 8px auto;
         }
 
         .logo-image {
@@ -99,24 +104,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border-radius: 1.1rem;
             background: #fff;
             border: 1px solid #dbe4ff;
-            padding: 10px;
+            padding: 12px;
             box-shadow: 0 0.7rem 1.8rem rgba(30, 27, 75, 0.18);
             display: block;
-            margin: 0 auto 16px auto;
+            margin: 0 auto;
         }
 
         .btn {
-            width: 100%;
-            min-height: 48px;
+            width: min(520px, 100%);
+            min-height: 50px;
             border: none;
             border-radius: 14px;
             font-weight: 700;
-            font-size: 1rem;
+            font-size: 1.03rem;
             cursor: pointer;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            transition: transform 0.15s ease, filter 0.15s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            filter: brightness(0.97);
         }
 
         .btn-primary {
@@ -127,18 +138,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .btn-green {
             background: var(--success);
             color: #fff;
-            margin-top: 10px;
-            width: 100%;
-            min-height: 2.75rem;
+            margin-top: 0;
+            width: min(520px, 100%);
+            min-height: 50px;
             border: none;
-            border-radius: 0.875rem;
+            border-radius: 14px;
             font-weight: 700;
-            font-size: 1rem;
+            font-size: 1.03rem;
             cursor: pointer;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            transition: transform 0.15s ease, filter 0.15s ease;
+        }
+
+        .btn-green:hover {
+            transform: translateY(-1px);
+            filter: brightness(0.97);
         }
 
         .error {
@@ -149,19 +166,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         @media (max-width: 520px) {
-            .card { border-radius: 20px; padding: 16px; }
+            .card { border-radius: 20px; padding: 16px; gap: 8px; }
+            .btn,
+            .btn-green { min-height: 48px; font-size: 1rem; }
         }
     </style>
 </head>
 <body>
-    <div class="app" style="background:#fff;min-height:100vh;">
+    <div class="app">
         <main class="wrap">
         <form class="card" method="POST" autocomplete="off" novalidate>
             <div class="logo-wrap">
                 <img src="img/logo.png" alt="Logo" class="logo-image">
             </div>
-            <button type="submit" class="btn btn-primary">Iniciar Ventas</button>
-            <a href="admin_login.php" class="btn-green">Administración</a>
+            <button type="submit" class="btn btn-primary">Ventas</button>
+            <a href="admin_login.php" class="btn-green">Equipo De Trabajo</a>
             <?php if ($error !== ''): ?>
                 <div class="error"><?php echo htmlspecialchars($error); ?></div>
             <?php endif; ?>

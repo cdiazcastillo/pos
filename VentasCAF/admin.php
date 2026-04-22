@@ -2,6 +2,7 @@
 require_once 'includes/auth.php';
 $currentUser = auth_require_role(['cashier', 'admin'], 'admin_login.php', 'index.php');
 $isAdmin = (($currentUser['role'] ?? '') === 'admin');
+$isSuperAdmin = $isAdmin && auth_is_super_admin();
 
 $db = Database::getInstance();
 $selectedShiftId = intval($_SESSION['selected_shift_id'] ?? 0);
@@ -884,17 +885,6 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
 <body>
     <?php $activePage = 'admin'; include 'top-nav.php'; ?>
     <div class="admin-container">
-        <div class="admin-toolbar">
-            <div class="toolbar-left">
-                <img src="img/logo.png" alt="Logo" class="toolbar-logo">
-                <h1 class="toolbar-title">Panel de Administración</h1>
-            </div>
-            <div class="status-pill header-status <?php echo $has_active_shift ? 'open' : 'closed'; ?>">
-                <span class="status-dot"></span>
-                <?php echo $has_active_shift ? ('Turno #' . intval($active_shift['id'])) : 'Turno cerrado'; ?>
-            </div>
-        </div>
-
         <div class="admin-main">
             <section>
                 <h2 class="section-title">Accesos rápidos</h2>
@@ -933,7 +923,7 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
                     <?php endif; ?>
                     <a href="expenses.php" class="menu-card">
                         <span class="card-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/><path d="M7 14h4"/></svg></span>
-                        <span class="card-title">OTROS GASTOS</span>
+                        <span class="card-title">Otros gastos</span>
                         <span class="card-subtitle">Abrir página nueva para registrar, editar y eliminar gastos.</span>
                     </a>
                     <?php if ($isAdmin): ?>
@@ -942,16 +932,18 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
                             <span class="card-title">Cierre de Turnos</span>
                             <span class="card-subtitle">Cuadre de caja y cierre operativo con resumen financiero.</span>
                         </a>
-                        <a href="#" id="open-realtime-insights-btn" class="menu-card">
+                        <a href="monitor.php" class="menu-card" target="_blank" rel="noopener noreferrer">
                             <span class="card-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></svg></span>
                             <span class="card-title">Insights en tiempo real</span>
-                            <span class="card-subtitle">Ingresos netos, otros gastos y productos más/menos vendidos.</span>
+                            <span class="card-subtitle">Abrir página nueva con ingresos netos, gastos y productos más/menos vendidos.</span>
                         </a>
-                        <a href="permissions.php" class="menu-card">
-                            <span class="card-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="3"/><path d="M23 21v-2a4 4 0 0 0-3-3.9"/><path d="M16 3.1a3 3 0 0 1 0 5.8"/></svg></span>
-                            <span class="card-title">Permisos</span>
-                            <span class="card-subtitle">Configurar qué puede ver cada rol del sistema.</span>
+                        <?php if ($isSuperAdmin): ?>
+                        <a href="#" id="open-super-admin-tools-btn" class="menu-card">
+                            <span class="card-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.2 4.5 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5L4.8 7.2l5-.7L12 2Z"/><path d="M5 20h14"/></svg></span>
+                            <span class="card-title">Administración avanzada</span>
+                            <span class="card-subtitle">Forzar cierre de turnos colgados y generar respaldo descargable.</span>
                         </a>
+                        <?php endif; ?>
                     <?php endif; ?>
                 </div>
             </section>
@@ -960,10 +952,12 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
                 <h2 class="section-title">Gestión de turno</h2>
                 <p class="panel-note">Usa este panel para abrir o cerrar turno de forma rápida.</p>
                 <div class="shift-grid">
+                    <?php if (!$isAdmin): ?>
                     <div class="field-group">
                         <label for="initial-cash">Efectivo inicial para abrir turno</label>
                         <input id="initial-cash" class="money-input" type="text" inputmode="numeric" pattern="[0-9]*" min="0" step="1" placeholder="Ej: 50000">
                     </div>
+                    <?php endif; ?>
                     <div class="field-group">
                         <label for="final-cash">Efectivo final para cerrar turno</label>
                         <input id="final-cash" class="money-input" type="text" inputmode="numeric" pattern="[0-9]*" min="0" step="1" placeholder="Ej: 145000">
@@ -972,7 +966,6 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
                     <div class="field-group">
                         <label for="admin-shift-target">Turno para trabajar</label>
                         <select id="admin-shift-target" class="money-input" style="height:42px;">
-                            <option value="new">Crear mi propio turno</option>
                             <?php foreach ($open_shifts_for_admin as $openShift): ?>
                                 <option value="<?php echo intval($openShift['id']); ?>" <?php echo ($has_active_shift && intval($active_shift['id'] ?? 0) === intval($openShift['id'])) ? 'selected' : ''; ?>>
                                     Turno #<?php echo intval($openShift['id']); ?> · <?php echo htmlspecialchars($openShift['username']); ?>
@@ -984,7 +977,7 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
                 </div>
 
                 <div class="btn-row">
-                    <button id="start-shift-btn" class="menu-button success" <?php if ($has_active_shift) echo 'disabled'; ?>>Iniciar turno</button>
+                    <button id="start-shift-btn" class="menu-button success" <?php if (($isAdmin && empty($open_shifts_for_admin)) || (!$isAdmin && $has_active_shift)) echo 'disabled'; ?>><?php echo $isAdmin ? 'Usar turno seleccionado' : 'Iniciar turno'; ?></button>
                     <button id="end-shift-btn" class="menu-button end-blue" <?php if (!$has_active_shift) echo 'disabled'; ?>>Terminar turno</button>
                     <a href="index.php" class="menu-button secondary">Regresar al inicio</a>
                 </div>
@@ -996,7 +989,7 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
                         <p>Usa estas acciones rápidas para trabajar o cerrar un turno específico.</p>
                     </div>
                     <?php if (empty($open_shifts_for_admin)): ?>
-                        <p class="panel-note" style="margin-top:10px;">No hay turnos activos en este momento.</p>
+                        <p class="panel-note" style="margin-top:10px;">No hay turnos abiertos. Se debe abrir uno.</p>
                     <?php else: ?>
                         <div class="active-shifts-table-wrap">
                             <table class="active-shifts-table">
@@ -1137,6 +1130,36 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
             </section>
             <?php endif; ?>
 
+            <?php if ($isSuperAdmin): ?>
+            <section id="super-admin-tools-panel" class="shift-panel panel-hidden">
+                <h2 class="section-title">Panel Super Administrador</h2>
+                <p class="panel-note">Herramientas avanzadas de mantenimiento: turnos colgados, procesos incompletos y respaldo de base de datos.</p>
+
+                <div class="btn-row" style="margin-bottom: 10px;">
+                    <button id="super-refresh-shifts-btn" class="menu-button secondary" type="button">Actualizar turnos</button>
+                    <button id="super-terminate-processes-btn" class="menu-button danger" type="button">Terminar procesos incompletos</button>
+                    <a href="download_backup_api.php" class="menu-button success" target="_blank" rel="noopener noreferrer">Descargar respaldo DB</a>
+                </div>
+
+                <div class="active-shifts-table-wrap">
+                    <table class="active-shifts-table">
+                        <thead>
+                            <tr>
+                                <th>Turno</th>
+                                <th>Usuario</th>
+                                <th>Inicio</th>
+                                <th>Estado</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="super-admin-shifts-body">
+                            <tr><td colspan="5">Cargando turnos...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            <?php endif; ?>
+
             <?php if ($isAdmin): ?>
             <section id="realtime-insights-panel" class="shift-panel panel-hidden">
                 <h2 class="section-title">Resumen de Turno Actual</h2>
@@ -1203,7 +1226,6 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
 
             <div class="footer-actions">
                 <button id="end-shift-footer-btn" class="menu-button end-blue">Terminar turno</button>
-                <a href="index.php" class="menu-button pos-red">Volver al POS</a>
                 <a href="logout.php" class="menu-button danger" style="margin-left:8px;">Cerrar sesión</a>
             </div>
         </div>
@@ -1233,6 +1255,7 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
     <script>
         const hasActiveShift = <?php echo $has_active_shift ? 'true' : 'false'; ?>;
         const isAdminUser = <?php echo $isAdmin ? 'true' : 'false'; ?>;
+        const isSuperAdminUser = <?php echo $isSuperAdmin ? 'true' : 'false'; ?>;
         const selectedShiftId = <?php echo intval($active_shift['id'] ?? 0); ?>;
         const startShiftBtn = document.getElementById('start-shift-btn');
         const endShiftBtn = document.getElementById('end-shift-btn');
@@ -1245,9 +1268,14 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
         const openShiftManagerBtn = document.getElementById('open-shift-manager-btn');
         const openSecurityManagerBtn = document.getElementById('open-security-manager-btn');
         const openRealtimeInsightsBtn = document.getElementById('open-realtime-insights-btn');
+        const openSuperAdminToolsBtn = document.getElementById('open-super-admin-tools-btn');
         const shiftManagerPanel = document.getElementById('shift-manager-panel');
         const securityManagerPanel = document.getElementById('security-manager-panel');
         const realtimeInsightsPanel = document.getElementById('realtime-insights-panel');
+        const superAdminToolsPanel = document.getElementById('super-admin-tools-panel');
+        const superAdminShiftsBody = document.getElementById('super-admin-shifts-body');
+        const superRefreshShiftsBtn = document.getElementById('super-refresh-shifts-btn');
+        const superTerminateProcessesBtn = document.getElementById('super-terminate-processes-btn');
         const kpiGrossSales = document.getElementById('kpi-gross-sales');
         const kpiReturns = document.getElementById('kpi-returns');
         const kpiOtherExpenses = document.getElementById('kpi-other-expenses');
@@ -1322,9 +1350,9 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
 
         function syncAdminShiftTarget(shiftId) {
             if (!adminShiftTarget) return;
-            const targetValue = String(shiftId || 'new');
+            const targetValue = String(shiftId || '');
             const hasOption = Array.from(adminShiftTarget.options).some(option => option.value === targetValue);
-            adminShiftTarget.value = hasOption ? targetValue : 'new';
+            adminShiftTarget.value = hasOption ? targetValue : (adminShiftTarget.options[0]?.value || '');
         }
 
         async function selectShiftForWork(shiftId, showSuccessToast = true) {
@@ -1358,7 +1386,7 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
         }
 
         function showOnlyPanel(panelToShow) {
-            [shiftManagerPanel, securityManagerPanel, realtimeInsightsPanel].forEach(panel => {
+            [shiftManagerPanel, securityManagerPanel, realtimeInsightsPanel, superAdminToolsPanel].forEach(panel => {
                 if (!panel) return;
                 panel.classList.add('panel-hidden');
                 panel.classList.remove('panel-visible');
@@ -1391,6 +1419,119 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
         openRealtimeInsightsBtn?.addEventListener('click', (event) => {
             event.preventDefault();
             showOnlyPanel(realtimeInsightsPanel);
+        });
+
+        openSuperAdminToolsBtn?.addEventListener('click', (event) => {
+            event.preventDefault();
+            showOnlyPanel(superAdminToolsPanel);
+            loadSuperAdminShifts();
+        });
+
+        async function loadSuperAdminShifts() {
+            if (!isSuperAdminUser || !superAdminShiftsBody) return;
+            try {
+                const response = await fetch('super_admin_tools_api.php?action=list_shifts', { cache: 'no-store' });
+                const payload = await response.json();
+
+                if (!payload.success) {
+                    superAdminShiftsBody.innerHTML = '<tr><td colspan="5">No se pudieron cargar los turnos.</td></tr>';
+                    showToast(payload.message || 'No se pudieron cargar los turnos.', true);
+                    return;
+                }
+
+                const rows = Array.isArray(payload.data?.shifts) ? payload.data.shifts : [];
+                if (rows.length === 0) {
+                    superAdminShiftsBody.innerHTML = '<tr><td colspan="5">No hay turnos abiertos.</td></tr>';
+                    return;
+                }
+
+                superAdminShiftsBody.innerHTML = rows.map(shift => {
+                    const statusLabel = shift.is_hung ? 'Colgado' : 'Activo';
+                    const statusClass = shift.is_hung ? 'selected' : '';
+                    return `
+                        <tr>
+                            <td>#${shift.id}</td>
+                            <td>${String(shift.username || 'usuario')}</td>
+                            <td>${String(shift.start_label || '-')}</td>
+                            <td><span class="shift-chip ${statusClass}">${statusLabel}</span></td>
+                            <td>
+                                <button type="button" class="menu-button end-blue row-action-btn super-force-close-btn" data-shift-id="${shift.id}">Forzar cierre</button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (error) {
+                superAdminShiftsBody.innerHTML = '<tr><td colspan="5">Error de conexión.</td></tr>';
+                showToast('Error de conexión al cargar turnos.', true);
+            }
+        }
+
+        superAdminShiftsBody?.addEventListener('click', async (event) => {
+            const button = event.target.closest('.super-force-close-btn');
+            if (!button) return;
+
+            const shiftId = Number(button.dataset.shiftId || 0);
+            if (!shiftId) {
+                showToast('Turno inválido.', true);
+                return;
+            }
+
+            const confirmClose = await openActionModal({
+                title: `Forzar cierre turno #${shiftId}`,
+                message: 'Se cerrará el turno con efectivo final igual al efectivo inicial registrado.',
+                confirmText: 'Forzar cierre',
+                confirmDanger: true
+            });
+            if (!confirmClose.confirmed) return;
+
+            button.disabled = true;
+            try {
+                const data = await postForm('super_admin_tools_api.php', {
+                    action: 'force_close_shift',
+                    shift_id: shiftId
+                });
+                if (data.success) {
+                    showToast('Turno cerrado de forma forzada.');
+                    await loadSuperAdminShifts();
+                    return;
+                }
+                showToast(data.message || 'No se pudo forzar el cierre.', true);
+            } catch (error) {
+                showToast('Error de conexión al forzar cierre.', true);
+            } finally {
+                button.disabled = false;
+            }
+        });
+
+        superRefreshShiftsBtn?.addEventListener('click', () => {
+            loadSuperAdminShifts();
+        });
+
+        superTerminateProcessesBtn?.addEventListener('click', async () => {
+            const confirmRun = await openActionModal({
+                title: 'Terminar procesos incompletos',
+                message: 'Se cerrarán turnos colgados y se finalizarán procesos pendientes de notificación.',
+                confirmText: 'Ejecutar',
+                confirmDanger: true
+            });
+            if (!confirmRun.confirmed) return;
+
+            superTerminateProcessesBtn.disabled = true;
+            try {
+                const data = await postForm('super_admin_tools_api.php', { action: 'terminate_incomplete_processes' });
+                if (data.success) {
+                    const closed = Number(data.data?.closed_hung_shifts || 0);
+                    const finalized = Number(data.data?.finalized_notifications || 0);
+                    showToast(`Procesos incompletos finalizados. Turnos cerrados: ${closed}, notificaciones: ${finalized}.`);
+                    await loadSuperAdminShifts();
+                    return;
+                }
+                showToast(data.message || 'No se pudo ejecutar la acción.', true);
+            } catch (error) {
+                showToast('Error de conexión al terminar procesos.', true);
+            } finally {
+                superTerminateProcessesBtn.disabled = false;
+            }
         });
 
         let realtimeTimer = null;
@@ -1784,7 +1925,11 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
                 return;
             }
 
-            if (isAdminUser && adminShiftTarget && adminShiftTarget.value !== 'new') {
+            if (isAdminUser) {
+                if (!adminShiftTarget || !adminShiftTarget.value) {
+                    showToast('No hay turnos abiertos. Se debe abrir uno.', true);
+                    return;
+                }
                 startShiftBtn.disabled = true;
                 try {
                     const selected = await selectShiftForWork(adminShiftTarget.value, true);

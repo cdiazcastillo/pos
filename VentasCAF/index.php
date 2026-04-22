@@ -17,13 +17,18 @@ if ($selectedShiftId > 0) {
 }
 
 if (!$active_shift) {
-    $active_shift = $db->query("SELECT id, user_id FROM shifts WHERE user_id = ? AND status = 'open'", [$_SESSION['user_id']]);
+    if (($currentUser['role'] ?? '') === 'admin') {
+        $active_shift = $db->query("SELECT id, user_id FROM shifts WHERE status = 'open' ORDER BY start_time ASC LIMIT 1");
+    } else {
+        $active_shift = $db->query("SELECT id, user_id FROM shifts WHERE user_id = ? AND status = 'open'", [$_SESSION['user_id']]);
+    }
     if ($active_shift) {
         $_SESSION['selected_shift_id'] = intval($active_shift['id']);
     }
 }
 
 $is_shift_open = is_array($active_shift) && isset($active_shift['id']);
+$requires_shift_overlay = (!$is_shift_open) && (($currentUser['role'] ?? '') !== 'admin');
 
 // --- Fetch Products ---
 $products = $db->query(
@@ -347,12 +352,12 @@ function get_stock_semaphore_class($product) {
             margin: 0 2px;
             color: var(--muted);
             font-weight: 700;
-            font-size: 0.72rem;
+            font-size: 0.925rem;
         }
 
         .cart-item-price {
             font-weight: 700;
-            font-size: 0.78rem;
+            font-size: 0.925rem;
         }
 
         .remove-item-btn {
@@ -606,7 +611,7 @@ function get_stock_semaphore_class($product) {
 </head>
 <body ontouchstart="">
     <?php $activePage = 'pos'; include 'top-nav.php'; ?>
-    <div id="pos-container" class="<?php echo !$is_shift_open ? 'shift-closed' : ''; ?>">
+    <div id="pos-container" class="<?php echo $requires_shift_overlay ? 'shift-closed' : ''; ?>">
         <main id="sales-interface">
             <section class="products-panel">
                 <div id="product-grid">
@@ -649,7 +654,7 @@ function get_stock_semaphore_class($product) {
             </aside>
         </main>
 
-        <?php if (!$is_shift_open): ?>
+        <?php if ($requires_shift_overlay): ?>
         <div id="shift-overlay">
             <div id="start-shift-modal">
                 <h2>Iniciar Turno</h2>
