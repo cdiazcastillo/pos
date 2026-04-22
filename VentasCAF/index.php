@@ -316,33 +316,33 @@ function get_stock_semaphore_class($product) {
         .cart-item {
             display: flex;
             justify-content: flex-start;
-            gap: 4px;
-            padding: 2px 5px;
+            gap: 3px;
+            padding: 1px 4px;
             align-items: center;
-            border-radius: 7px;
+            border-radius: 6px;
             background-color: #f8faff;
             border: 1px solid #eef2fb;
-            min-height: 24px;
-            font-size: 13px;
+            min-height: 12px;
+            font-size: 12px;
         }
 
         .cart-item-name {
             flex-grow: 1;
-            font-size: 0.82rem;
+            font-size: 0.72rem;
             font-weight: 600;
-            line-height: 1.1;
+            line-height: 1.05;
         }
 
         .cart-item-qty {
-            margin: 0 4px;
+            margin: 0 2px;
             color: var(--muted);
             font-weight: 700;
-            font-size: 0.74rem;
+            font-size: 0.64rem;
         }
 
         .cart-item-price {
             font-weight: 700;
-            font-size: 0.8rem;
+            font-size: 0.7rem;
         }
 
         .remove-item-btn {
@@ -350,10 +350,10 @@ function get_stock_semaphore_class($product) {
             color: var(--danger-color);
             background: none;
             border: none;
-            font-size: 0.95rem;
+            font-size: 0.8rem;
             line-height: 1;
-            width: 20px;
-            height: 20px;
+            width: 16px;
+            height: 16px;
             padding: 0;
         }
 
