@@ -173,10 +173,12 @@ function get_stock_semaphore_class($product) {
             background-color: var(--surface);
             border: 1px solid #e8ecf8;
             border-radius: 16px;
-            display: flex;
-            flex-direction: column;
+            display: grid;
+            grid-template-rows: auto minmax(0, 1fr) auto auto;
+            row-gap: 6px;
             padding: 12px;
             min-height: 0;
+            overflow: hidden;
         }
 
         .product-card {
@@ -277,7 +279,7 @@ function get_stock_semaphore_class($product) {
         }
 
         #cart-items {
-            flex-grow: 1;
+            min-height: 0;
             overflow-y: scroll;
             padding: 6px 2px;
             display: grid;
@@ -352,14 +354,12 @@ function get_stock_semaphore_class($product) {
         #cart-summary {
             border-top: 1px solid #eef2fb;
             padding-top: 10px;
-            margin-top: auto;
             background: #fff;
         }
 
         .cart-sticky-summary {
-            position: sticky;
-            bottom: 0;
-            background: linear-gradient(180deg, rgba(255,255,255,0.92), #fff 20%);
+            position: static;
+            background: #fff;
             padding-top: 6px;
         }
 
@@ -382,7 +382,10 @@ function get_stock_semaphore_class($product) {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 8px;
-            margin-top: 12px;
+            margin-top: 0;
+            padding-top: 8px;
+            border-top: 1px solid #eef2fb;
+            background: #fff;
         }
 
         .action-btn {
@@ -502,7 +505,7 @@ function get_stock_semaphore_class($product) {
 
             #sales-interface {
                 display: grid;
-                grid-template-rows: minmax(0, 1fr) auto;
+                grid-template-rows: minmax(0, 1fr) minmax(220px, 46vh);
                 height: calc(var(--app-height) - 56px);
                 min-height: 0;
                 gap: 6px;
@@ -516,8 +519,8 @@ function get_stock_semaphore_class($product) {
 
             #cart {
                 flex: 0 0 auto;
-                min-height: 260px;
-                max-height: 42vh;
+                min-height: 0;
+                max-height: 46vh;
                 position: relative;
                 z-index: 5;
                 box-shadow: 0 -8px 20px rgba(15, 23, 42, 0.08);
@@ -533,7 +536,7 @@ function get_stock_semaphore_class($product) {
             }
 
             #cart-items {
-                max-height: 200px;
+                max-height: none;
             }
 
             .summary-row {

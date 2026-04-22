@@ -6,7 +6,7 @@ $secondaryHref = $isCashier ? 'products.php' : 'totals.php';
 $secondaryLabel = $isCashier ? 'Productos' : 'Totales';
 $secondaryActive = in_array($activePage, ['totals', 'products'], true) ? 'active' : '';
 $rightHref = $isCashier ? 'expenses.php' : 'index.php';
-$rightLabel = $isCashier ? 'Gastos' : 'POS';
+$rightLabel = 'POS';
 $rightActive = in_array($activePage, ['pos', 'expenses'], true) ? 'active' : '';
 ?>
 <style>
@@ -56,8 +56,9 @@ body {
 
     <a href="<?php echo $rightHref; ?>" class="nav-item <?php echo $rightActive; ?>">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <rect x="2.5" y="5" width="19" height="14" rx="2"/>
-            <path d="M2.5 10h19"/>
+            <rect x="3" y="6" width="18" height="12" rx="2"/>
+            <path d="M3 10h18"/>
+            <path d="M7 14h4"/>
         </svg>
         <span><?php echo $rightLabel; ?></span>
     </a>

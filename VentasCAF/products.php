@@ -297,14 +297,6 @@ $products = $db->query("SELECT * FROM products ORDER BY id ASC", [], true);
 
     <div class="container">
         <div class="sticky-top">
-            <div class="header">
-                <div class="title-wrap">
-                    <h1>Gestionar Productos</h1>
-                </div>
-                <div class="logo-column">
-                    <img src="img/logo.png" alt="Logo">
-                </div>
-            </div>
             <div class="header-actions">
                 <button id="new-product-btn" class="btn btn-primary">Crear Nuevo Producto</button>
             </div>

@@ -508,15 +508,6 @@ if ($hasActiveShift) {
 </head>
 <body>
     <?php $activePage = ''; include 'top-nav.php'; ?>
-    <header class="header">
-        <div class="header-content">
-            <h1>Otros Gastos</h1>
-            <div class="header-buttons">
-                <a href="logout.php" class="btn btn-secondary">Cerrar sesión</a>
-            </div>
-        </div>
-    </header>
-
     <main class="main">
         <div class="page-title">Otros gastos rápidos</div>
 
