@@ -4,7 +4,7 @@
 $servername = "localhost";
 $username = "root";
 $password = "";
-$dbname = "ventascaf_db";
+$dbname = "ventas_db";
 
 try {
     $pdo = new PDO("mysql:host=$servername", $username, $password);
@@ -94,7 +94,7 @@ try {
     $stmt->execute([$admin_user, $password_hash]);
 
     $products = [
-        ['Café Americano', 3, 50, 10],
+        ['Americano', 3, 50, 10],
         ['Latte', 4, 30, 10],
         ['Croissant', 2, 15, 5],
         ['Jugo de Naranja', 3, 20, 5],

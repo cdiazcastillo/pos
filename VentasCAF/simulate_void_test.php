@@ -96,7 +96,7 @@ try {
         $stmt->execute([$user_id, $admin_user, $password_hash]);
 
         $products = [
-            ['Café Americano', 3, 50, 10], ['Latte', 4, 30, 10], ['Croissant', 2, 15, 5],
+            ['Americano', 3, 50, 10], ['Latte', 4, 30, 10], ['Croissant', 2, 15, 5],
             ['Jugo de Naranja', 3, 20, 5], ['Sandwich de Pavo', 6, 5, 2], ['Té Verde', 2, 40, 10],
             ['Muffin de Arándanos', 3, 12, 5], ['Agua Mineral', 2, 0, 10],
         ];
@@ -119,11 +119,11 @@ try {
 
 
     // --- Step 3: Create a Sale ---
-    $product_id_1 = 1; // Café Americano, price 3
+    $product_id_1 = 1; // Americano, price 3
     $product_id_2 = 2; // Latte, price 4
     $product_id_3 = 3; // Croissant, price 2
 
-    $sale_total = 3 + 4 + 2; // Café, Latte, Croissant
+    $sale_total = 3 + 4 + 2; // Americano, Latte, Croissant
     $sale_method = 'cash';
 
     $db->execute("INSERT INTO sales (shift_id, total_amount, payment_method, status) VALUES (?, ?, ?, 'completed')", [$shift_id, $sale_total, $sale_method]);

@@ -36,6 +36,7 @@ $items = $db->query(
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Procesar Devolución - Venta #<?php echo $sale_id; ?></title>
+    <link rel="stylesheet" href="styles.css">
     <style>
         :root {
             --primary-color: #007bff;
@@ -216,6 +217,7 @@ $items = $db->query(
     </style>
 </head>
 <body>
+    <?php $activePage = 'history'; include 'top-nav.php'; ?>
 
     <div class="container">
         <div class="sticky-top">

@@ -11,6 +11,7 @@ $products = $db->query("SELECT * FROM products ORDER BY id ASC", [], true);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestionar Productos - 4 Básico A</title>
+    <link rel="stylesheet" href="styles.css">
     <style>
         :root {
             --primary-color: #7c3aed;
@@ -295,6 +296,7 @@ $products = $db->query("SELECT * FROM products ORDER BY id ASC", [], true);
     </style>
 </head>
 <body>
+    <?php $activePage = 'admin'; include 'top-nav.php'; ?>
 
     <div class="container">
         <div class="sticky-top">

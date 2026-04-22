@@ -30,7 +30,7 @@ class Database {
     private function __construct() {
         // Asignar los valores desde las variables de entorno
         self::$host = self::env('DB_HOST', 'localhost');
-        self::$dbname = self::env('DB_NAME', 'ventascaf_db');
+        self::$dbname = self::env('DB_NAME', 'ventas_db');
         self::$username = self::env('DB_USER', 'root');
         self::$password = self::env('DB_PASS', '');
         self::$port = self::env('DB_PORT', '3306');
@@ -171,7 +171,7 @@ class Database {
 
     public static function getDbname() {
         require_once __DIR__ . '/bootstrap.php';
-        return self::env('DB_NAME', 'ventascaf_db');
+        return self::env('DB_NAME', 'ventas_db');
     }
 
     public static function getUsername() {

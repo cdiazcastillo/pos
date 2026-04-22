@@ -58,6 +58,7 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Menú de Administración - 4 Básico A</title>
     <base href="<?php echo htmlspecialchars($baseHref, ENT_QUOTES, 'UTF-8'); ?>">
+    <link rel="stylesheet" href="styles.css">
     <style>
         :root {
             --primary-color: #3457dc;
@@ -865,6 +866,7 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
     </style>
 </head>
 <body>
+    <?php $activePage = 'admin'; include 'top-nav.php'; ?>
     <div class="admin-container">
         <div class="admin-header">
             <div class="logo-spotlight">

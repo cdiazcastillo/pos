@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             --bg-app: #f3f0ff;
             --bg-card: #ffffff;
             --text-dark: #1e1b4b;
-            --text-muted: #6b7280;
+            --text-muted: #4b5563;
             --danger: #dc2626;
             --success: #16a34a;
             --blue: #2563eb;
@@ -61,6 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-family: -apple-system, BlinkMacSystemFont, "Inter", "Poppins", "Segoe UI", Roboto, Arial, sans-serif;
             background: var(--bg-app);
             color: var(--text-dark);
+            overflow-x: hidden;
         }
 
         .app {
@@ -73,8 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             position: sticky;
             top: 0;
             z-index: 10;
-            background: rgba(124, 58, 237, 0.94);
-            backdrop-filter: blur(4px);
+            background: #6d28d9;
             padding: 10px 12px;
             display: flex;
             gap: 8px;
@@ -121,7 +121,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             text-transform: uppercase;
             letter-spacing: 0.08em;
             font-weight: 800;
-            color: var(--text-muted);
+            color: #4b5563;
             margin-bottom: 8px;
         }
 
@@ -131,10 +131,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             margin-bottom: 10px;
         }
 
-        .logo-wrap img {
-            width: min(280px, 78vw);
-            height: auto;
-            object-fit: contain;
+        .logo-badge {
+            inline-size: 4rem;
+            block-size: 4rem;
+            border-radius: 50%;
+            background: rgba(124, 58, 237, 0.12);
+            color: var(--primary);
+            display: grid;
+            place-items: center;
+            font-size: 1.2rem;
+            font-weight: 800;
         }
 
         .big-number {
@@ -168,6 +174,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             background: var(--success);
             color: #fff;
             margin-top: 10px;
+            width: 100%;
+            min-height: 2.75rem;
+            border: none;
+            border-radius: 0.875rem;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .error {
@@ -192,11 +209,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <a href="logout.php" class="nav-btn logout">Cerrar sesión</a>
         </div>
 
-        <div class="wrap">
+        <main class="wrap">
         <form class="card" method="POST" autocomplete="off" novalidate>
             <div class="label">Acceso rápido</div>
             <div class="logo-wrap">
-                <img src="img/logo.png" alt="Logo 4 Básico A">
+                <div class="logo-badge" aria-hidden="true">VD</div>
             </div>
             <div class="big-number">Vendedor</div>
             <button type="submit" class="btn btn-primary">Iniciar Ventas</button>
@@ -205,7 +222,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="error"><?php echo htmlspecialchars($error); ?></div>
             <?php endif; ?>
         </form>
-        </div>
+        </main>
     </div>
 </body>
 </html>

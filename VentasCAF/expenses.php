@@ -44,7 +44,8 @@ $basePath = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Otros Gastos - VentasCAF POS</title>
+    <title>Otros Gastos - POS</title>
+    <link rel="stylesheet" href="styles.css">
     <style>
         * {
             box-sizing: border-box;
@@ -499,6 +500,7 @@ $basePath = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
     </style>
 </head>
 <body>
+    <?php $activePage = ''; include 'top-nav.php'; ?>
     <header class="header">
         <div class="header-content">
             <h1>Otros Gastos</h1>

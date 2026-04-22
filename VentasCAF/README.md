@@ -107,7 +107,7 @@ También puedes abrir directamente `index.php`: si no hay sesión activa, rediri
 
 ### Usuarios por defecto (instalación nueva)
 
-- Admin: `admin` / `franenro_admincaf123`
+- Admin: `admin` / `franenro_admin123`
 - Vendedor (principal): `ventas` / `ventas123`
 - Vendedor (compatibilidad): `vendedor` / `vendedor123`
 

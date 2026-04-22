@@ -49,6 +49,7 @@ $allPermissions = $db->query(
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Permisos - POS</title>
+    <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="style.css">
     <style>
         :root {
@@ -308,6 +309,7 @@ $allPermissions = $db->query(
     </style>
 </head>
 <body>
+    <?php $activePage = 'admin'; include 'top-nav.php'; ?>
     <div class="sticky-top">
         <h2>Gestión de Permisos</h2>
         <a href="admin.php" class="back-link">← Volver al Panel</a>

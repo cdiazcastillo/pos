@@ -70,6 +70,7 @@ function get_stock_semaphore_class($product) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>4 Básico A - Punto de Venta</title>
     <base href="<?php echo htmlspecialchars($baseHref, ENT_QUOTES, 'UTF-8'); ?>">
+    <link rel="stylesheet" href="styles.css">
     <link rel="apple-touch-icon" href="img/logo.png">
     <style>
         :root {
@@ -579,6 +580,7 @@ function get_stock_semaphore_class($product) {
     </style>
 </head>
 <body ontouchstart="">
+    <?php $activePage = 'pos'; include 'top-nav.php'; ?>
     <div id="pos-container" class="<?php echo !$is_shift_open ? 'shift-closed' : ''; ?>">
         <main id="sales-interface">
             <section class="products-panel">

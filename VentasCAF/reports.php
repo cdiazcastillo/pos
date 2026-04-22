@@ -8,6 +8,7 @@ $currentUser = auth_require_role(['admin'], 'admin_login.php', 'index.php');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reportes de Turno</title>
+    <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="reports.css">
     <style>
@@ -22,6 +23,7 @@ $currentUser = auth_require_role(['admin'], 'admin_login.php', 'index.php');
     </style>
 </head>
 <body>
+    <?php $activePage = 'admin'; include 'top-nav.php'; ?>
     <div class="container">
         <div class="sticky-top">
             <div class="header">

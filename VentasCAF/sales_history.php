@@ -146,6 +146,7 @@ function format_payment_method($method) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Historial de Ventas - 4 Básico A</title>
+    <link rel="stylesheet" href="styles.css">
     <style>
         :root {
             --primary-color: #7c3aed; --secondary-color: #6b7280; --danger-color: #fb7185;
@@ -312,6 +313,7 @@ function format_payment_method($method) {
     </style>
 </head>
 <body>
+    <?php $activePage = 'history'; include 'top-nav.php'; ?>
     <div class="container">
         <div class="sticky-top">
             <div class="header">
