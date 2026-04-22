@@ -85,6 +85,8 @@ function get_stock_semaphore_class($product) {
             --surface-soft: #f8faff;
             --dark-gray: #111827;
             --muted: #6b7280;
+            --cart-row-height: 28px;
+            --cart-row-gap: 2px;
             --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
 
@@ -175,7 +177,7 @@ function get_stock_semaphore_class($product) {
             border-radius: 16px;
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 2px;
             padding: 12px;
             min-height: 0;
             overflow: hidden;
@@ -271,26 +273,31 @@ function get_stock_semaphore_class($product) {
         }
 
         .cart-header {
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            border-bottom: 1px solid #eef2fb;
-            padding: 2px 4px 8px;
+            display: none;
         }
 
         #cart-items {
-            flex: 1 1 auto;
+            flex: 0 0 auto;
             min-height: 0;
             overflow-y: auto;
-            padding: 2px 0;
+            padding: 0;
             display: grid;
-            gap: 2px;
+            gap: var(--cart-row-gap);
+            height: calc((var(--cart-row-height) * 4) + (var(--cart-row-gap) * 3));
+            max-height: calc((var(--cart-row-height) * 4) + (var(--cart-row-gap) * 3));
             scrollbar-gutter: stable;
             scrollbar-width: auto;
             scrollbar-color: #9db0f6 #eef2fb;
             -webkit-overflow-scrolling: touch;
             touch-action: pan-y;
             overscroll-behavior-y: contain;
+        }
+
+        #cart-items:empty {
+            display: none;
+            height: 0;
+            max-height: 0;
+            overflow: hidden;
         }
 
         #product-grid::-webkit-scrollbar,
@@ -320,32 +327,32 @@ function get_stock_semaphore_class($product) {
             display: flex;
             justify-content: flex-start;
             gap: 3px;
-            padding: 1px 4px;
+            padding: 2px 5px;
             align-items: center;
             border-radius: 6px;
             background-color: #f8faff;
             border: 1px solid #eef2fb;
-            min-height: 12px;
-            font-size: 12px;
+            min-height: var(--cart-row-height);
+            font-size: 13px;
         }
 
         .cart-item-name {
             flex-grow: 1;
-            font-size: 0.72rem;
+            font-size: 0.925rem;
             font-weight: 600;
-            line-height: 1.05;
+            line-height: 1.12;
         }
 
         .cart-item-qty {
             margin: 0 2px;
             color: var(--muted);
             font-weight: 700;
-            font-size: 0.64rem;
+            font-size: 0.72rem;
         }
 
         .cart-item-price {
             font-weight: 700;
-            font-size: 0.7rem;
+            font-size: 0.78rem;
         }
 
         .remove-item-btn {
@@ -362,14 +369,15 @@ function get_stock_semaphore_class($product) {
 
         #cart-summary {
             border-top: 1px solid #eef2fb;
-            padding-top: 10px;
+            padding-top: 2px;
             background: #fff;
+            margin-top: 0;
         }
 
         .cart-sticky-summary {
             position: static;
             background: #fff;
-            padding-top: 6px;
+            padding-top: 0;
         }
 
         .summary-row {
@@ -382,8 +390,8 @@ function get_stock_semaphore_class($product) {
             font-weight: 800;
             font-size: 1.2rem;
             border-top: 2px solid #cfd8f7;
-            padding-top: 8px;
-            margin-top: 5px;
+            padding-top: 2px;
+            margin-top: 0;
             color: var(--primary-dark);
         }
 
@@ -392,7 +400,7 @@ function get_stock_semaphore_class($product) {
             grid-template-columns: repeat(3, 1fr);
             gap: 6px;
             margin-top: 0;
-            padding-top: 6px;
+            padding-top: 2px;
             border-top: 1px solid #eef2fb;
             background: #fff;
             position: static;
@@ -548,7 +556,8 @@ function get_stock_semaphore_class($product) {
 
             #cart-items {
                 min-height: 0;
-                max-height: none;
+                height: calc((var(--cart-row-height) * 4) + (var(--cart-row-gap) * 3));
+                max-height: calc((var(--cart-row-height) * 4) + (var(--cart-row-gap) * 3));
             }
 
             .summary-row {
@@ -625,8 +634,7 @@ function get_stock_semaphore_class($product) {
             <aside id="cart">
                 <div class="cart-header">
                 </div>
-                <div id="cart-items">
-                </div>
+                <div id="cart-items"></div>
                 <div id="cart-summary" class="cart-sticky-summary">
                     <div class="summary-row total">
                         <span>Total:</span>

@@ -6,7 +6,7 @@ $secondaryHref = $isCashier ? 'products.php' : 'totals.php';
 $secondaryLabel = $isCashier ? 'Productos' : 'Totales';
 $secondaryActive = in_array($activePage, ['totals', 'products'], true) ? 'active' : '';
 $rightHref = $isCashier ? 'expenses.php' : 'index.php';
-$rightLabel = 'POS';
+$rightLabel = 'Gastos';
 $rightActive = in_array($activePage, ['pos', 'expenses'], true) ? 'active' : '';
 ?>
 <style>

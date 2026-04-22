@@ -78,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         .card {
-            width: min(460px, 100%);
+            width: min(760px, 100%);
             background: var(--bg-card);
             border-radius: 24px;
             padding: 20px;
@@ -93,10 +93,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         .logo-image {
-            width: 500px;
-            height: 500px;
-            max-width: 90vw;
-            max-height: 60vh;
+            width: min(560px, 94vw);
+            height: min(560px, 94vw);
             object-fit: contain;
             border-radius: 1.1rem;
             background: #fff;
@@ -152,7 +150,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         @media (max-width: 520px) {
             .card { border-radius: 20px; padding: 16px; }
-            .logo-image { width: 128px; height: 128px; }
         }
     </style>
 </head>

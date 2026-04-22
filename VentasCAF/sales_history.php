@@ -333,15 +333,6 @@ function format_payment_method($method) {
     <?php $activePage = 'history'; include 'top-nav.php'; ?>
     <div class="container">
         <div class="sticky-top">
-            <div class="header">
-                <div class="title-wrap">
-                    <h1>Historial de Ventas</h1>
-                </div>
-                <div class="logo-column">
-                    <img src="img/logo.png" alt="Logo">
-                </div>
-            </div>
-
             <div class="filters-wrap">
                 <div class="filter-buttons">
                     <a href="sales_history.php?filter=all" class="filter-btn <?php if ($filter === 'all') echo 'active'; ?>">Todos</a>
