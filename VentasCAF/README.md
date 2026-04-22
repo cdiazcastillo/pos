@@ -100,8 +100,18 @@ Este proyecto usa rutas relativas (`products.php`, `start_shift_api.php`, etc.),
 
 ### 5) Acceder al sistema
 
-- POS: `https://tu-dominio.com/4a/index.php`
-- Admin: `https://tu-dominio.com/4a/admin.php`
+- Vendedor (POS): `https://tu-dominio.com/4a/vendedor_login.php`
+- Admin: `https://tu-dominio.com/4a/admin_login.php`
+
+También puedes abrir directamente `index.php`: si no hay sesión activa, redirige al acceso de vendedor.
+
+### Usuarios por defecto (instalación nueva)
+
+- Admin: `admin` / `franenro_admincaf123`
+- Vendedor (principal): `ventas` / `ventas123`
+- Vendedor (compatibilidad): `vendedor` / `vendedor123`
+
+Se recomienda cambiar ambas claves tras instalar.
 
 ## Notas
 
@@ -156,6 +166,21 @@ También puedes usar el botón **Reintentar fallidos**, que llama a:
 
 - `retry_notifications_api.php`
 
+### Monitores útiles agregados
+
+`monitor.php` ahora incluye un bloque adicional de monitores en tiempo real con:
+
+- Ingreso neto del día (ventas - devoluciones - otros gastos).
+- Otros gastos del día, ticket promedio y ventas de la última hora.
+- Alertas de stock bajo/sin stock.
+- Top productos vendidos del día.
+- Últimos otros gastos registrados.
+- Tendencia neta de los últimos 7 días.
+
+Endpoint interno usado por esta sección:
+
+- `get_monitor_summary_api.php`
+
 ## Reinicio operativo (cerrar turnos y partir desde cero)
 
 Desde `admin.php` tienes el bloque **Reinicio operativo (día nuevo)** para:
@@ -171,8 +196,21 @@ Desde `admin.php` tienes el bloque **Reinicio operativo (día nuevo)** para:
 1. Entra a `https://tu-dominio.com/4a/admin.php`
 2. (Opcional) Ingresa el efectivo inicial del nuevo turno.
 3. Pulsa **Cerrar turnos y reiniciar ventas**.
-4. Escribe `REINICIAR` cuando se solicite confirmación.
+4. Ingresa la clave de seguridad `250012` y confirma la acción.
 
 ### Endpoint usado
 
 - `reset_operations_api.php` (requiere sesión activa y usuario con rol `admin`).
+
+## Insights en tiempo real en Admin
+
+Dentro de `admin.php` ahora tienes el acceso **Insights en tiempo real**, donde puedes:
+
+- Ver ingresos netos con descuento de **otros gastos**.
+- Registrar **nota + monto** de otros gastos (se descuentan automáticamente).
+- Revisar ranking de **productos más vendidos** y **menos vendidos**.
+- Actualización automática cada 15 segundos.
+
+Endpoint usado para el panel:
+
+- `get_admin_realtime_summary_api.php`

@@ -1,11 +1,7 @@
 <?php
-session_start();
-require_once 'config/db.php';
+require_once 'includes/auth.php';
+$currentUser = auth_require_role(['admin'], 'admin_login.php', 'index.php');
 require_once 'includes/notification_helper.php';
-
-if (!isset($_SESSION['user_id'])) {
-    die('Acceso denegado. Por favor, inicie sesión.');
-}
 
 $db = Database::getInstance();
 $conn = $db->getConnection();
@@ -78,7 +74,7 @@ function format_clp_local($amount) {
             font-family: var(--font);
             background: var(--bg);
             color: var(--dark);
-            padding: 18px;
+            padding: 10px;
         }
 
         .container {
@@ -92,12 +88,20 @@ function format_clp_local($amount) {
             background: linear-gradient(135deg, var(--primary), #4f46e5);
             color: #fff;
             border-radius: 14px;
-            padding: 16px;
+            padding: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             gap: 10px;
             flex-wrap: wrap;
+        }
+
+        .sticky-top {
+            position: sticky;
+            top: 0;
+            z-index: 90;
+            background: var(--bg);
+            padding: 2px 0 8px;
         }
 
         .header h1 { margin: 0; font-size: 1.3rem; }
@@ -117,6 +121,16 @@ function format_clp_local($amount) {
         }
 
         .btn.secondary { background: #374151; border-color: #374151; }
+
+                .logo-column img {
+                    width: 62px;
+                    height: 62px;
+                    object-fit: contain;
+                    border-radius: 10px;
+                    border: 1px solid rgba(255,255,255,0.45);
+                    padding: 4px;
+                    background: rgba(255,255,255,0.14);
+                }
 
         .grid {
             display: grid;
@@ -143,6 +157,95 @@ function format_clp_local($amount) {
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 14px;
+        }
+
+        .monitor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 10px;
+        }
+
+        .metric-card {
+            background: #f9fbff;
+            border: 1px solid #e4e8f7;
+            border-radius: 10px;
+            padding: 12px;
+        }
+
+        .metric-label {
+            margin: 0;
+            font-size: 0.82rem;
+            color: var(--muted);
+            font-weight: 700;
+        }
+
+        .metric-value {
+            margin: 8px 0 0;
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--dark);
+        }
+
+        .monitor-panels {
+            margin-top: 12px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 10px;
+        }
+
+        .subpanel {
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            background: #fff;
+            padding: 12px;
+        }
+
+        .subpanel h3 {
+            margin: 0 0 8px;
+            font-size: 0.92rem;
+        }
+
+        .list-clean {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: grid;
+            gap: 7px;
+        }
+
+        .list-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            align-items: center;
+            border-bottom: 1px solid #f1f3f9;
+            padding-bottom: 6px;
+            font-size: 0.84rem;
+        }
+
+        .list-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .mini-badge {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            padding: 3px 8px;
+            font-size: 0.74rem;
+            font-weight: 700;
+            background: #eef2ff;
+            color: #334155;
+        }
+
+        .mini-badge.warn { background: #ffedd5; color: #9a3412; }
+        .mini-badge.danger { background: #fee2e2; color: #991b1b; }
+
+        .tiny-muted {
+            margin: 8px 0 0;
+            color: var(--muted);
+            font-size: 0.8rem;
         }
 
         .panel-head {
@@ -217,15 +320,20 @@ function format_clp_local($amount) {
 </head>
 <body>
     <div class="container">
-        <header class="header">
-            <div>
-                <h1>Control Operativo Resumido</h1>
-                <p>Puntos clave del día y monitoreo de correos de cierre.</p>
-            </div>
-            <div class="actions">
-                <a href="admin.php" class="btn secondary">Volver a Admin</a>
-            </div>
-        </header>
+        <div class="sticky-top">
+            <header class="header">
+                <div>
+                    <h1>Control Operativo Resumido</h1>
+                    <p>Puntos clave del día y monitoreo de correos de cierre.</p>
+                </div>
+                <div class="logo-column">
+                    <img src="img/logo.png" alt="Logo">
+                </div>
+                <div class="actions">
+                    <a href="index.php" class="btn secondary">Regresar al POS</a>
+                </div>
+            </header>
+        </div>
 
         <section class="grid">
             <article class="card">
@@ -252,6 +360,83 @@ function format_clp_local($amount) {
                 <div class="label">Correos con fallo</div>
                 <div class="value danger"><?php echo intval($notifications_summary['failed_total'] ?? 0); ?></div>
             </article>
+        </section>
+
+        <section class="panel">
+            <div class="panel-head">
+                <div>
+                    <h2>Monitores útiles en tiempo real</h2>
+                    <p>Indicadores financieros, stock crítico, top productos y tendencia semanal.</p>
+                </div>
+            </div>
+
+            <div class="monitor-grid">
+                <article class="metric-card">
+                    <p class="metric-label">Ingreso neto hoy</p>
+                    <p class="metric-value" id="metric-net-income">$0</p>
+                </article>
+                <article class="metric-card">
+                    <p class="metric-label">Otros gastos hoy</p>
+                    <p class="metric-value danger" id="metric-other-expenses">$0</p>
+                </article>
+                <article class="metric-card">
+                    <p class="metric-label">Ticket promedio hoy</p>
+                    <p class="metric-value" id="metric-avg-ticket">$0</p>
+                </article>
+                <article class="metric-card">
+                    <p class="metric-label">Ventas última hora</p>
+                    <p class="metric-value" id="metric-last-hour">0</p>
+                </article>
+                <article class="metric-card">
+                    <p class="metric-label">Productos stock bajo</p>
+                    <p class="metric-value warn" id="metric-low-stock">0</p>
+                </article>
+                <article class="metric-card">
+                    <p class="metric-label">Productos sin stock</p>
+                    <p class="metric-value danger" id="metric-out-stock">0</p>
+                </article>
+            </div>
+
+            <div class="monitor-panels">
+                <div class="subpanel">
+                    <h3>Alertas de stock</h3>
+                    <ul id="stock-alerts-list" class="list-clean">
+                        <li class="list-row"><span>Cargando alertas...</span></li>
+                    </ul>
+                </div>
+                <div class="subpanel">
+                    <h3>Productos top del día</h3>
+                    <ul id="top-products-list" class="list-clean">
+                        <li class="list-row"><span>Cargando ranking...</span></li>
+                    </ul>
+                </div>
+                <div class="subpanel">
+                    <h3>Últimos otros gastos</h3>
+                    <ul id="latest-expenses-list" class="list-clean">
+                        <li class="list-row"><span>Cargando gastos...</span></li>
+                    </ul>
+                </div>
+                <div class="subpanel">
+                    <h3>Método de pago hoy</h3>
+                    <ul id="payment-mix-list" class="list-clean">
+                        <li class="list-row"><span>Cargando distribución...</span></li>
+                    </ul>
+                </div>
+                <div class="subpanel">
+                    <h3>Tendencia neta (7 días)</h3>
+                    <ul id="trend-list" class="list-clean">
+                        <li class="list-row"><span>Cargando tendencia...</span></li>
+                    </ul>
+                </div>
+                <div class="subpanel">
+                    <h3>Estado de turno abierto</h3>
+                    <ul id="open-shift-list" class="list-clean">
+                        <li class="list-row"><span>Sin datos todavía...</span></li>
+                    </ul>
+                </div>
+            </div>
+
+            <p id="monitor-updated-at" class="tiny-muted">Actualizando monitores...</p>
         </section>
 
         <section class="panel">
@@ -307,12 +492,131 @@ function format_clp_local($amount) {
     <script>
         const retryBtn = document.getElementById('retry-btn');
         const toast = document.getElementById('toast');
+        const metricNetIncome = document.getElementById('metric-net-income');
+        const metricOtherExpenses = document.getElementById('metric-other-expenses');
+        const metricAvgTicket = document.getElementById('metric-avg-ticket');
+        const metricLastHour = document.getElementById('metric-last-hour');
+        const metricLowStock = document.getElementById('metric-low-stock');
+        const metricOutStock = document.getElementById('metric-out-stock');
+        const stockAlertsList = document.getElementById('stock-alerts-list');
+        const topProductsList = document.getElementById('top-products-list');
+        const latestExpensesList = document.getElementById('latest-expenses-list');
+        const paymentMixList = document.getElementById('payment-mix-list');
+        const trendList = document.getElementById('trend-list');
+        const openShiftList = document.getElementById('open-shift-list');
+        const monitorUpdatedAt = document.getElementById('monitor-updated-at');
+
+        function formatClp(value) {
+            return `$${Number(value || 0).toLocaleString('es-CL')}`;
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function formatDateLocal(value) {
+            if (!value) return '-';
+            const parsed = new Date(String(value).replace(' ', 'T'));
+            if (Number.isNaN(parsed.getTime())) return String(value);
+            return parsed.toLocaleString('es-CL');
+        }
+
+        function elapsedTextSince(value) {
+            if (!value) return 'Sin turnos abiertos';
+            const start = new Date(String(value).replace(' ', 'T'));
+            if (Number.isNaN(start.getTime())) return 'Sin datos de inicio';
+            const diffMs = Date.now() - start.getTime();
+            const totalMinutes = Math.max(0, Math.floor(diffMs / 60000));
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = totalMinutes % 60;
+            return `${hours}h ${minutes}m abierto`;
+        }
 
         function showToast(message) {
             toast.textContent = message;
             toast.classList.add('show');
             setTimeout(() => toast.classList.remove('show'), 2600);
         }
+
+        function renderList(container, items, emptyText) {
+            if (!container) return;
+            if (!Array.isArray(items) || items.length === 0) {
+                container.innerHTML = `<li class="list-row"><span>${emptyText}</span></li>`;
+                return;
+            }
+            container.innerHTML = items.join('');
+        }
+
+        async function loadMonitorSummary() {
+            try {
+                const response = await fetch('get_monitor_summary_api.php', { cache: 'no-store' });
+                const payload = await response.json();
+                if (!payload.success) {
+                    showToast(payload.message || 'No se pudieron cargar los monitores.');
+                    return;
+                }
+
+                const data = payload.data || {};
+                const kpis = data.kpis || {};
+                const paymentMix = data.payment_mix_today || {};
+
+                metricNetIncome.textContent = formatClp(kpis.net_income_today || 0);
+                metricOtherExpenses.textContent = formatClp(kpis.other_expenses_today || 0);
+                metricAvgTicket.textContent = formatClp(kpis.avg_ticket_today || 0);
+                metricLastHour.textContent = Number(kpis.sales_last_hour || 0).toLocaleString('es-CL');
+                metricLowStock.textContent = Number(kpis.low_stock_count || 0).toLocaleString('es-CL');
+                metricOutStock.textContent = Number(kpis.out_stock_count || 0).toLocaleString('es-CL');
+
+                const stockAlertsRows = (data.stock_alerts || []).map(item => {
+                    const stock = Number(item.stock_level || 0);
+                    const warning = Number(item.min_stock_warning || 0);
+                    const badgeClass = stock <= 0 ? 'danger' : 'warn';
+                    const badgeText = stock <= 0 ? 'Sin stock' : 'Bajo stock';
+                    return `<li class="list-row"><span>${escapeHtml(item.name)} (${stock}/${warning})</span><span class="mini-badge ${badgeClass}">${badgeText}</span></li>`;
+                });
+                renderList(stockAlertsList, stockAlertsRows, 'Sin alertas de stock.');
+
+                const topProductsRows = (data.top_products_today || []).map(item => (
+                    `<li class="list-row"><span>${escapeHtml(item.name)}</span><strong>${Number(item.sold_qty || 0).toLocaleString('es-CL')} uds</strong></li>`
+                ));
+                renderList(topProductsList, topProductsRows, 'No hay ventas hoy para ranking.');
+
+                const latestExpensesRows = (data.latest_other_expenses || []).map(item => (
+                    `<li class="list-row"><span>${escapeHtml(item.description)}</span><strong>${formatClp(item.amount || 0)}</strong></li>`
+                ));
+                renderList(latestExpensesList, latestExpensesRows, 'Sin otros gastos registrados.');
+
+                const paymentMixRows = [
+                    `<li class="list-row"><span>Efectivo</span><strong>${formatClp(paymentMix.cash?.amount || 0)} (${Number(paymentMix.cash?.qty || 0).toLocaleString('es-CL')})</strong></li>`,
+                    `<li class="list-row"><span>Transferencia</span><strong>${formatClp(paymentMix.transfer?.amount || 0)} (${Number(paymentMix.transfer?.qty || 0).toLocaleString('es-CL')})</strong></li>`
+                ];
+                renderList(paymentMixList, paymentMixRows, 'Sin datos de método de pago.');
+
+                const trendRows = (data.activity_trend_7d || []).map(item => (
+                    `<li class="list-row"><span>${escapeHtml(item.day)}</span><strong>${formatClp(item.net || 0)}</strong></li>`
+                ));
+                renderList(trendList, trendRows, 'Sin actividad suficiente para tendencia.');
+
+                const shiftRows = [
+                    `<li class="list-row"><span>Turnos abiertos</span><strong>${Number(kpis.open_shifts || 0).toLocaleString('es-CL')}</strong></li>`,
+                    `<li class="list-row"><span>Duración estimada</span><strong>${escapeHtml(elapsedTextSince(kpis.open_shift_earliest_start || null))}</strong></li>`,
+                    `<li class="list-row"><span>Inicio más antiguo</span><strong>${escapeHtml(formatDateLocal(kpis.open_shift_earliest_start || null))}</strong></li>`
+                ];
+                renderList(openShiftList, shiftRows, 'Sin información de turnos abiertos.');
+
+                monitorUpdatedAt.textContent = `Monitores actualizados: ${formatDateLocal(data.updated_at || null)}`;
+            } catch (error) {
+                showToast('Error de conexión cargando monitores.');
+            }
+        }
+
+        loadMonitorSummary();
+        setInterval(loadMonitorSummary, 20000);
 
         retryBtn.addEventListener('click', async () => {
             retryBtn.disabled = true;

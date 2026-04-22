@@ -1,9 +1,6 @@
 <?php
-session_start();
-if (!isset($_SESSION['user_id'])) {
-    header('Location: index.php');
-    exit;
-}
+require_once 'includes/auth.php';
+$currentUser = auth_require_role(['admin'], 'admin_login.php', 'index.php');
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -28,7 +25,7 @@ if (!isset($_SESSION['user_id'])) {
             background-color: var(--light-gray);
             color: var(--dark-gray);
             margin: 0;
-            padding: 20px;
+            padding: 12px;
         }
         .container {
             max-width: 1200px;
@@ -37,29 +34,49 @@ if (!isset($_SESSION['user_id'])) {
             box-shadow: none;
             padding: 0;
         }
+        .sticky-top {
+            position: sticky;
+            top: 0;
+            z-index: 90;
+            background: var(--light-gray);
+            padding: 6px 0 10px;
+            margin-bottom: 8px;
+        }
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
             flex-wrap: wrap;
-            gap: 20px;
+            gap: 10px;
+        }
+        .title-wrap { display: flex; align-items: center; gap: 10px; }
+        .logo-column img {
+            width: 66px;
+            height: 66px;
+            object-fit: contain;
+            border-radius: 10px;
+            border: 1px solid #dbe4ff;
+            background: #fff;
+            padding: 4px;
         }
         h1 {
             margin: 0;
             color: var(--dark-gray);
+            font-size: 1.15rem;
         }
+        .top-menu-row { display: flex; justify-content: center; gap: 8px; }
         .btn {
-            padding: 10px 15px;
+            padding: 8px 12px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             text-decoration: none;
-            font-size: 1rem;
+            font-size: 0.92rem;
             font-weight: 600;
             color: white !important;
             display: inline-block;
             text-align: center;
+            white-space: nowrap;
         }
         .btn-secondary {
             background-color: var(--secondary-color) !important;
@@ -100,10 +117,18 @@ if (!isset($_SESSION['user_id'])) {
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <img src="img/logo.png" alt="Logo" style="max-width: 100px;">
-            <h1>Ventas Totales</h1>
-            <a href="admin.php" class="btn btn-secondary">Volver al menu</a>
+        <div class="sticky-top">
+            <div class="header">
+                <div class="title-wrap">
+                    <h1>Ventas Totales</h1>
+                </div>
+                <div class="logo-column">
+                    <img src="img/logo.png" alt="Logo">
+                </div>
+            </div>
+            <div class="top-menu-row">
+                <a href="index.php" class="btn btn-secondary">Regresar al POS</a>
+            </div>
         </div>
 
         <div id="dashboard-grid">

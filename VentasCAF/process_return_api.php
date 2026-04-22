@@ -1,8 +1,8 @@
 <?php
 header('Content-Type: application/json');
 
-session_start();
-require_once 'config/db.php';
+require_once 'includes/auth.php';
+auth_require_api_role(['admin']);
 
 // Define the master key for overrides. In a real app, this should be in a config file.
 define('MASTER_KEY', '1234');
@@ -10,12 +10,6 @@ define('MASTER_KEY', '1234');
 $response = ['success' => false, 'message' => 'An unknown error occurred.'];
 
 // 1. Authentication & Input Validation
-if (!isset($_SESSION['user_id'])) {
-    $response['message'] = 'Authentication required.';
-    echo json_encode($response);
-    exit;
-}
-
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     $response['message'] = 'Invalid request method.';
     echo json_encode($response);

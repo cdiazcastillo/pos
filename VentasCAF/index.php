@@ -1,16 +1,6 @@
 <?php
-session_start();
-require_once 'config/db.php';
-
-// --- Authentication & Shift Check ---
-// For now, we'll simulate a logged-in user and an open shift.
-// In a real implementation, you would have a full login system.
-if (!isset($_SESSION['user_id'])) {
-    // Forcing a user for development purposes.
-    // header('Location: login.php');
-    // exit;
-    $_SESSION['user_id'] = 1; // Simulate user 1 (admin) is logged in.
-}
+require_once 'includes/auth.php';
+$currentUser = auth_require_role(['cashier', 'admin'], 'vendedor_login.php', 'vendedor_login.php');
 
 $db = Database::getInstance();
 $conn = $db->getConnection();
@@ -65,20 +55,6 @@ function get_stock_semaphore_class($product) {
     <title>4 Básico A - Punto de Venta</title>
     <base href="<?php echo htmlspecialchars($baseHref, ENT_QUOTES, 'UTF-8'); ?>">
     <link rel="apple-touch-icon" href="img/logo.png">
-    <script>
-        (function () {
-            try {
-                const key = 'pvdl_splash_seen_persistent';
-                const alreadySeen = localStorage.getItem(key) === '1';
-                if (!alreadySeen) {
-                    document.documentElement.classList.add('show-brand-splash');
-                    localStorage.setItem(key, '1');
-                }
-            } catch (e) {
-                document.documentElement.classList.add('show-brand-splash');
-            }
-        })();
-    </script>
     <style>
         :root {
             --primary-color: #3457dc;
@@ -149,6 +125,16 @@ function get_stock_semaphore_class($product) {
             letter-spacing: 0.2px;
         }
 
+        .school-badge a {
+            text-decoration: none;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #111827;
+            background: #e5e7eb;
+            border-radius: 999px;
+            padding: 4px 8px;
+        }
+
         .products-panel::before {
             content: '';
             position: absolute;
@@ -170,65 +156,6 @@ function get_stock_semaphore_class($product) {
         #product-grid {
             position: relative;
             z-index: 1;
-        }
-
-        .school-splash {
-            position: fixed;
-            inset: 0;
-            z-index: 2200;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            background: radial-gradient(circle at 20% 20%, #4f63de, #2e45c7 45%, #1b2f99 100%);
-            color: #fff;
-            pointer-events: none;
-            animation: splashFade 2.9s ease forwards;
-        }
-
-        .show-brand-splash .school-splash {
-            display: flex;
-        }
-
-        .school-splash-card {
-            text-align: center;
-            width: min(96vw, 1100px);
-            padding: 26px 18px 22px;
-            border-radius: 24px;
-            background: rgba(255, 255, 255, 0.09);
-            border: 1px solid rgba(255, 255, 255, 0.25);
-            box-shadow: 0 24px 45px rgba(15, 23, 42, 0.28);
-            backdrop-filter: blur(4px);
-        }
-
-        .school-splash-card img {
-            width: min(74vw, 74vh);
-            height: min(74vw, 74vh);
-            max-width: 540px;
-            max-height: 540px;
-            object-fit: contain;
-            border-radius: 26px;
-            background: #fff;
-            padding: 12px;
-            box-shadow: 0 14px 30px rgba(15, 23, 42, 0.28);
-        }
-
-        .school-splash-card h2 {
-            margin: 16px 0 8px;
-            font-size: clamp(1.25rem, 3.8vw, 2.4rem);
-            letter-spacing: 0.4px;
-            text-transform: uppercase;
-        }
-
-        .school-splash-card p {
-            margin: 0;
-            font-size: clamp(0.92rem, 2.1vw, 1.2rem);
-            opacity: 0.95;
-        }
-
-        @keyframes splashFade {
-            0% { opacity: 1; visibility: visible; }
-            72% { opacity: 1; visibility: visible; }
-            100% { opacity: 0; visibility: hidden; }
         }
 
         #sales-interface {
@@ -611,19 +538,9 @@ function get_stock_semaphore_class($product) {
                 font-size: 0.74rem;
             }
 
-            .school-splash-card {
-                margin: 0 8px;
-                padding: 18px 12px 14px;
-            }
-
-            .school-splash-card img {
-                width: min(84vw, 52vh);
-                height: min(84vw, 52vh);
-                border-radius: 20px;
-            }
-
-            .school-splash-card h2 {
-                font-size: clamp(1rem, 4.2vw, 1.5rem);
+            .school-badge a {
+                font-size: 0.68rem;
+                padding: 3px 7px;
             }
 
             #sales-interface {
@@ -700,18 +617,11 @@ function get_stock_semaphore_class($product) {
     </style>
 </head>
 <body ontouchstart="">
-    <div class="school-splash" aria-hidden="true">
-        <div class="school-splash-card">
-            <img src="img/logo.png" alt="Logo 4 Básico A">
-            <h2>PUNTO DE VENTA DIA DEL LIBRO</h2>
-            <p>4 Básico A</p>
-        </div>
-    </div>
-
     <div id="pos-container" class="<?php echo !$is_shift_open ? 'shift-closed' : ''; ?>">
         <div class="school-badge">
             <img src="img/logo.png" alt="Logo">
             <span>4 Básico A</span>
+                <a href="logout.php">Salir</a>
         </div>
 
         <main id="sales-interface">

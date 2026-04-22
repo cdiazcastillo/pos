@@ -1,13 +1,7 @@
 <?php
 header('Content-Type: application/json');
-session_start();
-require_once 'config/db.php';
-
-if (!isset($_SESSION['user_id'])) {
-    $response = ['success' => false, 'message' => 'Authentication required.'];
-    echo json_encode($response);
-    exit;
-}
+require_once 'includes/auth.php';
+auth_require_api_role(['admin']);
 
 $db = Database::getInstance();
 $response = ['success' => false, 'message' => 'Could not retrieve totals.'];

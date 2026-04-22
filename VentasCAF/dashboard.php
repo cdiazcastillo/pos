@@ -1,10 +1,6 @@
 <?php
-session_start();
-require_once 'config/db.php';
-
-if (!isset($_SESSION['user_id'])) {
-    die('Acceso denegado. Por favor, inicie sesión.');
-}
+require_once 'includes/auth.php';
+$currentUser = auth_require_role(['cashier', 'admin'], 'admin_login.php', 'index.php');
 
 $db = Database::getInstance();
 
@@ -107,21 +103,50 @@ try {
             --light-gray: #f8f9fa; --dark-gray: #343a40;
             --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
-        body { font-family: var(--font-family); background-color: var(--light-gray); color: var(--dark-gray); margin: 0; padding: 20px; }
+        body { font-family: var(--font-family); background-color: var(--light-gray); color: var(--dark-gray); margin: 0; padding: 12px; }
         .container { max-width: 1200px; margin: auto; background-color: transparent; box-shadow: none; padding: 0; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 20px; }
+        .sticky-top {
+            position: sticky;
+            top: 0;
+            z-index: 90;
+            background: var(--light-gray);
+            padding: 6px 0 10px;
+            margin-bottom: 10px;
+        }
+        .header {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            margin-bottom: 8px;
+            gap: 10px;
+        }
         h1 { margin: 0; color: var(--dark-gray); }
-        .title-wrap { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .title-wrap { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .logo-column img {
+            width: 68px;
+            height: 68px;
+            object-fit: contain;
+            border-radius: 10px;
+            border: 1px solid #dbe4ff;
+            background: #fff;
+            padding: 4px;
+        }
+        .top-menu-row {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
         .shift-badge {
             background: #eef4ff;
             color: var(--primary-color);
             border: 1px solid #cfe0ff;
             border-radius: 999px;
-            font-size: 0.85rem;
+            font-size: 0.78rem;
             font-weight: 700;
-            padding: 6px 10px;
+            padding: 4px 8px;
         }
-        .btn { padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; font-size: 1rem; font-weight: 600; color: white !important; }
+        .btn { padding: 8px 12px; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; font-size: 0.9rem; font-weight: 600; color: white !important; white-space: nowrap; }
         .btn-secondary { background-color: var(--secondary-color) !important; }
         .btn-primary { background-color: var(--primary-color) !important; }
         .btn-success { background-color: var(--success-color) !important; }
@@ -162,23 +187,33 @@ try {
             margin-top: 30px;
             text-align: right;
         }
+
+        @media (max-width: 760px) {
+            body { padding: 8px; }
+            h1 { font-size: 1.1rem; }
+            .kpi-value { font-size: 1.55rem; }
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <div class="header">
-            <img src="img/logo.png" alt="Logo" style="max-width: 100px;">
-            <div class="title-wrap">
-                <h1>Panel Turno en Curso</h1>
-                <span class="shift-badge"><?php echo $shift_id ? 'Turno actual (ID: ' . $shift_id . ')' : 'Sin turno activo'; ?></span>
+        <div class="sticky-top">
+            <div class="header">
+                <div class="title-wrap">
+                    <h1>Panel Turno en Curso</h1>
+                    <span class="shift-badge"><?php echo $shift_id ? 'Turno actual (ID: ' . $shift_id . ')' : 'Sin turno activo'; ?></span>
+                </div>
+                <div class="logo-column">
+                    <img src="img/logo.png" alt="Logo">
+                </div>
             </div>
-            <div>
+
+            <div class="top-menu-row">
                 <?php if ($shift_id): ?>
                     <button id="end-shift-btn" class="btn btn-danger">Cerrar Turno (ID: <?php echo $shift_id; ?>)</button>
                 <?php endif; ?>
                 <a href="index.php" class="btn btn-info">Regresar al POS</a>
-                <a href="admin.php" class="btn btn-secondary">Regresar a Ventas</a>
             </div>
         </div>
 

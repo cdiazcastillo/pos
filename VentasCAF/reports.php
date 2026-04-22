@@ -1,9 +1,6 @@
 <?php
-session_start();
-if (!isset($_SESSION['user_id'])) {
-    header('Location: index.php');
-    exit;
-}
+require_once 'includes/auth.php';
+$currentUser = auth_require_role(['admin'], 'admin_login.php', 'index.php');
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -14,23 +11,26 @@ if (!isset($_SESSION['user_id'])) {
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="reports.css">
     <style>
-        .btn { padding: 10px 15px; border: none; border-radius: 8px; cursor: pointer; text-decoration: none; font-size: 0.95rem; font-weight: 700; color: white !important; display: inline-block; text-align: center; }
+        .btn { padding: 8px 12px; border: none; border-radius: 8px; cursor: pointer; text-decoration: none; font-size: 0.92rem; font-weight: 700; color: white !important; display: inline-block; text-align: center; white-space: nowrap; }
         .btn-secondary { background-color: var(--secondary-color) !important; }
         .btn-success { background-color: var(--success-color) !important; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <img src="img/logo.png" alt="Logo" style="max-width: 100px;">
-            <div class="reports-title-wrap">
-                <h1>Reportes de Turno</h1>
-                <p class="reports-brand">PUNTO DE VENTA DIA DEL LIBRO · 4 Básico A</p>
+        <div class="sticky-top">
+            <div class="header">
+                <div class="reports-title-wrap">
+                    <h1>Reportes de Turno</h1>
+                    <p class="reports-brand">4 Básico A · Resumen y exportación de turnos</p>
+                </div>
+                <div class="logo-column">
+                    <img src="img/logo.png" alt="Logo">
+                </div>
             </div>
-            <div class="reports-actions">
+            <div class="top-menu-row reports-actions">
                 <button id="export-all-btn" class="btn btn-success">Exportar Todo a Excel</button>
-                <a href="index.php" class="btn btn-success">Regresar al POS</a>
-                <a href="admin.php" class="btn btn-secondary">Regresar a Ventas</a>
+                <a href="index.php" class="btn btn-secondary">Regresar al POS</a>
             </div>
         </div>
         <div class="reports-container" role="region" aria-label="Listado de turnos">

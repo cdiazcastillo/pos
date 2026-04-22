@@ -1,12 +1,6 @@
 <?php
-session_start();
-require_once 'config/db.php';
-
-if (!isset($_SESSION['user_id'])) {
-    // Forcing a user for development purposes.
-    // In a real implementation, you would have a full login system.
-    $_SESSION['user_id'] = 1; 
-}
+require_once __DIR__ . '/auth.php';
+$currentUser = auth_require_login('vendedor_login.php');
 
 $db = Database::getInstance();
 $active_shift = $db->query("SELECT id FROM shifts WHERE user_id = ? AND status = 'open'", [$_SESSION['user_id']]);

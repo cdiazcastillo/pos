@@ -3,12 +3,8 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-session_start();
-require_once 'config/db.php';
-
-if (!isset($_SESSION['user_id'])) {
-    die('Acceso denegado. Por favor, inicie sesión.');
-}
+require_once 'includes/auth.php';
+$currentUser = auth_require_role(['admin'], 'admin_login.php', 'index.php');
 
 $sale_id = filter_input(INPUT_GET, 'sale_id', FILTER_VALIDATE_INT);
 if (!$sale_id) {
@@ -55,34 +51,66 @@ $items = $db->query(
             background-color: var(--light-gray);
             color: var(--dark-gray);
             margin: 0;
-            padding: 20px;
+            padding: 12px;
         }
         .container {
-            max-width: 800px;
+            max-width: 980px;
             margin: auto;
             background-color: #fff;
-            padding: 30px;
+            padding: 14px;
             border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #dee2e6;
-            padding-bottom: 20px;
+        .sticky-top {
+            position: sticky;
+            top: 0;
+            z-index: 90;
+            background: #fff;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #e5e7eb;
         }
-        h1 { margin: 0; color: var(--primary-color); }
+        .header {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        h1 { margin: 0; color: var(--primary-color); font-size: 1.15rem; line-height: 1.15; }
+        .logo-column {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+        .logo-column img {
+            width: 66px;
+            height: 66px;
+            object-fit: contain;
+            border-radius: 10px;
+            border: 1px solid #dbe4ff;
+            background: #fff;
+            padding: 4px;
+        }
+        .top-menu-row {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
         .btn {
-            padding: 10px 15px;
+            padding: 8px 12px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             text-decoration: none;
-            font-size: 1rem;
+            font-size: 0.9rem;
             font-weight: 600;
             color: white !important;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
         .btn-secondary { background-color: var(--secondary-color) !important; }
         .btn-primary { background-color: var(--primary-color) !important; }
@@ -90,7 +118,7 @@ $items = $db->query(
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            margin-top: 10px;
         }
         th, td {
             padding: 12px;
@@ -112,13 +140,13 @@ $items = $db->query(
         }
         
         .footer-summary {
-            margin-top: 30px;
-            padding-top: 20px;
+            margin-top: 14px;
+            padding-top: 12px;
             border-top: 2px solid var(--dark-gray);
             text-align: right;
         }
         #total-refund-amount {
-            font-size: 1.8rem;
+            font-size: 1.45rem;
             font-weight: bold;
             color: var(--danger-color);
         }
@@ -133,51 +161,113 @@ $items = $db->query(
             z-index: 2000; visibility: hidden; opacity: 0; transition: all 0.3s; transform: translateX(110%);
         }
         #toast-notification.show { visibility: visible; opacity: 1; transform: translateX(0); }
+
+        .table-wrap {
+            overflow-x: auto;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #fff;
+        }
+
+        @media (max-width: 760px) {
+            body { padding: 8px; }
+            .container { padding: 10px; }
+            .header { grid-template-columns: 1fr auto; }
+            .logo-column img { width: 58px; height: 58px; }
+
+            table,
+            thead,
+            tbody,
+            th,
+            td,
+            tr {
+                display: block;
+                width: 100%;
+            }
+
+            thead { display: none; }
+
+            tbody tr {
+                border-bottom: 1px solid #e5e7eb;
+                padding: 10px 8px;
+            }
+
+            td {
+                border: none;
+                padding: 6px 0;
+                text-align: left !important;
+            }
+
+            td::before {
+                content: attr(data-label) ": ";
+                font-weight: 700;
+                color: #374151;
+            }
+
+            .return-qty-input {
+                width: 100%;
+                max-width: 130px;
+            }
+
+            .footer-summary h2 {
+                font-size: 1.05rem;
+            }
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <div class="header">
-            <h1>Devolución para Venta #<?php echo $sale_id; ?></h1>
-            <a href="sales_history.php" class="btn btn-secondary">Volver al Historial</a>
+        <div class="sticky-top">
+            <div class="header">
+                <h1>Devolución para Venta #<?php echo $sale_id; ?></h1>
+                <div class="logo-column">
+                    <img src="img/logo.png" alt="Logo">
+                </div>
+            </div>
+            <div class="top-menu-row">
+                <a href="index.php" class="btn btn-primary">Ir POS</a>
+                <a href="sales_history.php" class="btn btn-secondary">Ir Historial</a>
+            </div>
         </div>
 
         <form id="return-form">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Producto</th>
-                        <th>Cant. Comprada</th>
-                        <th>Cant. Devuelta</th>
-                        <th>A Devolver Ahora</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach($items as $item): 
-                        $max_returnable = $item['quantity'] - $item['quantity_returned'];
-                    ?>
-                    <tr id="item-row-<?php echo $item['id']; ?>" class="<?php if ($max_returnable <= 0) echo 'item-fully-returned'; ?>">
-                        <td data-label="Producto"><?php echo htmlspecialchars($item['name']); ?></td>
-                        <td data-label="Cant. Comprada"><?php echo $item['quantity']; ?></td>
-                        <td data-label="Cant. Devuelta" class="returned-qty-cell"><?php echo $item['quantity_returned']; ?></td>
-                        <td data-label="A Devolver Ahora">
-                            <?php if($max_returnable > 0): ?>
-                            <input type="number" 
-                                   class="return-qty-input" 
-                                   name="items[<?php echo $item['id']; ?>]"
-                                   value="0" 
-                                   min="0" 
-                                   max="<?php echo $max_returnable; ?>"
-                                   data-price="<?php echo $item['price_per_unit']; ?>">
-                            <?php else: ?>
-                                <span>Todo Devuelto</span>
-                            <?php endif; ?>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Cant. Comprada</th>
+                            <th>Cant. Devuelta</th>
+                            <th>A Devolver Ahora</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach($items as $item): 
+                            $max_returnable = $item['quantity'] - $item['quantity_returned'];
+                        ?>
+                        <tr id="item-row-<?php echo $item['id']; ?>" class="<?php if ($max_returnable <= 0) echo 'item-fully-returned'; ?>">
+                            <td data-label="Producto"><?php echo htmlspecialchars($item['name']); ?></td>
+                            <td data-label="Cant. Comprada"><?php echo $item['quantity']; ?></td>
+                            <td data-label="Cant. Devuelta" class="returned-qty-cell"><?php echo $item['quantity_returned']; ?></td>
+                            <td data-label="A Devolver Ahora">
+                                <?php if($max_returnable > 0): ?>
+                                <input type="number" 
+                                       class="return-qty-input" 
+                                       name="items[<?php echo $item['id']; ?>]"
+                                       value="0" 
+                                       min="0" 
+                                       max="<?php echo $max_returnable; ?>"
+                                       data-price="<?php echo $item['price_per_unit']; ?>">
+                                <?php else: ?>
+                                    <span>Todo Devuelto</span>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
 
             <div class="footer-summary">
                 <h2>Total a Devolver: <span id="total-refund-amount">$0</span></h2>

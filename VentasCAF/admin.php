@@ -1,10 +1,7 @@
 <?php
-session_start();
-require_once 'config/db.php';
-
-if (!isset($_SESSION['user_id'])) {
-    die('Acceso denegado. Por favor, inicie sesión.');
-}
+require_once 'includes/auth.php';
+$currentUser = auth_require_role(['cashier', 'admin'], 'admin_login.php', 'index.php');
+$isAdmin = (($currentUser['role'] ?? '') === 'admin');
 
 $db = Database::getInstance();
 $active_shift = $db->query("SELECT id FROM shifts WHERE user_id = ? AND status = 'open'", [$_SESSION['user_id']]);
@@ -211,6 +208,153 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
             margin: 0 0 8px;
             color: var(--muted);
             font-size: 0.9rem;
+        }
+
+        .insight-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .insight-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            background: #fff;
+            padding: 12px;
+        }
+
+        .insight-label {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .insight-value {
+            margin: 8px 0 0;
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--dark-gray);
+        }
+
+        .insight-value.danger {
+            color: var(--danger-color);
+        }
+
+        .insight-value.success {
+            color: var(--success-color);
+        }
+
+        .insight-sections {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 14px;
+            margin-top: 14px;
+        }
+
+        .insight-block {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            background: #fff;
+            padding: 12px;
+        }
+
+        .insight-block h3 {
+            margin: 0 0 10px;
+            font-size: 0.95rem;
+        }
+
+        .expense-form {
+            display: grid;
+            grid-template-columns: 2fr 1fr auto;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .expense-form input {
+            height: 40px;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            padding: 0 10px;
+            font-size: 0.92rem;
+        }
+
+        .expense-form button {
+            height: 40px;
+            padding: 0 12px;
+            border: none;
+            border-radius: 10px;
+            background: var(--primary-color);
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .expense-table-wrap {
+            overflow: auto;
+            max-height: 280px;
+            border: 1px solid #eef2f7;
+            border-radius: 10px;
+        }
+
+        .expense-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .expense-table th,
+        .expense-table td {
+            padding: 8px;
+            border-bottom: 1px solid #eef2f7;
+            text-align: left;
+        }
+
+        .chart-list {
+            display: grid;
+            gap: 8px;
+        }
+
+        .chart-item {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .chart-track {
+            background: #eef2ff;
+            border-radius: 8px;
+            height: 22px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .chart-bar {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.78rem;
+            padding-left: 8px;
+            white-space: nowrap;
+            min-width: 34px;
+        }
+
+        .chart-bar.top {
+            background: linear-gradient(90deg, #16a34a, #22c55e);
+        }
+
+        .chart-bar.low {
+            background: linear-gradient(90deg, #f59e0b, #f97316);
+        }
+
+        .chart-qty {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #374151;
         }
 
         .danger-panel {
@@ -543,31 +687,45 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
                         <span class="card-title">Panel turno en curso</span>
                         <span class="card-subtitle">Visualiza ventas del turno activo.</span>
                     </a>
-                    <a href="reports.php" class="menu-card">
-                        <span class="card-icon">📈</span>
-                        <span class="card-title">Reportes de turno</span>
-                        <span class="card-subtitle">Exporta y revisa resultados diarios.</span>
-                    </a>
-                    <a href="totals.php" class="menu-card">
-                        <span class="card-icon">💰</span>
-                        <span class="card-title">Ventas totales</span>
-                        <span class="card-subtitle">Resumen acumulado del negocio.</span>
-                    </a>
-                    <a href="monitor.php" class="menu-card">
-                        <span class="card-icon">🛰️</span>
-                        <span class="card-title">Control operativo</span>
-                        <span class="card-subtitle">Resumen clave y monitoreo de correos.</span>
-                    </a>
+                    <?php if ($isAdmin): ?>
+                        <a href="reports.php" class="menu-card">
+                            <span class="card-icon">📈</span>
+                            <span class="card-title">Reportes de turno</span>
+                            <span class="card-subtitle">Exporta y revisa resultados diarios.</span>
+                        </a>
+                        <a href="totals.php" class="menu-card">
+                            <span class="card-icon">💰</span>
+                            <span class="card-title">Ventas totales</span>
+                            <span class="card-subtitle">Resumen acumulado del negocio.</span>
+                        </a>
+                        <a href="monitor.php" class="menu-card">
+                            <span class="card-icon">🛰️</span>
+                            <span class="card-title">Control operativo</span>
+                            <span class="card-subtitle">Resumen clave y monitoreo de correos.</span>
+                        </a>
+                    <?php endif; ?>
                     <a href="#" id="open-shift-manager-btn" class="menu-card">
                         <span class="card-icon">⏱️</span>
                         <span class="card-title">Gestión de turno</span>
                         <span class="card-subtitle">Abrir panel práctico para iniciar o terminar turno.</span>
                     </a>
-                    <a href="#" id="open-security-manager-btn" class="menu-card">
-                        <span class="card-icon">🔐</span>
-                        <span class="card-title">Seguridad</span>
-                        <span class="card-subtitle">Reinicio operativo con clave de seguridad.</span>
-                    </a>
+                    <?php if ($isAdmin): ?>
+                        <a href="#" id="open-security-manager-btn" class="menu-card">
+                            <span class="card-icon">🔐</span>
+                            <span class="card-title">Seguridad</span>
+                            <span class="card-subtitle">Reinicio operativo con clave de seguridad.</span>
+                        </a>
+                        <a href="#" id="open-realtime-insights-btn" class="menu-card">
+                            <span class="card-icon">⚡</span>
+                            <span class="card-title">Insights en tiempo real</span>
+                            <span class="card-subtitle">Ingresos netos, otros gastos y productos más/menos vendidos.</span>
+                        </a>
+                        <a href="permissions.php" class="menu-card">
+                            <span class="card-icon">👥</span>
+                            <span class="card-title">Permisos</span>
+                            <span class="card-subtitle">Configurar qué puede ver cada rol del sistema.</span>
+                        </a>
+                    <?php endif; ?>
                 </div>
             </section>
 
@@ -591,6 +749,7 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
                 </div>
             </section>
 
+            <?php if ($isAdmin): ?>
             <section id="security-manager-panel" class="danger-panel panel-hidden">
                 <h2 class="section-title">Reinicio operativo (día nuevo)</h2>
                 <p>Esta acción cierra todos los turnos abiertos, devuelve stock de ventas completadas y elimina ventas, detalle y gastos para iniciar desde cero.</p>
@@ -612,8 +771,73 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
                     <button id="reset-operations-btn" class="menu-button danger">Cerrar turnos y reiniciar ventas</button>
                 </div>
             </section>
+            <?php endif; ?>
+
+            <?php if ($isAdmin): ?>
+            <section id="realtime-insights-panel" class="shift-panel panel-hidden">
+                <h2 class="section-title">Insights en tiempo real</h2>
+                <p class="panel-note">Los otros gastos se descuentan automáticamente de los ingresos netos. Puedes registrar nota y monto aquí mismo.</p>
+
+                <div class="insight-grid">
+                    <article class="insight-card">
+                        <p class="insight-label">Ventas brutas completadas</p>
+                        <p id="kpi-gross-sales" class="insight-value">$0</p>
+                    </article>
+                    <article class="insight-card">
+                        <p class="insight-label">Devoluciones / anulaciones</p>
+                        <p id="kpi-returns" class="insight-value danger">$0</p>
+                    </article>
+                    <article class="insight-card">
+                        <p class="insight-label">Otros gastos</p>
+                        <p id="kpi-other-expenses" class="insight-value danger">$0</p>
+                    </article>
+                    <article class="insight-card">
+                        <p class="insight-label">Ingreso neto final (descontado)</p>
+                        <p id="kpi-net-income" class="insight-value success">$0</p>
+                    </article>
+                </div>
+
+                <div class="insight-sections">
+                    <div class="insight-block">
+                        <h3>Otros gastos (nota + monto)</h3>
+                        <div class="expense-form">
+                            <input id="expense-note-input" type="text" maxlength="255" placeholder="Ej: Compra de bolsas, cambio, transporte...">
+                            <input id="expense-amount-input" type="number" min="1" step="1" placeholder="Monto">
+                            <button id="save-expense-btn" type="button">Guardar</button>
+                        </div>
+                        <div class="expense-table-wrap">
+                            <table class="expense-table">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Nota</th>
+                                        <th>Monto</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="other-expenses-body">
+                                    <tr><td colspan="3">Cargando gastos...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="insight-block">
+                        <h3>Productos más vendidos</h3>
+                        <div id="top-products-chart" class="chart-list"></div>
+                    </div>
+
+                    <div class="insight-block">
+                        <h3>Productos menos vendidos</h3>
+                        <div id="least-products-chart" class="chart-list"></div>
+                    </div>
+                </div>
+
+                <p class="panel-note" id="realtime-updated-at">Actualizando datos...</p>
+            </section>
+            <?php endif; ?>
 
             <div class="footer-actions">
+                <a href="logout.php" class="menu-button danger" style="margin-right:8px;">Cerrar sesión</a>
                 <a href="index.php" class="menu-button secondary">Volver al POS</a>
             </div>
         </div>
@@ -652,8 +876,21 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
         const resetOperationsBtn = document.getElementById('reset-operations-btn');
         const openShiftManagerBtn = document.getElementById('open-shift-manager-btn');
         const openSecurityManagerBtn = document.getElementById('open-security-manager-btn');
+        const openRealtimeInsightsBtn = document.getElementById('open-realtime-insights-btn');
         const shiftManagerPanel = document.getElementById('shift-manager-panel');
         const securityManagerPanel = document.getElementById('security-manager-panel');
+        const realtimeInsightsPanel = document.getElementById('realtime-insights-panel');
+        const kpiGrossSales = document.getElementById('kpi-gross-sales');
+        const kpiReturns = document.getElementById('kpi-returns');
+        const kpiOtherExpenses = document.getElementById('kpi-other-expenses');
+        const kpiNetIncome = document.getElementById('kpi-net-income');
+        const otherExpensesBody = document.getElementById('other-expenses-body');
+        const topProductsChart = document.getElementById('top-products-chart');
+        const leastProductsChart = document.getElementById('least-products-chart');
+        const realtimeUpdatedAt = document.getElementById('realtime-updated-at');
+        const expenseNoteInput = document.getElementById('expense-note-input');
+        const expenseAmountInput = document.getElementById('expense-amount-input');
+        const saveExpenseBtn = document.getElementById('save-expense-btn');
         const toast = document.getElementById('toast');
         const actionModal = document.getElementById('action-modal');
         const modalTitle = document.getElementById('modal-title');
@@ -677,6 +914,10 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
             return Number.isInteger(amount) ? amount : NaN;
         }
 
+        function formatClp(value) {
+            return `$${Number(value || 0).toLocaleString('es-CL')}`;
+        }
+
         async function postForm(url, payload) {
             const formData = new FormData();
             Object.entries(payload).forEach(([key, value]) => formData.append(key, value));
@@ -690,7 +931,7 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
         }
 
         function showOnlyPanel(panelToShow) {
-            [shiftManagerPanel, securityManagerPanel].forEach(panel => {
+            [shiftManagerPanel, securityManagerPanel, realtimeInsightsPanel].forEach(panel => {
                 if (!panel) return;
                 panel.classList.add('panel-hidden');
                 panel.classList.remove('panel-visible');
@@ -700,6 +941,12 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
                 panelToShow.classList.remove('panel-hidden');
                 panelToShow.classList.add('panel-visible');
                 panelToShow.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            if (panelToShow === realtimeInsightsPanel) {
+                startRealtimeUpdates();
+            } else {
+                stopRealtimeUpdates();
             }
         }
 
@@ -711,6 +958,141 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
         openSecurityManagerBtn?.addEventListener('click', (event) => {
             event.preventDefault();
             showOnlyPanel(securityManagerPanel);
+        });
+
+        openRealtimeInsightsBtn?.addEventListener('click', (event) => {
+            event.preventDefault();
+            showOnlyPanel(realtimeInsightsPanel);
+        });
+
+        let realtimeTimer = null;
+
+        function renderProductBars(container, products, barClass, emptyMessage) {
+            if (!container) return;
+            const validProducts = Array.isArray(products) ? products : [];
+            if (validProducts.length === 0) {
+                container.innerHTML = `<p class="panel-note">${emptyMessage}</p>`;
+                return;
+            }
+
+            const maxQty = Math.max(...validProducts.map(item => Number(item.sold_qty || 0)), 1);
+            container.innerHTML = validProducts.map(item => {
+                const qty = Number(item.sold_qty || 0);
+                const width = Math.max(14, Math.round((qty / maxQty) * 100));
+                const label = String(item.name || 'Producto');
+                return `
+                    <div class="chart-item">
+                        <div class="chart-track">
+                            <div class="chart-bar ${barClass}" style="width:${width}%">${label}</div>
+                        </div>
+                        <span class="chart-qty">${qty}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderOtherExpensesRows(rows) {
+            if (!otherExpensesBody) return;
+            const data = Array.isArray(rows) ? rows : [];
+            if (data.length === 0) {
+                otherExpensesBody.innerHTML = '<tr><td colspan="3">Sin gastos registrados.</td></tr>';
+                return;
+            }
+
+            otherExpensesBody.innerHTML = data.map(row => {
+                const dateValue = row.expense_time ? new Date(row.expense_time.replace(' ', 'T')) : null;
+                const formattedDate = dateValue && !Number.isNaN(dateValue.getTime())
+                    ? dateValue.toLocaleString('es-CL')
+                    : (row.expense_time || '-');
+                const note = String(row.description || '-').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                return `
+                    <tr>
+                        <td>${formattedDate}</td>
+                        <td>${note}</td>
+                        <td>${formatClp(row.amount || 0)}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function loadRealtimeSummary() {
+            try {
+                const response = await fetch('get_admin_realtime_summary_api.php', { cache: 'no-store' });
+                const payload = await response.json();
+                if (!payload.success) {
+                    showToast(payload.message || 'No se pudo cargar el resumen en tiempo real.', true);
+                    return;
+                }
+
+                const income = payload.data?.income || {};
+                kpiGrossSales.textContent = formatClp(income.gross_sales || 0);
+                kpiReturns.textContent = formatClp(income.returns || 0);
+                kpiOtherExpenses.textContent = formatClp(income.other_expenses || 0);
+                kpiNetIncome.textContent = formatClp(income.net_income_after_expenses || 0);
+
+                renderOtherExpensesRows(payload.data?.other_expenses_notes || []);
+                renderProductBars(topProductsChart, payload.data?.top_products || [], 'top', 'Sin ventas suficientes para ranking.');
+                renderProductBars(leastProductsChart, payload.data?.least_products || [], 'low', 'Sin ventas suficientes para ranking.');
+
+                const updated = payload.data?.updated_at || null;
+                realtimeUpdatedAt.textContent = updated
+                    ? `Actualizado: ${new Date(updated.replace(' ', 'T')).toLocaleString('es-CL')}`
+                    : 'Actualizado recientemente';
+            } catch (error) {
+                showToast('No se pudo conectar para actualizar insights.', true);
+            }
+        }
+
+        function startRealtimeUpdates() {
+            stopRealtimeUpdates();
+            loadRealtimeSummary();
+            realtimeTimer = setInterval(loadRealtimeSummary, 15000);
+        }
+
+        function stopRealtimeUpdates() {
+            if (realtimeTimer) {
+                clearInterval(realtimeTimer);
+                realtimeTimer = null;
+            }
+        }
+
+        saveExpenseBtn?.addEventListener('click', async () => {
+            const description = expenseNoteInput.value.trim();
+            const amountValue = parseAmount(expenseAmountInput.value);
+
+            if (!description) {
+                showToast('Escribe la nota del gasto.', true);
+                expenseNoteInput.focus();
+                return;
+            }
+
+            if (!Number.isFinite(amountValue) || amountValue <= 0) {
+                showToast('Ingresa un monto válido para el gasto.', true);
+                expenseAmountInput.focus();
+                return;
+            }
+
+            saveExpenseBtn.disabled = true;
+            try {
+                const data = await postForm('register_expense_api.php', {
+                    description,
+                    amount: amountValue
+                });
+
+                if (!data.success) {
+                    showToast(data.message || 'No se pudo guardar el gasto.', true);
+                    return;
+                }
+
+                expenseNoteInput.value = '';
+                expenseAmountInput.value = '';
+                showToast('Gasto guardado y descontado de ingresos.');
+                await loadRealtimeSummary();
+            } catch (error) {
+                showToast('Error de conexión al guardar el gasto.', true);
+            } finally {
+                saveExpenseBtn.disabled = false;
+            }
         });
 
         function openActionModal(options) {

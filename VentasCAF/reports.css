@@ -1,8 +1,9 @@
 /* Reports-specific styles */
 .container {
+    max-width: 1200px;
     width: min(1200px, 96vw) !important;
-    margin: 16px auto;
-    padding: 18px;
+    margin: 0 auto;
+    padding: 12px 0;
 }
 
 body {
@@ -13,11 +14,19 @@ body {
 }
 
 .header {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr auto;
     align-items: center;
-    gap: 14px;
-    justify-content: space-between;
-    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.sticky-top {
+    position: sticky;
+    top: 0;
+    z-index: 90;
+    background: #f8f9fa;
+    padding: 8px 0 10px;
 }
 
 .header h1 {
@@ -26,36 +35,55 @@ body {
 }
 
 .reports-title-wrap {
-    display: grid;
-    gap: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
     min-width: 0;
 }
 
 .reports-brand {
     margin: 0;
-    color: #3b4f9e;
-    font-size: clamp(0.78rem, 1.5vw, 0.92rem);
-    font-weight: 800;
-    letter-spacing: 0.2px;
+    color: #475569;
+    font-size: 0.86rem;
+    font-weight: 700;
 }
 
-.header img {
-    max-width: 108px !important;
+.logo-column {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.logo-column img {
+    width: 72px;
+    height: 72px;
+    object-fit: contain;
     border-radius: 14px;
     padding: 4px;
     background: #fff;
     border: 1px solid #dbe4ff;
-    box-shadow: 0 8px 20px rgba(59, 79, 158, 0.18);
+    box-shadow: 0 6px 14px rgba(59, 79, 158, 0.16);
 }
 
 .reports-actions {
     display: flex;
     flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
     gap: 8px;
 }
 
+.top-menu-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 2px;
+}
+
 .reports-container {
-    margin-top: 20px;
+    margin-top: 10px;
     overflow-x: auto;
     border: 1px solid #e5e7eb;
     border-radius: 10px;
@@ -76,7 +104,7 @@ body {
 }
 
 #shifts-table th {
-    background-color: #f2f2f2;
+    background-color: #eef2ff;
     position: sticky;
     top: 0;
     z-index: 1;
@@ -120,16 +148,17 @@ body {
 @media (max-width: 900px) {
     .container {
         width: min(1200px, 98vw) !important;
-        padding: 12px;
-        border-radius: 10px;
+        padding: 10px 0;
     }
 
     .header {
-        align-items: flex-start;
+        grid-template-columns: 1fr auto;
+        align-items: center;
     }
 
-    .header img {
-        max-width: 88px !important;
+    .logo-column img {
+        width: 62px;
+        height: 62px;
     }
 
     .reports-actions {
@@ -154,8 +183,16 @@ body {
 
 @media (max-width: 640px) {
     .container {
-        margin: 6px auto;
-        padding: 10px;
+        margin: 0 auto;
+        padding: 8px 0;
+    }
+
+    .header h1 {
+        font-size: 1.12rem;
+    }
+
+    .reports-brand {
+        font-size: 0.8rem;
     }
 
     .reports-container {

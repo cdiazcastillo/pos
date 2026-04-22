@@ -122,13 +122,97 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['install'])) {
         ");
         $message .= "`expenses` table created.<br>";
 
+        // Permissions Table
+        $pdo->exec("
+            CREATE TABLE `permissions` (
+                `id` INT AUTO_INCREMENT PRIMARY KEY,
+                `key` VARCHAR(100) NOT NULL UNIQUE,
+                `name` VARCHAR(100) NOT NULL,
+                `description` TEXT,
+                `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        ");
+        $message .= "`permissions` table created.<br>";
+
+        // Role Permissions Table
+        $pdo->exec("
+            CREATE TABLE `role_permissions` (
+                `id` INT AUTO_INCREMENT PRIMARY KEY,
+                `role` ENUM('admin', 'cashier') NOT NULL,
+                `permission_id` INT NOT NULL,
+                `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (`permission_id`) REFERENCES `permissions`(`id`) ON DELETE CASCADE,
+                UNIQUE KEY `role_perm_unique` (`role`, `permission_id`)
+            );
+        ");
+        $message .= "`role_permissions` table created.<br>";
+
+        // 4.5. Insertar permisos por defecto
+        $permissions = [
+            ['pos', 'Punto de Venta (POS)', 'Acceso a la pantalla de ventas'],
+            ['returns', 'Devoluciones', 'Procesar devoluciones de productos'],
+            ['sales_history', 'Historial de Ventas', 'Ver historial de ventas'],
+            ['dashboard', 'Dashboard', 'Ver dashboard administrativo'],
+            ['reports', 'Reportes', 'Generar y ver reportes'],
+            ['totals', 'Totales', 'Ver totales y resúmenes'],
+            ['products', 'Productos', 'Gestionar inventario de productos'],
+            ['monitor', 'Monitor', 'Monitoreo en tiempo real'],
+            ['users', 'Usuarios', 'Gestionar usuarios del sistema'],
+            ['permissions', 'Permisos', 'Configurar permisos por rol'],
+        ];
+        $stmt = $pdo->prepare("INSERT INTO `permissions` (`key`, `name`, `description`) VALUES (?, ?, ?)");
+        foreach ($permissions as $perm) {
+            $stmt->execute($perm);
+        }
+        $message .= "Permisos por defecto insertados.<br>";
+
+        // 4.6. Asignar permisos a roles
+        // Admin: todos los permisos
+        $stmt = $pdo->prepare("
+            INSERT INTO `role_permissions` (role, permission_id) 
+            SELECT 'admin', id FROM `permissions`
+        ");
+        $stmt->execute();
+        
+        // Cashier: POS + historial + dashboard + productos (sin totales ni módulos sensibles)
+        $stmt = $pdo->prepare("
+            INSERT INTO `role_permissions` (role, permission_id)
+            SELECT 'cashier', id FROM `permissions` WHERE `key` IN ('pos', 'returns', 'sales_history', 'dashboard', 'products')
+        ");
+        $stmt->execute();
+        $message .= "Permisos por defecto asignados a roles.<br>";
+
         // 5. Insertar usuario administrador por defecto
         $admin_user = 'admin';
-        $admin_pass = 'franenro_admincaf123'; // La nueva contraseña del usuario admin de la aplicación
+        $admin_pass = '0000'; // Clave del equipo de trabajo (admin)
         $password_hash = password_hash($admin_pass, PASSWORD_DEFAULT);
         $stmt = $pdo->prepare("INSERT INTO `users` (username, password_hash, role) VALUES (?, ?, 'admin')");
         $stmt->execute([$admin_user, $password_hash]);
-        $message .= "Usuario administrador por defecto creado (usuario: 'admin', clave: 'franenro_admincaf123').<br>";
+        $message .= "Usuario administrador por defecto creado (usuario: 'admin', clave: '0000').<br>";
+
+        // 5b. Insertar usuario vendedor por defecto
+        $cashier_user = 'ventas';
+        $cashier_pass = 'ventas123';
+        $cashier_hash = password_hash($cashier_pass, PASSWORD_DEFAULT);
+        $stmt = $pdo->prepare("INSERT INTO `users` (username, password_hash, role) VALUES (?, ?, 'cashier')");
+        $stmt->execute([$cashier_user, $cashier_hash]);
+        $message .= "Usuario vendedor por defecto creado (usuario: 'ventas', clave: 'ventas123').<br>";
+
+        // 5c. Compatibilidad con despliegues anteriores
+        $legacy_cashier_user = 'vendedor';
+        $legacy_cashier_pass = 'vendedor123';
+        $legacy_cashier_hash = password_hash($legacy_cashier_pass, PASSWORD_DEFAULT);
+        $stmt = $pdo->prepare("INSERT INTO `users` (username, password_hash, role) VALUES (?, ?, 'cashier')");
+        $stmt->execute([$legacy_cashier_user, $legacy_cashier_hash]);
+        $message .= "Usuario de compatibilidad creado (usuario: 'vendedor', clave: 'vendedor123').<br>";
+
+        // 5b. Insertar usuario vendedor por defecto
+        $cashier_user = 'vendedor';
+        $cashier_pass = 'vendedor123';
+        $cashier_hash = password_hash($cashier_pass, PASSWORD_DEFAULT);
+        $stmt = $pdo->prepare("INSERT INTO `users` (username, password_hash, role) VALUES (?, ?, 'cashier')");
+        $stmt->execute([$cashier_user, $cashier_hash]);
+        $message .= "Usuario vendedor por defecto creado (usuario: 'vendedor', clave: 'vendedor123').<br>";
 
         // 6. Insertar productos de ejemplo
         $products = [

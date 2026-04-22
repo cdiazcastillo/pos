@@ -3,12 +3,9 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-session_start();
-require_once 'config/db.php';
-
-if (!isset($_SESSION['user_id'])) {
-    die('Acceso denegado. Por favor, inicie sesión.');
-}
+require_once 'includes/auth.php';
+$currentUser = auth_require_role(['cashier', 'admin'], 'admin_login.php', 'index.php');
+$isAdmin = (($currentUser['role'] ?? '') === 'admin');
 
 $db = Database::getInstance();
 
@@ -16,6 +13,23 @@ $db = Database::getInstance();
 $filter = $_GET['filter'] ?? 'all';
 $sql_where = [];
 $params = [];
+$salesContextNote = '';
+
+if (!$isAdmin) {
+    $activeShift = $db->query(
+        "SELECT id FROM shifts WHERE user_id = ? AND status = 'open' ORDER BY id DESC LIMIT 1",
+        [$_SESSION['user_id']]
+    );
+
+    if ($activeShift && isset($activeShift['id'])) {
+        $sql_where[] = "shift_id = ?";
+        $params[] = intval($activeShift['id']);
+        $salesContextNote = 'Mostrando solo ventas de tu turno activo.';
+    } else {
+        $sql_where[] = "1 = 0";
+        $salesContextNote = 'No tienes un turno activo. Inicia turno para ver ventas en este panel.';
+    }
+}
 
 if (in_array($filter, ['cash', 'transfer'])) {
     $sql_where[] = "payment_method = ?";
@@ -88,10 +102,43 @@ function format_payment_method($method) {
             --success-color: #28a745; --info-color: #17a2b8; --light-gray: #f8f9fa; --dark-gray: #343a40;
             --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
-        body { font-family: var(--font-family); background-color: var(--light-gray); color: var(--dark-gray); margin: 0; padding: 20px; }
+        body { font-family: var(--font-family); background-color: var(--light-gray); color: var(--dark-gray); margin: 0; padding: 14px; }
         .container { max-width: 1200px; margin: auto; background-color: transparent; box-shadow: none; padding: 0; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 20px; }
-        h1 { margin: 0; color: var(--dark-gray); }
+        .sticky-top {
+            position: sticky;
+            top: 0;
+            z-index: 90;
+            background: var(--light-gray);
+            padding: 8px 0 10px;
+        }
+        .header {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        .title-wrap {
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 6px;
+        }
+        h1 { margin: 0; color: var(--dark-gray); font-size: 1.15rem; line-height: 1.1; }
+        .logo-column {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 6px;
+        }
+        .logo-column img {
+            max-width: 72px;
+            border-radius: 10px;
+            background: #fff;
+            border: 1px solid #dbe4ff;
+            padding: 4px;
+        }
         .btn { padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; font-size: 1rem; font-weight: 600; color: white !important; }
         .btn-secondary { background-color: var(--secondary-color) !important; }
         .btn-danger { background-color: var(--danger-color) !important; }
@@ -99,21 +146,39 @@ function format_payment_method($method) {
         .btn-info { background-color: var(--info-color) !important; }
 
         .filter-buttons {
-            display: flex;
-            gap: 10px;
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 6px;
             background-color: #e9ecef;
             padding: 5px;
             border-radius: 8px;
-            flex-wrap: wrap;
+            width: min(100%, 760px);
         }
-        .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        .top-menu-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: nowrap;
+            overflow: hidden;
+            padding-bottom: 2px;
+        }
+        .top-menu-row .btn { white-space: nowrap; padding: 8px 12px; font-size: 0.92rem; }
+        .top-menu-row .filter-buttons { margin: 0 auto; }
         .filter-btn {
-            padding: 8px 15px;
+            padding: 7px 6px;
             text-decoration: none;
             color: var(--secondary-color);
             font-weight: 600;
             border-radius: 5px;
             transition: all 0.2s;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 36px;
+            line-height: 1.1;
+            font-size: 0.86rem;
         }
         .filter-btn:hover {
             background-color: #d1d5db;
@@ -123,6 +188,12 @@ function format_payment_method($method) {
             color: white;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
+        .context-note {
+            margin: 6px 0 0;
+            font-size: 0.84rem;
+            color: #475569;
+            font-weight: 600;
+        }
 
         /* Card Grid Layout */
         #sales-card-grid {
@@ -130,6 +201,7 @@ function format_payment_method($method) {
             grid-template-columns: repeat(auto-fill, 320px);
             gap: 20px;
             justify-content: center;
+            margin-top: 8px;
         }
         .sale-card {
             background-color: #fff;
@@ -182,21 +254,30 @@ function format_payment_method($method) {
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <img src="img/logo.png" alt="Logo" style="max-width: 100px;">
-            <h1>Historial de Ventas</h1>
-            <div class="filter-buttons">
-                <a href="sales_history.php?filter=all" class="filter-btn <?php if ($filter === 'all') echo 'active'; ?>">Todos</a>
-                <a href="sales_history.php?filter=cash" class="filter-btn <?php if ($filter === 'cash') echo 'active'; ?>">Efectivo</a>
-                <a href="sales_history.php?filter=transfer" class="filter-btn <?php if ($filter === 'transfer') echo 'active'; ?>">Transferencia</a>
-                <a href="sales_history.php?filter=voided" class="filter-btn <?php if ($filter === 'voided') echo 'active'; ?>">Anuladas</a>
+        <div class="sticky-top">
+            <div class="header">
+                <div class="title-wrap">
+                    <h1>Historial de Ventas</h1>
+                    <a href="index.php" class="btn btn-info">Ir POS</a>
+                </div>
+                <div class="logo-column">
+                    <img src="img/logo.png" alt="Logo">
+                </div>
             </div>
-            <div class="header-actions">
-                <a href="reports.php" class="btn btn-info">Reportes</a>
-                <a href="index.php" class="btn btn-info">Regresar al POS</a>
-                <a href="admin.php" class="btn btn-secondary">Regresar a Ventas</a>
+
+            <div class="top-menu-row">
+                <div class="filter-buttons">
+                    <a href="sales_history.php?filter=all" class="filter-btn <?php if ($filter === 'all') echo 'active'; ?>">Todos</a>
+                    <a href="sales_history.php?filter=cash" class="filter-btn <?php if ($filter === 'cash') echo 'active'; ?>">Efectivo</a>
+                    <a href="sales_history.php?filter=transfer" class="filter-btn <?php if ($filter === 'transfer') echo 'active'; ?>">Transferencia</a>
+                    <a href="sales_history.php?filter=voided" class="filter-btn <?php if ($filter === 'voided') echo 'active'; ?>">Anuladas</a>
+                </div>
             </div>
+            <?php if ($salesContextNote !== ''): ?>
+                <p class="context-note"><?php echo htmlspecialchars($salesContextNote); ?></p>
+            <?php endif; ?>
         </div>
+
         <div id="sales-card-grid">
             <?php foreach($sales as $sale): ?>
             <div class="sale-card <?php echo $sale['status']; ?>" id="sale-<?php echo $sale['id']; ?>">
@@ -239,8 +320,10 @@ function format_payment_method($method) {
                 </div>
                 <div class="card-footer">
                     <?php if ($sale['status'] === 'completed'): ?>
-                        <a href="return.php?sale_id=<?php echo $sale['id']; ?>" class="btn btn-warning">Procesar Devolución</a>
-                        <button class="btn btn-danger void-sale-btn" data-id="<?php echo $sale['id']; ?>">Anular Venta Completa</button>
+                        <?php if ($isAdmin): ?>
+                            <a href="return.php?sale_id=<?php echo $sale['id']; ?>" class="btn btn-warning">Procesar Devolución</a>
+                            <button class="btn btn-danger void-sale-btn" data-id="<?php echo $sale['id']; ?>">Anular Venta Completa</button>
+                        <?php endif; ?>
                     <?php endif; ?>
                 </div>
             </div>

@@ -1,18 +1,12 @@
 <?php
 header('Content-Type: application/json');
 
-session_start();
-require_once 'config/db.php';
+require_once 'includes/auth.php';
+auth_require_api_role(['cashier', 'admin']);
 
 $response = ['success' => false, 'message' => 'An unknown error occurred.'];
 
 // --- Security & Validation ---
-if (!isset($_SESSION['user_id'])) {
-    $response['message'] = 'Authentication required.';
-    echo json_encode($response);
-    exit;
-}
-// In a real app, you would also check if the user has an 'admin' role.
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     $response['message'] = 'Invalid request method.';
