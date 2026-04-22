@@ -1,0 +1,11 @@
+admin_login.php,65,90,96,FAIL,0,PASS,YES,1,0,LOW
+admin.php,64,90,96,FAIL,0,PASS,NO,6,0,MEDIUM
+dashboard.php,66,90,96,FAIL,0,PASS,YES,2,1,LOW
+expenses.php,65,90,96,FAIL,0,PASS,YES,4,2,LOW
+monitor.php,64,90,96,FAIL,0,PASS,YES,0,0,LOW
+products.php,66,90,96,FAIL,0,PASS,YES,3,1,LOW
+reports.php,65,90,96,FAIL,0,PASS,NO,0,0,LOW
+sales_history.php,65,90,96,FAIL,0,PASS,YES,1,1,LOW
+shift_management.php,66,90,96,FAIL,0,PASS,YES,5,2,LOW
+totals.php,65,90,96,FAIL,0,PASS,YES,1,1,LOW
+vendedor_login.php,65,80,96,FAIL,0,PASS,NO,1,0,MEDIUM

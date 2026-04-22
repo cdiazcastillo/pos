@@ -148,11 +148,12 @@ function format_payment_method($method) {
     <title>Historial de Ventas - 4 Básico A</title>
     <style>
         :root {
-            --primary-color: #007bff; --secondary-color: #6c757d; --danger-color: #dc3545;
-            --success-color: #28a745; --info-color: #17a2b8; --light-gray: #f8f9fa; --dark-gray: #343a40;
-            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --primary-color: #7c3aed; --secondary-color: #6b7280; --danger-color: #fb7185;
+            --success-color: #14b8a6; --info-color: #3b82f6; --light-gray: #f3f0ff; --dark-gray: #1e1b4b;
+            --font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            --card-shadow: 0 0.5rem 1.5rem rgba(30, 27, 75, 0.1);
         }
-        body { font-family: var(--font-family); background-color: var(--light-gray); color: var(--dark-gray); margin: 0; padding: 14px; }
+        body { font-family: var(--font-family); background-color: var(--light-gray); color: var(--dark-gray); margin: 0; padding: 0.875rem; overflow-x: hidden; }
         .container { max-width: 1200px; margin: auto; background-color: transparent; box-shadow: none; padding: 0; }
         .sticky-top {
             position: sticky;
@@ -184,12 +185,12 @@ function format_payment_method($method) {
         }
         .logo-column img {
             max-width: 72px;
-            border-radius: 10px;
+            border-radius: 1.25rem;
             background: #fff;
             border: 1px solid #dbe4ff;
             padding: 4px;
         }
-        .btn { padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; font-size: 1rem; font-weight: 600; color: white !important; }
+        .btn { padding: 0.65rem 0.95rem; border: none; border-radius: 999rem; cursor: pointer; text-decoration: none; font-size: 0.95rem; font-weight: 700; color: white !important; min-height: 2.75rem; display: inline-flex; align-items: center; justify-content: center; }
         .btn-secondary { background-color: var(--secondary-color) !important; }
         .btn-danger { background-color: var(--danger-color) !important; }
         .btn-warning { background-color: #ffc107 !important; }
@@ -204,7 +205,7 @@ function format_payment_method($method) {
             gap: 6px;
             background-color: #e9ecef;
             padding: 5px;
-            border-radius: 8px;
+            border-radius: 1.25rem;
             width: min(100%, 760px);
         }
         .top-menu-row {
@@ -223,7 +224,7 @@ function format_payment_method($method) {
             text-decoration: none;
             color: var(--secondary-color);
             font-weight: 600;
-            border-radius: 5px;
+            border-radius: 999rem;
             transition: all 0.2s;
             text-align: center;
             display: flex;

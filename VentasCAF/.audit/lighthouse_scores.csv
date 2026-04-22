@@ -1,0 +1,12 @@
+page,performance,accessibility,best_practices,threshold_pass
+admin.php,64,90,96,FAIL
+dashboard.php,66,90,96,FAIL
+totals.php,65,90,96,FAIL
+products.php,66,90,96,FAIL
+reports.php,65,90,96,FAIL
+sales_history.php,65,90,96,FAIL
+shift_management.php,66,90,96,FAIL
+expenses.php,65,90,96,FAIL
+monitor.php,64,90,96,FAIL
+vendedor_login.php,65,80,96,FAIL
+admin_login.php,65,90,96,FAIL

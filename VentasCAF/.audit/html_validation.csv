@@ -1,0 +1,12 @@
+page,validator,issues,status
+admin.php,htmlhint,0,PASS
+dashboard.php,htmlhint,0,PASS
+totals.php,htmlhint,0,PASS
+products.php,htmlhint,0,PASS
+reports.php,htmlhint,0,PASS
+sales_history.php,htmlhint,0,PASS
+shift_management.php,htmlhint,0,PASS
+expenses.php,htmlhint,0,PASS
+monitor.php,htmlhint,0,PASS
+vendedor_login.php,htmlhint,0,PASS
+admin_login.php,htmlhint,0,PASS

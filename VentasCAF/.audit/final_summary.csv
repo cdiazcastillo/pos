@@ -1,0 +1,12 @@
+page,performance,accessibility,best_practices,threshold_pass,html_issues,html_status,overflow_x_hidden,fixed_px_flags,high_px_flags,overflow_risk,page_status
+admin_login.php,65,90,96,FAIL,0,PASS,YES,1,0,LOW,FAIL
+admin.php,64,90,96,FAIL,0,PASS,NO,6,0,MEDIUM,FAIL
+dashboard.php,66,90,96,FAIL,0,PASS,YES,2,1,LOW,FAIL
+expenses.php,65,90,96,FAIL,0,PASS,YES,4,2,LOW,FAIL
+monitor.php,64,90,96,FAIL,0,PASS,YES,0,0,LOW,FAIL
+products.php,66,90,96,FAIL,0,PASS,YES,3,1,LOW,FAIL
+reports.php,65,90,96,FAIL,0,PASS,NO,0,0,LOW,FAIL
+sales_history.php,65,90,96,FAIL,0,PASS,YES,1,1,LOW,FAIL
+shift_management.php,66,90,96,FAIL,0,PASS,YES,5,2,LOW,FAIL
+totals.php,65,90,96,FAIL,0,PASS,YES,1,1,LOW,FAIL
+vendedor_login.php,65,80,96,FAIL,0,PASS,NO,1,0,MEDIUM,FAIL

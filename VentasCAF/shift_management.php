@@ -48,23 +48,25 @@ $basePath = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
         }
 
         :root {
-            --primary-color: #16a34a;
-            --danger-color: #ef4444;
+            --primary-color: #7c3aed;
+            --danger-color: #fb7185;
             --warning-color: #f97316;
             --muted: #6b7280;
-            --dark-gray: #1f2937;
-            --light-bg: #f9fafb;
+            --dark-gray: #1e1b4b;
+            --light-bg: #f3f0ff;
             --border-color: #e5e7eb;
+            --card-shadow: 0 0.5rem 1.5rem rgba(30, 27, 75, 0.1);
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
             background-color: var(--light-bg);
             color: var(--dark-gray);
             line-height: 1.5;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            overflow-x: hidden;
         }
 
         .header {
@@ -96,8 +98,8 @@ $basePath = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
         .btn {
             padding: 10px 16px;
             border: none;
-            border-radius: 8px;
-            font-weight: 600;
+            border-radius: 999rem;
+            font-weight: 700;
             cursor: pointer;
             font-size: 0.9rem;
             transition: all 0.2s;
@@ -105,6 +107,7 @@ $basePath = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
             display: inline-flex;
             align-items: center;
             gap: 6px;
+            min-height: 2.75rem;
         }
 
         .btn-primary {
@@ -169,10 +172,10 @@ $basePath = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
         .card {
             background: #fff;
             border: 1px solid var(--border-color);
-            border-radius: 12px;
+            border-radius: 1.4rem;
             padding: 20px;
             margin-bottom: 20px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            box-shadow: var(--card-shadow);
         }
 
         .card-title {
@@ -192,7 +195,7 @@ $basePath = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
         .status-item {
             background: var(--light-bg);
             border: 1px solid var(--border-color);
-            border-radius: 10px;
+            border-radius: 1.25rem;
             padding: 14px;
             text-align: center;
         }

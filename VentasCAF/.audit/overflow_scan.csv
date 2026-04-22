@@ -1,0 +1,12 @@
+page,overflow_x_hidden,fixed_px_flags,high_px_flags,overflow_risk
+admin.php,NO,6,0,MEDIUM
+dashboard.php,YES,2,1,LOW
+totals.php,YES,1,1,LOW
+products.php,YES,3,1,LOW
+reports.php,NO,0,0,LOW
+sales_history.php,YES,1,1,LOW
+shift_management.php,YES,5,2,LOW
+expenses.php,YES,4,2,LOW
+monitor.php,YES,0,0,LOW
+vendedor_login.php,NO,1,0,MEDIUM
+admin_login.php,YES,1,0,LOW

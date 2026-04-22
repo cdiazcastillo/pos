@@ -1,0 +1,1 @@
+validator=htmlhint (fallback; not equivalent to v.Nu HTML5 conformance checker)
