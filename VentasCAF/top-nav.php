@@ -1,5 +1,13 @@
 <?php
 $activePage = $activePage ?? '';
+$currentRole = (string)($_SESSION['user_role'] ?? '');
+$isCashier = ($currentRole === 'cashier');
+$secondaryHref = $isCashier ? 'products.php' : 'totals.php';
+$secondaryLabel = $isCashier ? 'Productos' : 'Totales';
+$secondaryActive = in_array($activePage, ['totals', 'products'], true) ? 'active' : '';
+$rightHref = $isCashier ? 'expenses.php' : 'index.php';
+$rightLabel = $isCashier ? 'Gastos' : 'POS';
+$rightActive = in_array($activePage, ['pos', 'expenses'], true) ? 'active' : '';
 ?>
 <style>
 body {
@@ -15,14 +23,21 @@ body {
         <span>Menú</span>
     </a>
 
-    <a href="totals.php" class="nav-item <?php echo $activePage === 'totals' ? 'active' : ''; ?>">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M4 20V10"/>
-            <path d="M10 20V4"/>
-            <path d="M16 20v-7"/>
-            <path d="M22 20V8"/>
-        </svg>
-        <span>Totales</span>
+    <a href="<?php echo $secondaryHref; ?>" class="nav-item <?php echo $secondaryActive; ?>">
+        <?php if ($isCashier): ?>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 7.5 12 3l9 4.5-9 4.5-9-4.5Z"/>
+                <path d="M3 7.5V16.5L12 21l9-4.5V7.5"/>
+            </svg>
+        <?php else: ?>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 20V10"/>
+                <path d="M10 20V4"/>
+                <path d="M16 20v-7"/>
+                <path d="M22 20V8"/>
+            </svg>
+        <?php endif; ?>
+        <span><?php echo $secondaryLabel; ?></span>
     </a>
 
     <a href="index.php" class="fab" aria-label="Ir a Ventas POS">
@@ -39,11 +54,11 @@ body {
         <span>Historial</span>
     </a>
 
-    <a href="index.php" class="nav-item <?php echo $activePage === 'pos' ? 'active' : ''; ?>">
+    <a href="<?php echo $rightHref; ?>" class="nav-item <?php echo $rightActive; ?>">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <rect x="2.5" y="5" width="19" height="14" rx="2"/>
             <path d="M2.5 10h19"/>
         </svg>
-        <span>POS</span>
+        <span><?php echo $rightLabel; ?></span>
     </a>
 </nav>

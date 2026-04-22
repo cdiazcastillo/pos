@@ -92,88 +92,6 @@ $netSlice = max(0, 100 - $returnSlice - $expenseSlice);
             padding-bottom: 5.5rem;
         }
 
-        .topbar {
-            background: linear-gradient(135deg, var(--primary), #8b5cf6);
-            color: #fff;
-            padding: 1rem;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.75rem;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .identity {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            min-width: 0;
-        }
-
-        .avatar {
-            inline-size: 2.5rem;
-            block-size: 2.5rem;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
-            display: grid;
-            place-items: center;
-            font-weight: 700;
-            font-size: 0.85rem;
-        }
-
-        .title-wrap h1 {
-            margin: 0;
-            font-size: clamp(1rem, 4vw, 1.4rem);
-            line-height: 1.2;
-        }
-
-        .month-nav {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-top: 0.2rem;
-            font-size: 0.78rem;
-            font-weight: 600;
-            opacity: 0.95;
-        }
-
-        .month-btn {
-            border: 0;
-            background: rgba(255, 255, 255, 0.24);
-            color: #fff;
-            border-radius: 999rem;
-            inline-size: 2rem;
-            block-size: 2rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 2.75rem;
-            min-height: 2.75rem;
-            cursor: pointer;
-        }
-
-        .top-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            justify-content: flex-end;
-        }
-
-        .btn-pill {
-            border: 0;
-            text-decoration: none;
-            color: #fff;
-            font-weight: 700;
-            font-size: 0.8rem;
-            border-radius: 999rem;
-            padding: 0.65rem 0.9rem;
-            min-width: 2.75rem;
-            min-height: 2.75rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255, 255, 255, 0.24);
-        }
 
         .content {
             width: min(100%, 80rem);
@@ -248,27 +166,38 @@ $netSlice = max(0, 100 - $returnSlice - $expenseSlice);
         .badge.warning { background: rgba(249, 115, 22, 0.12); color: #9a3412; }
         .badge.danger { background: rgba(251, 113, 133, 0.12); color: #9f1239; }
 
-        .chip-toggle {
-            display: inline-flex;
-            background: rgba(124, 58, 237, 0.12);
-            border-radius: 999rem;
-            padding: 0.2rem;
+        .distribution-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+            gap: 0.65rem;
+        }
+
+        .dist-item {
+            border-radius: 1rem;
+            border: 0.06rem solid rgba(124, 58, 237, 0.12);
+            background: #faf8ff;
+            padding: 0.75rem;
+            display: grid;
             gap: 0.2rem;
         }
 
-        .chip {
-            border: 0;
-            border-radius: 999rem;
-            background: transparent;
-            padding: 0.45rem 0.7rem;
-            min-height: 2.75rem;
-            min-width: 2.75rem;
-            font-size: 0.75rem;
-            font-weight: 700;
+        .dist-item .name {
+            font-size: 0.72rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
             color: var(--text-muted);
+            font-weight: 700;
         }
 
-        .chip.active { background: #fff; color: var(--text-dark); }
+        .dist-item .value {
+            font-size: 1.05rem;
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .dist-item .value.success { color: var(--success); }
+        .dist-item .value.danger { color: var(--danger); }
+        .dist-item .value.warning { color: var(--warning); }
 
         .stats {
             display: grid;
@@ -338,7 +267,7 @@ $netSlice = max(0, 100 - $returnSlice - $expenseSlice);
 
         .line-chart {
             width: 100%;
-            height: clamp(8rem, 20vw, 12rem);
+            height: clamp(7rem, 18vw, 10rem);
             border-radius: 1rem;
             background: linear-gradient(180deg, rgba(124, 58, 237, 0.12), rgba(124, 58, 237, 0.02));
             padding: 0.45rem;
@@ -363,6 +292,7 @@ $netSlice = max(0, 100 - $returnSlice - $expenseSlice);
             background: linear-gradient(90deg, var(--primary), #8b5cf6);
             border-radius: inherit;
             width: <?php echo $netRatio; ?>%;
+            min-width: 0.3rem;
         }
 
         .products {
@@ -497,7 +427,6 @@ $netSlice = max(0, 100 - $returnSlice - $expenseSlice);
         }
 
         @media (min-width: 48rem) {
-            .topbar { padding: 1rem 1.25rem; }
             .content { padding: 1.25rem; gap: 1.1rem; }
         }
 
@@ -512,33 +441,13 @@ $netSlice = max(0, 100 - $returnSlice - $expenseSlice);
                 border-bottom: 0.06rem solid rgba(124, 58, 237, 0.15);
                 order: 1;
             }
-            .topbar { order: 0; }
-            .content { order: 2; }
+            .content { order: 0; }
         }
     </style>
 </head>
 <body>
     <?php $activePage = 'admin'; include 'top-nav.php'; ?>
     <div class="app">
-        <header class="topbar">
-            <div class="identity">
-                <div class="avatar"><?php echo strtoupper(substr((string)($currentUser['username'] ?? 'AD'), 0, 2)); ?></div>
-                <div class="title-wrap">
-                    <h1>Monitor Financiero</h1>
-                    <div class="month-nav">
-                        <button type="button" class="month-btn" aria-label="Mes anterior">&lt;</button>
-                        <span>Ago 2023</span>
-                        <button type="button" class="month-btn" aria-label="Mes siguiente">&gt;</button>
-                    </div>
-                </div>
-            </div>
-            <div class="top-actions">
-                <a href="admin.php" class="btn-pill">Menú</a>
-                <a href="index.php" class="btn-pill">Volver POS</a>
-                <a href="logout.php" class="btn-pill">Cerrar sesión</a>
-            </div>
-        </header>
-
         <main class="content">
             <article class="card">
                 <div class="card-head">
@@ -621,20 +530,23 @@ $netSlice = max(0, 100 - $returnSlice - $expenseSlice);
                 <div class="card-head">
                     <div>
                         <div class="kpi-label">Distribución diaria</div>
-                        <div class="chip-toggle" aria-label="Selector de vista">
-                            <button type="button" class="chip active">Categorías</button>
-                            <button type="button" class="chip">Naturaleza</button>
-                        </div>
+                        <div class="kpi-sub">Resumen actual de neto, devoluciones y gastos</div>
                     </div>
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 21H4a1 1 0 0 1-1-1V3"/><path d="M7 14l4-4 3 3 5-5"/></svg>
                 </div>
 
-                <div class="donut-wrap">
-                    <div class="donut" role="img" aria-label="Distribución de neto, devoluciones y gastos">
-                        <div class="donut-center">
-                            <div class="small">Total neto</div>
-                            <div class="amount">$<?php echo number_format($netToday, 0, '', '.'); ?></div>
-                        </div>
+                <div class="distribution-grid" role="group" aria-label="Distribución de neto, devoluciones y gastos">
+                    <div class="dist-item">
+                        <div class="name">Neto</div>
+                        <div class="value success">$<?php echo number_format($netToday, 0, '', '.'); ?></div>
+                    </div>
+                    <div class="dist-item">
+                        <div class="name">Devoluciones</div>
+                        <div class="value danger">-$<?php echo number_format($returnesTodayAmount, 0, '', '.'); ?></div>
+                    </div>
+                    <div class="dist-item">
+                        <div class="name">Gastos</div>
+                        <div class="value warning">-$<?php echo number_format($expensesTodayAmount, 0, '', '.'); ?></div>
                     </div>
                 </div>
 

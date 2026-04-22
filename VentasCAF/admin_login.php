@@ -58,38 +58,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Inter", "Poppins", "Segoe UI", Roboto, Arial, sans-serif; background: var(--bg-app); overflow-x: hidden; color: var(--text-dark); }
 
         .app { min-height: 100svh; display: flex; flex-direction: column; position: relative; z-index: 1; }
-        .top-nav {
-            position: sticky;
-            top: 0;
-            z-index: 20;
-            background: #6d28d9;
-            padding: 10px 12px;
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        .nav-btn {
-            border: none;
-            border-radius: 999px;
-            padding: 8px 12px;
-            font-size: 0.82rem;
-            font-weight: 700;
-            color: #fff;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 38px;
-        }
-        .nav-btn.menu { background: var(--success); }
-        .nav-btn.pos { background: var(--danger); }
-        .nav-btn.logout { background: var(--blue); }
 
         .wrap { flex: 1; display: grid; place-items: center; padding: clamp(12px, 3vw, 24px); }
         .card { width: min(560px, 96vw); background: var(--bg-card); border: 1px solid #ece8ff; border-radius: 24px; padding: clamp(16px, 3vw, 24px); box-shadow: var(--shadow-soft); }
         .logo-wrap { display: flex; justify-content: center; margin-bottom: 16px; }
-        .logo-badge { inline-size: 4rem; block-size: 4rem; border-radius: 50%; background: rgba(124, 58, 237, 0.12); color: var(--primary); display: grid; place-items: center; font-size: 1.2rem; font-weight: 800; }
+        .logo-image {
+            width: 160px;
+            height: 160px;
+            object-fit: contain;
+            border-radius: 1.2rem;
+            background: #fff;
+            border: 1px solid #dbe4ff;
+            padding: 10px;
+            box-shadow: 0 0.7rem 1.8rem rgba(30, 27, 75, 0.18);
+        }
         h1 { margin: 0 0 6px; font-size: 1.3rem; color: var(--text-dark); text-align: center; }
         p { margin: 0 0 12px; color: var(--text-muted); font-size: .9rem; text-align: center; }
         .field { display: grid; gap: 6px; margin-top: 10px; }
@@ -103,22 +85,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         @media (max-width: 520px) {
             .links { grid-template-columns: 1fr; }
-            .top-nav { justify-content: stretch; }
-            .nav-btn { flex: 1; }
+            .logo-image { width: 128px; height: 128px; }
         }
     </style>
 </head>
 <body>
     <div class="app">
-        <div class="top-nav">
-            <a href="index.php" class="nav-btn pos">Volver al POS</a>
-            <a href="logout.php" class="nav-btn logout">Cerrar sesión</a>
-        </div>
-
     <main class="wrap">
         <form class="card" method="POST" autocomplete="off">
             <div class="logo-wrap">
-                <div class="logo-badge" aria-hidden="true">AD</div>
+                <img src="img/logo.png" alt="Logo" class="logo-image">
             </div>
             <h1>Equipo de trabajo</h1>
             <div class="field">

@@ -67,17 +67,25 @@ $allPermissions = $db->query(
         }
 
         .permissions-container {
-            max-width: 1200px;
+            max-width: 1080px;
             margin: 0 auto;
-            padding: clamp(12px, 3vw, 24px);
+            padding: clamp(12px, 3vw, 18px);
+        }
+
+        .permissions-shell {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 1rem;
+            box-shadow: 0 0.5rem 1.5rem rgba(30, 27, 75, 0.08);
+            padding: clamp(12px, 2vw, 20px);
         }
 
         .role-selector-row {
             display: flex;
             align-items: center;
             gap: 12px;
-            margin-bottom: 24px;
-            background: #fff;
+            margin-bottom: 16px;
+            background: #f8faff;
             padding: 14px 16px;
             border-radius: 12px;
             border: 1px solid #e5e7eb;
@@ -100,11 +108,11 @@ $allPermissions = $db->query(
         }
 
         .role-section {
-            background: #fff;
+            background: #fcfcff;
             border: 1px solid #e5e7eb;
             border-radius: 12px;
             padding: clamp(14px, 2vw, 22px);
-            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+            box-shadow: inset 0 0 0 1px rgba(124, 58, 237, 0.03);
         }
 
         .role-section h3 {
@@ -183,8 +191,9 @@ $allPermissions = $db->query(
         .button-group {
             margin-top: 20px;
             display: flex;
-            gap: 10px;
+            gap: 8px;
             flex-wrap: wrap;
+            justify-content: flex-end;
         }
 
         button {
@@ -248,11 +257,11 @@ $allPermissions = $db->query(
 
         .sticky-top {
             position: sticky;
-            top: 0;
+            top: calc(var(--nav-height, 3.8rem) + 0.35rem);
             z-index: 90;
-            background: #fff;
+            background: #f3f5fb;
             border-bottom: 1px solid #e5e7eb;
-            padding: 15px;
+            padding: 10px 14px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -269,13 +278,13 @@ $allPermissions = $db->query(
         .back-link {
             color: var(--primary-color);
             text-decoration: none;
-            font-size: 0.88rem;
+            font-size: 0.86rem;
             padding: 8px 12px;
-            background: #f8f9fa;
-            border-radius: 4px;
+            background: #fff;
+            border-radius: 999rem;
             transition: all 0.2s;
             font-weight: 600;
-            border: 1px solid transparent;
+            border: 1px solid #d1d5db;
         }
 
         .back-link:hover {
@@ -316,6 +325,7 @@ $allPermissions = $db->query(
     </div>
 
     <div class="permissions-container">
+        <div class="permissions-shell">
         <?php if (!empty($message)): ?>
             <div class="message <?php echo $messageType; ?>">
                 <?php echo htmlspecialchars($message); ?>
@@ -379,6 +389,7 @@ $allPermissions = $db->query(
                     <button type="submit" class="btn-primary" <?php echo $isAdminRole ? 'disabled' : ''; ?>>Guardar Permisos</button>
                 </div>
             </form>
+        </div>
         </div>
     </div>
 </body>

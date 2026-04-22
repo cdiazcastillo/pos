@@ -70,36 +70,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             flex-direction: column;
         }
 
-        .top-nav {
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            background: #6d28d9;
-            padding: 10px 12px;
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .nav-btn {
-            border: none;
-            border-radius: 999px;
-            padding: 8px 12px;
-            font-size: 0.82rem;
-            font-weight: 700;
-            color: #fff;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 38px;
-        }
-
-        .nav-btn.menu { background: var(--success); }
-        .nav-btn.pos { background: var(--danger); }
-        .nav-btn.logout { background: var(--blue); }
-
         .wrap {
             flex: 1;
             display: grid;
@@ -116,39 +86,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             text-align: center;
         }
 
-        .label {
-            font-size: 0.72rem;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            font-weight: 800;
-            color: #4b5563;
-            margin-bottom: 8px;
-        }
-
         .logo-wrap {
             display: flex;
             justify-content: center;
-            margin-bottom: 10px;
+            margin-bottom: 16px;
         }
 
-        .logo-badge {
-            inline-size: 4rem;
-            block-size: 4rem;
-            border-radius: 50%;
-            background: rgba(124, 58, 237, 0.12);
-            color: var(--primary);
-            display: grid;
-            place-items: center;
-            font-size: 1.2rem;
-            font-weight: 800;
-        }
-
-        .big-number {
-            font-size: clamp(1.8rem, 4vw, 2.4rem);
-            font-weight: 800;
-            line-height: 1.1;
-            margin: 4px 0 16px;
-            color: var(--text-dark);
+        .logo-image {
+            width: 160px;
+            height: 160px;
+            object-fit: contain;
+            border-radius: 1.1rem;
+            background: #fff;
+            border: 1px solid #dbe4ff;
+            padding: 10px;
+            box-shadow: 0 0.7rem 1.8rem rgba(30, 27, 75, 0.18);
         }
 
         .btn {
@@ -196,25 +148,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         @media (max-width: 520px) {
             .card { border-radius: 20px; padding: 16px; }
-            .top-nav { justify-content: stretch; }
-            .nav-btn { flex: 1; }
+            .logo-image { width: 128px; height: 128px; }
         }
     </style>
 </head>
 <body>
     <div class="app">
-        <div class="top-nav">
-            <a href="index.php" class="nav-btn pos">Volver al POS</a>
-            <a href="logout.php" class="nav-btn logout">Cerrar sesión</a>
-        </div>
-
         <main class="wrap">
         <form class="card" method="POST" autocomplete="off" novalidate>
-            <div class="label">Acceso rápido</div>
             <div class="logo-wrap">
-                <div class="logo-badge" aria-hidden="true">VD</div>
+                <img src="img/logo.png" alt="Logo" class="logo-image">
             </div>
-            <div class="big-number">Vendedor</div>
             <button type="submit" class="btn btn-primary">Iniciar Ventas</button>
             <a href="admin_login.php" class="btn-green">Equipo de trabajo</a>
             <?php if ($error !== ''): ?>

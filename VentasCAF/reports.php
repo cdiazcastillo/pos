@@ -9,24 +9,53 @@ $currentUser = auth_require_role(['admin'], 'admin_login.php', 'index.php');
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reportes de Turno</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="reports.css">
     <style>
-        .btn { padding: 10px 16px; border: none; border-radius: 10px; cursor: pointer; text-decoration: none; font-size: 0.92rem; font-weight: 700; color: white !important; display: inline-block; text-align: center; white-space: nowrap; transition: all 0.2s; }
-        .btn:hover { transform: translateY(-1px); opacity: 0.9; }
-        .btn-secondary { background-color: #6b7280 !important; }
-        .btn-success { background-color: #1f9d61 !important; }
-        .btn-primary { background-color: #3457dc !important; }
+        .reports-page {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 12px;
+            display: grid;
+            gap: 12px;
+        }
+
+        .reports-header-card,
+        .reports-summary-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 1rem;
+            box-shadow: 0 0.5rem 1.5rem rgba(30, 27, 75, 0.08);
+            padding: 12px;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 999rem;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #fff !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 2.75rem;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover { transform: translateY(-1px); }
+        .btn-success { background-color: #7c3aed !important; }
     </style>
 </head>
 <body>
     <?php $activePage = 'admin'; include 'top-nav.php'; ?>
-    <div class="container">
-        <div class="sticky-top">
+    <div class="reports-page">
+        <div class="reports-header-card sticky-top">
             <div class="header">
                 <div class="reports-title-wrap">
                     <h1>Reportes de Turno</h1>
-                    <p class="reports-brand">4 Básico A · Resumen y exportación de turnos</p>
+                    <p class="reports-brand">Resumen y exportación de turnos</p>
                 </div>
                 <div class="logo-column">
                     <img src="img/logo.png" alt="Logo">
@@ -56,7 +85,7 @@ $currentUser = auth_require_role(['admin'], 'admin_login.php', 'index.php');
                 </tbody>
             </table>
         </div>
-        <div id="reports-summary" class="report-details" style="display:block; margin-top:12px;">
+        <div id="reports-summary" class="report-details reports-summary-card" style="display:block; margin-top:0;">
             <strong>Total turnos cargados:</strong> <span id="total-shifts-count">0</span>
         </div>
         <div id="report-details" class="report-details" style="display: none;">

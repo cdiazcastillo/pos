@@ -13,6 +13,40 @@ $activeShift = $db->query(
      JOIN users u ON u.id = s.user_id
      WHERE s.user_id = ? AND s.status = 'open'
      ORDER BY s.start_time DESC LIMIT 1",
+    [$userId]
+);
+
+$hasActiveShift = $activeShift && isset($activeShift['id']);
+$activeShiftId = $activeShift ? intval($activeShift['id']) : 0;
+
+$expenses = [];
+$totalExpenses = 0;
+$totalCashExpenses = 0;
+
+if ($hasActiveShift) {
+    $expenses = $db->query(
+        "SELECT id, description, amount, expense_time, COALESCE(payment_method, 'cash') AS payment_method
+         FROM expenses
+         WHERE shift_id = ? AND sale_id IS NULL
+         ORDER BY expense_time DESC",
+        [$activeShiftId],
+        true
+    ) ?: [];
+
+    foreach ($expenses as &$expenseRow) {
+        $amount = intval($expenseRow['amount'] ?? 0);
+        $paymentMethod = ($expenseRow['payment_method'] ?? 'cash') === 'transfer' ? 'transfer' : 'cash';
+        $expenseRow['payment_method'] = $paymentMethod;
+
+        $totalExpenses += $amount;
+        if ($paymentMethod === 'cash') {
+            $totalCashExpenses += $amount;
+        }
+    }
+    unset($expenseRow);
+}
+?>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">

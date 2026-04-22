@@ -95,60 +95,44 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
             box-shadow: 0 12px 30px rgba(15, 23, 42, 0.15);
         }
 
-        .admin-header {
+        .admin-toolbar {
             position: sticky;
             top: calc(var(--nav-height, 3.8rem) + 0.4rem);
             z-index: 95;
-            display: grid;
-            gap: 0.6rem;
-            padding: 14px 16px;
-            background: linear-gradient(135deg, var(--primary-color), #4f46e5);
-            color: white;
-        }
-
-        .header-main {
             display: flex;
             align-items: center;
-            gap: 12px;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 10px 14px;
+            background: #fff;
+            border-bottom: 1px solid #e5eaf8;
         }
 
-        .logo-spotlight {
-            width: 132px;
-            height: 132px;
-            border-radius: 22px;
+        .toolbar-left {
             display: inline-flex;
             align-items: center;
-            justify-content: center;
-            background: radial-gradient(circle at 30% 30%, #ffffff, #eef2ff 68%, #dbe4ff 100%);
-            border: 2px solid rgba(255, 255, 255, 0.78);
-            box-shadow:
-                0 16px 30px rgba(37, 62, 168, 0.35),
-                0 0 0 6px rgba(255, 255, 255, 0.18);
-            flex-shrink: 0;
+            gap: 10px;
+            min-width: 0;
         }
 
-        .admin-header img {
-            width: 100px;
-            height: 100px;
+        .toolbar-logo {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
             object-fit: contain;
-            filter: drop-shadow(0 4px 8px rgba(37, 62, 168, 0.2));
+            border: 1px solid #dbe4ff;
+            background: #fff;
+            padding: 3px;
         }
 
-        .header-text {
-            flex: 1;
-            text-align: left;
-        }
-
-        .admin-header h1 {
+        .toolbar-title {
             margin: 0;
-            font-size: 1.28rem;
+            font-size: 1rem;
             line-height: 1.2;
-        }
-
-        .admin-header p {
-            margin: 8px 0 0;
-            opacity: 0.95;
-            font-size: 0.95rem;
+            color: var(--dark-gray);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .status-pill {
@@ -156,11 +140,12 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
             align-items: center;
             gap: 8px;
             border-radius: 999px;
-            padding: 8px 12px;
+            padding: 6px 10px;
             font-weight: 700;
-            font-size: 0.84rem;
-            background-color: rgba(255, 255, 255, 0.18);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            font-size: 0.8rem;
+            background-color: #f3f5ff;
+            border: 1px solid #d6defa;
+            color: #374151;
         }
 
         .header-status {
@@ -873,23 +858,17 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
                 padding: 10px;
             }
 
-            .header-main {
-                align-items: center;
-                gap: 10px;
+            .admin-toolbar {
+                padding: 8px 10px;
             }
 
-            .logo-spotlight {
-                width: 116px;
-                height: 116px;
+            .toolbar-logo {
+                width: 40px;
+                height: 40px;
             }
 
-            .admin-header img {
-                width: 86px;
-                height: 86px;
-            }
-
-            .status-pill {
-                margin-top: 6px;
+            .toolbar-title {
+                font-size: 0.92rem;
             }
 
             .footer-actions {
@@ -905,14 +884,10 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
 <body>
     <?php $activePage = 'admin'; include 'top-nav.php'; ?>
     <div class="admin-container">
-        <div class="admin-header">
-            <div class="header-main">
-                <div class="logo-spotlight">
-                    <img src="img/logo.png" alt="Logo">
-                </div>
-                <div class="header-text">
-                    <h1>Panel de Administración</h1>
-                </div>
+        <div class="admin-toolbar">
+            <div class="toolbar-left">
+                <img src="img/logo.png" alt="Logo" class="toolbar-logo">
+                <h1 class="toolbar-title">Panel de Administración</h1>
             </div>
             <div class="status-pill header-status <?php echo $has_active_shift ? 'open' : 'closed'; ?>">
                 <span class="status-dot"></span>
