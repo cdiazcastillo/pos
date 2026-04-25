@@ -222,29 +222,8 @@ try {
     <?php $activePage = 'admin'; include 'top-nav.php'; ?>
 
     <div class="container">
-        <div class="sticky-top">
-            <div class="header">
-                <div class="title-wrap">
-                    <h1>Panel Turno en Curso</h1>
-                    <span class="shift-badge"><?php echo $shift_id ? 'Turno actual (ID: ' . $shift_id . ')' : 'Sin turno activo'; ?></span>
-                </div>
-                <div class="logo-column">
-                    <img src="img/logo.png" alt="Logo">
-                </div>
-            </div>
-
-            <div class="header-actions">
-                <?php if ($shift_id): ?>
-                    <button id="end-shift-btn" class="btn btn-end-blue">Cerrar Turno (ID: <?php echo $shift_id; ?>)</button>
-                <?php endif; ?>
-                <a href="logout.php" class="btn btn-secondary">Cerrar sesión</a>
-            </div>
-        </div>
-
         <?php if ($shift_id): ?>
             <p>Mostrando datos del turno activo para control rápido de caja.</p>
-        <?php else: ?>
-            <p>No hay un turno activo. Inicia uno para ver el resumen.</p>
         <?php endif; ?>
 
         <div id="dashboard-grid">
@@ -283,58 +262,5 @@ try {
 
     <div id="toast-notification"></div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const endShiftBtn = document.getElementById('end-shift-btn');
-            
-            if (endShiftBtn) {
-                endShiftBtn.addEventListener('click', () => {
-                    const shiftId = <?php echo json_encode($shift_id); ?>;
-                    const expectedCash = <?php echo json_encode($expected_cash_in_drawer); ?>;
-                    
-                    if (confirm(`¿Estás seguro de que quieres cerrar el Turno ${shiftId}? El efectivo esperado en caja es: $${expectedCash.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")} `)) {
-                        closeShift(shiftId, expectedCash);
-                    }
-                });
-            }
-
-            function showToast(message, isError = false) {
-                const toast = document.getElementById('toast-notification');
-                if (!toast) return;
-
-                toast.textContent = message;
-                toast.style.backgroundColor = isError ? 'var(--danger-color)' : 'var(--success-color)';
-                toast.classList.add('show');
-
-                setTimeout(() => {
-                    toast.classList.remove('show');
-                }, 3000);
-            }
-
-            async function closeShift(shiftId, finalCash) {
-                const formData = new FormData();
-                formData.append('shift_id', shiftId);
-                formData.append('final_cash', finalCash);
-
-                try {
-                    const response = await fetch('end_shift_api.php', {
-                        method: 'POST',
-                        body: formData
-                    });
-                    const result = await response.json();
-
-                    if (result.success) {
-                        showToast('Turno cerrado con éxito!');
-                        setTimeout(() => window.location.href = 'index.php', 1000); // Go back to POS
-                    } else {
-                        showToast('Error al cerrar turno: ' + result.message, true);
-                    }
-                } catch (error) {
-                    console.error('Failed to close shift:', error);
-                    showToast('Falla de conexión al intentar cerrar el turno.', true);
-                }
-            }
-        });
-    </script>
 </body>
 </html>

@@ -916,9 +916,14 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
                             <span class="card-subtitle">Resumen acumulado del negocio.</span>
                         </a>
                         <a href="monitor.php" class="menu-card">
-                            <span class="card-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 16 8-8"/><path d="m11 7 6 6"/><path d="M3 12h5M16 12h5M12 3v5M12 16v5"/></svg></span>
-                            <span class="card-title">Control operativo</span>
-                            <span class="card-subtitle">Resumen clave y monitoreo de correos.</span>
+                            <span class="card-icon">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M21 21H4a1 1 0 0 1-1-1V3"/>
+                                    <path d="M7 14l4-4 3 3 5-5"/>
+                                </svg>
+                            </span>
+                            <span class="card-title">Monitor del día</span>
+                            <span class="card-subtitle">Ventas, gastos y productos en tiempo real.</span>
                         </a>
                     <?php endif; ?>
                     <a href="expenses.php" class="menu-card">
@@ -931,11 +936,6 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
                             <span class="card-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20V8"/></svg></span>
                             <span class="card-title">Cierre de Turnos</span>
                             <span class="card-subtitle">Cuadre de caja y cierre operativo con resumen financiero.</span>
-                        </a>
-                        <a href="monitor.php" class="menu-card" target="_blank" rel="noopener noreferrer">
-                            <span class="card-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></svg></span>
-                            <span class="card-title">Insights en tiempo real</span>
-                            <span class="card-subtitle">Abrir página nueva con ingresos netos, gastos y productos más/menos vendidos.</span>
                         </a>
                         <?php if ($isSuperAdmin): ?>
                         <a href="#" id="open-super-admin-tools-btn" class="menu-card">
@@ -978,7 +978,7 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
 
                 <div class="btn-row">
                     <button id="start-shift-btn" class="menu-button success" <?php if (($isAdmin && empty($open_shifts_for_admin)) || (!$isAdmin && $has_active_shift)) echo 'disabled'; ?>><?php echo $isAdmin ? 'Usar turno seleccionado' : 'Iniciar turno'; ?></button>
-                    <button id="end-shift-btn" class="menu-button end-blue" <?php if (!$has_active_shift) echo 'disabled'; ?>>Terminar turno</button>
+                    <button id="end-shift-btn" class="menu-button end-blue" <?php if (!$has_active_shift) echo 'disabled'; ?>>Terminar turno <?php echo $has_active_shift ? '(ID: '.intval($active_shift['id']).')' : ''; ?></button>
                     <a href="index.php" class="menu-button secondary">Regresar al inicio</a>
                 </div>
 
@@ -1243,7 +1243,7 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
             <?php endif; ?>
 
             <div class="footer-actions">
-                <button id="end-shift-footer-btn" class="menu-button end-blue">Terminar turno</button>
+                <button id="end-shift-footer-btn" class="menu-button end-blue"><?php echo $has_active_shift ? 'Terminar turno (ID: '.intval($active_shift['id'] ?? 0).')' : 'Iniciar turno'; ?></button>
                 <a href="logout.php" class="menu-button danger" style="margin-left:8px;">Cerrar sesión</a>
             </div>
         </div>
@@ -1320,6 +1320,7 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
         const modalCancelBtn = document.getElementById('modal-cancel-btn');
         const modalConfirmBtn = document.getElementById('modal-confirm-btn');
         const adminShiftTarget = document.getElementById('admin-shift-target');
+        const endShiftFooterBtn = document.getElementById('end-shift-footer-btn');
         const quickUseShiftButtons = document.querySelectorAll('.quick-use-shift-btn');
         const quickCloseShiftButtons = document.querySelectorAll('.quick-close-shift-btn');
         const canLoadRealtimeSummary = isAdminUser && !!realtimeInsightsPanel;
@@ -1694,6 +1695,86 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
             }
         }
 
+        if (endShiftFooterBtn) {
+            endShiftFooterBtn.addEventListener('click', async () => {
+                // Actualizar texto del botón según estado
+                endShiftFooterBtn.textContent = hasActiveShift 
+                    ? 'Terminar turno' 
+                    : 'Iniciar turno';
+
+                if (!hasActiveShift) {
+                    const startPrompt = await openActionModal({
+                        title: 'Iniciar turno',
+                        message: 'No hay turno activo. Ingresa el efectivo inicial.',
+                        confirmText: 'Iniciar turno',
+                        cancelText: 'Cancelar',
+                        confirmDanger: false,
+                        inputLabel: 'Efectivo inicial',
+                        inputPlaceholder: 'Ej: 50000',
+                        requireInput: true
+                    });
+
+                    if (!startPrompt.confirmed) return;
+
+                    const amount = parseAmount(startPrompt.value);
+                    if (!Number.isFinite(amount) || amount < 0) {
+                        showToast('Monto inválido.', true);
+                        return;
+                    }
+
+                    endShiftFooterBtn.disabled = true;
+                    try {
+                        const data = await postForm('start_shift_api.php', { initial_cash: amount, mode: 'own' });
+                        if (data.success) {
+                            showToast('Turno iniciado correctamente.');
+                            setTimeout(() => window.location.reload(), 700);
+                            return;
+                        }
+                        showToast(data.message || 'No se pudo iniciar el turno.', true);
+                    } catch (e) {
+                        showToast('Error de conexión.', true);
+                    } finally {
+                        endShiftFooterBtn.disabled = false;
+                    }
+                    return;
+                }
+
+                const closePrompt = await openActionModal({
+                    title: 'Terminar turno',
+                    message: 'Ingresa el efectivo final en caja para cerrar.',
+                    confirmText: 'Cerrar turno',
+                    cancelText: 'Cancelar',
+                    confirmDanger: true,
+                    inputLabel: 'Efectivo final',
+                    inputPlaceholder: 'Ej: 145000',
+                    requireInput: true
+                });
+
+                if (!closePrompt.confirmed) return;
+
+                const amount = parseAmount(closePrompt.value);
+                if (!Number.isFinite(amount) || amount < 0) {
+                    showToast('Monto inválido.', true);
+                    return;
+                }
+
+                endShiftFooterBtn.disabled = true;
+                try {
+                    const data = await postForm('end_shift_api.php', { final_cash: amount });
+                    if (data.success) {
+                        showToast('Turno cerrado correctamente.');
+                        setTimeout(() => window.location.reload(), 700);
+                        return;
+                    }
+                    showToast(data.message || 'No se pudo cerrar el turno.', true);
+                } catch (e) {
+                    showToast('Error de conexión.', true);
+                } finally {
+                    endShiftFooterBtn.disabled = false;
+                }
+            });
+        }
+
         async function loadClosShiftSummary() {
             try {
                 const response = await fetch('get_admin_realtime_summary_api.php', { cache: 'no-store' });
@@ -1936,9 +2017,26 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
                 modalInputLabel.textContent = inputLabel;
                 modalInput.placeholder = inputPlaceholder;
                 modalInput.value = inputValue;
+                if (requireInput) {
+                    modalInput.setAttribute('inputmode', 'numeric');
+                    modalInput.setAttribute('pattern', '[0-9]*');
+                    modalInput.setAttribute('autocomplete', 'off');
+                    modalInput.setAttribute('autocorrect', 'off');
+                    modalInput.setAttribute('spellcheck', 'false');
+                    modalInput.oninput = () => {
+                        modalInput.value = String(modalInput.value).replace(/\D/g, '');
+                    };
+                } else {
+                    modalInput.removeAttribute('inputmode');
+                    modalInput.removeAttribute('pattern');
+                    modalInput.oninput = null;
+                }
             } else {
                 modalInputWrap.classList.remove('show');
                 modalInput.value = '';
+                modalInput.removeAttribute('inputmode');
+                modalInput.removeAttribute('pattern');
+                modalInput.oninput = null;
             }
 
             actionModal.classList.add('show');
