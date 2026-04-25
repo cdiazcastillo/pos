@@ -932,7 +932,7 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
                         <span class="card-subtitle">Abrir página nueva para registrar, editar y eliminar gastos.</span>
                     </a>
                     <?php if ($isAdmin): ?>
-                        <a href="#" id="open-security-manager-btn" class="menu-card">
+                        <a href="shifts_manager.php" class="menu-card">
                             <span class="card-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20V8"/></svg></span>
                             <span class="card-title">Cierre de Turnos</span>
                             <span class="card-subtitle">Cuadre de caja y cierre operativo con resumen financiero.</span>

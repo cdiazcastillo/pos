@@ -23,7 +23,13 @@ $total_returns_amount = 0; // Anulacion o Cancelada
 $expected_cash_in_drawer = 0;
 
 try {
-    $current_shift = $db->query("SELECT id, initial_cash FROM shifts WHERE user_id = ? AND status = 'open'", [$_SESSION['user_id']]);
+    $current_shift = $db->query(
+        "SELECT id, initial_cash
+         FROM shifts
+         WHERE status = 'open'
+         ORDER BY start_time DESC
+         LIMIT 1"
+    );
 
     if ($current_shift) {
         $shift_id = $current_shift['id'];
@@ -41,12 +47,12 @@ try {
             $gross_transfer_sales_completed = $sales_summary['transfer_sales'] ?? 0;
         }
 
-        // 2. Returns Data (from expenses linked to sales that are STILL completed)
+        // 2. Returns Data (partial returns linked to sales)
         $returns_summary_query = "SELECT SUM(CASE WHEN s.payment_method = 'cash' THEN e.amount ELSE 0 END) AS cash_returns,
                                  SUM(CASE WHEN s.payment_method = 'transfer' THEN e.amount ELSE 0 END) AS transfer_returns
                           FROM expenses e
                           JOIN sales s ON e.sale_id = s.id
-                          WHERE e.shift_id = ? AND e.sale_id IS NOT NULL AND s.status = 'completed'";
+                  WHERE e.shift_id = ? AND e.sale_id IS NOT NULL";
         $returns_summary = $db->query($returns_summary_query, [$shift_id]);
         
         if ($returns_summary) {
@@ -93,8 +99,18 @@ try {
         // Venta Actual (Total Sales NETO)
         $total_sales_current_net = $net_cash_sales + $net_transfer_sales;
 
-        // Anulación o Cancelada (Total NET Returns from Completed Sales)
-        $total_returns_amount = $net_returns_on_completed_sales_cash + $net_returns_on_completed_sales_transfer;
+        // Anulación o Cancelada (voided sales + partial returns)
+        $voided_summary = $db->query(
+            "SELECT
+                SUM(CASE WHEN payment_method = 'cash' THEN total_amount ELSE 0 END) AS voided_cash,
+                SUM(CASE WHEN payment_method = 'transfer' THEN total_amount ELSE 0 END) AS voided_transfer
+             FROM sales
+             WHERE shift_id = ? AND status = 'voided'",
+            [$shift_id]
+        );
+        $voided_cash = floatval($voided_summary['voided_cash'] ?? 0);
+        $voided_transfer = floatval($voided_summary['voided_transfer'] ?? 0);
+        $total_returns_amount = $net_returns_on_completed_sales_cash + $net_returns_on_completed_sales_transfer + $voided_cash + $voided_transfer;
 
         // Efectivo Esperado en Caja (Money actually in the drawer)
         // Initial Cash

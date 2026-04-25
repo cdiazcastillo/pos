@@ -57,7 +57,7 @@ try {
             throw new Exception("Item ID #{$sale_item_id} does not belong to Sale #{$sale_id}.");
         }
 
-        $max_returnable = $original_item['quantity'] - $original_item['quantity_returned'];
+        $max_returnable = max(0, intval($original_item['quantity']) - intval($original_item['quantity_returned']));
         if ($quantity_to_return > $max_returnable) {
             throw new Exception("Cannot return {$quantity_to_return} units of product ID {$original_item['product_id']}. Only {$max_returnable} are returnable.");
         }
@@ -68,9 +68,14 @@ try {
             [$quantity_to_return, $original_item['product_id']]
         );
 
-        // 2e. Update the sale_item to reflect the return
+        // 2e. Update the sale_item to persist net purchased quantity
+        // Net purchased remaining = (quantity - quantity_returned) - returned_now
+        // quantity_returned is normalized to 0 after applying this adjustment.
         $db->execute(
-            "UPDATE sale_items SET quantity_returned = quantity_returned + ? WHERE id = ?",
+            "UPDATE sale_items
+             SET quantity = GREATEST((quantity - quantity_returned) - ?, 0),
+                 quantity_returned = 0
+             WHERE id = ?",
             [$quantity_to_return, $sale_item_id]
         );
 
@@ -100,7 +105,7 @@ try {
 
     // 2h. Check if all items for this sale are now returned, and if so, void the sale
     $remaining_items = $db->query(
-        "SELECT COUNT(*) as count FROM sale_items WHERE sale_id = ? AND quantity > quantity_returned",
+        "SELECT COUNT(*) as count FROM sale_items WHERE sale_id = ? AND quantity > 0",
         [$sale_id]
     );
 

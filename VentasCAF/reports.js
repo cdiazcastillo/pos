@@ -77,10 +77,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     shiftsTableBody.addEventListener('click', function(event) {
-        if (event.target.classList.contains('view-report-btn')) {
-            const shiftId = event.target.dataset.shiftId;
-            fetchReportDetails(shiftId);
-        }
+        const button = event.target.closest('.view-report-btn');
+        if (!button) return;
+        const shiftId = button.dataset.shiftId;
+        if (!shiftId) return;
+        fetchReportDetails(shiftId);
     });
 
     function fetchReportDetails(shiftId) {
@@ -285,85 +286,297 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function buildPdfPresentation(report) {
+    async function buildPdfPresentation(report) {
+        const jspdfNs = window.jspdf;
+        if (!jspdfNs || !jspdfNs.jsPDF) {
+            throw new Error('PDF library not loaded');
+        }
+
         const dateLabel = report.date || new Date().toISOString().slice(0, 10);
         const generatedAt = report.generated_at || new Date().toISOString().slice(0, 19).replace('T', ' ');
         const summary = report.summary || {};
-
         const shifts = report.sales_by_shift || [];
         const topProducts = (report.top_products || []).slice(0, 8);
 
-        const barSvg = createShiftBarsSvg(shifts);
-        const donutSvg = createDonutSvg(summary);
-        const topSvg = createTopProductsSvg(topProducts);
+        const pdf = new jspdfNs.jsPDF({
+            orientation: 'landscape',
+            unit: 'pt',
+            format: 'letter'
+        });
 
-        const html = `
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<title>Resumen del Día — Libro de Ventas</title>
-<style>
-    @page { size: Letter landscape; margin: 12mm; }
-    body { margin: 0; font-family: "Segoe UI", Arial, sans-serif; color: #1f2937; background: #f4f6fb; }
-    .page { position: relative; min-height: 100vh; padding: 14px; }
-    .watermark { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
-    .watermark img { width: 55%; opacity: 0.12; }
-    .title { font-size: 30px; font-weight: 800; color: #7c3aed; margin-bottom: 4px; }
-    .subtitle { font-size: 14px; color: #6b7280; margin-bottom: 12px; }
-    .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 12px; }
-    .kpi { background: #fff; border: 1px solid #ece8ff; border-radius: 14px; box-shadow: 0 6px 16px rgba(124,58,237,0.08); padding: 10px; }
-    .kpi .label { font-size: 12px; color: #6b7280; }
-    .kpi .value { font-size: 22px; font-weight: 800; color: #1e1b4b; }
-    .charts { display: grid; grid-template-columns: 1.25fr 1fr; gap: 12px; }
-    .chart-card { background: #fff; border: 1px solid #ece8ff; border-radius: 14px; box-shadow: 0 6px 16px rgba(30,27,75,0.08); padding: 10px; }
-    .chart-title { font-size: 14px; font-weight: 700; margin-bottom: 6px; color: #334155; }
-    .footer { position: fixed; bottom: 6px; left: 0; right: 0; text-align: center; color: #64748b; font-size: 11px; }
-    .legend { font-size: 12px; color: #475569; margin-top: 6px; }
-</style>
-</head>
-<body>
-    <div class="watermark"><img src="img/logo.png" alt="Logo"></div>
-    <div class="page">
-        <div class="title">Resumen del Día — Libro de Ventas</div>
-        <div class="subtitle">Fecha del reporte: ${dateLabel}</div>
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        const margin = 28;
+        const contentWidth = pageWidth - margin * 2;
+        const primary = [124, 58, 237];
 
-        <div class="kpi-grid">
-            <div class="kpi"><div class="label">Total ventas del día</div><div class="value">${formatCurrency(summary.gross_sales || 0)}</div></div>
-            <div class="kpi"><div class="label">Total anulaciones</div><div class="value">${formatCurrency(summary.voided_sales || 0)}</div></div>
-            <div class="kpi"><div class="label">Cantidad transacciones</div><div class="value">${Number(summary.transactions_count || 0).toLocaleString('es-CL')}</div></div>
-            <div class="kpi"><div class="label">Ingreso neto final</div><div class="value">${formatCurrency(summary.net_income || 0)}</div></div>
-        </div>
+        const logoDataUrl = await loadImageAsDataUrl('img/logo.png').catch(() => null);
 
-        <div class="charts">
-            <div class="chart-card">
-                <div class="chart-title">Ventas por turno — comparación diaria</div>
-                ${barSvg}
-            </div>
-            <div class="chart-card">
-                <div class="chart-title">Distribución del día (Neto / Devoluciones / Gastos)</div>
-                ${donutSvg}
-                <div class="legend">Neto: ${formatCurrency(summary.net_income || 0)} · Devoluciones: ${formatCurrency(summary.returns || 0)} · Gastos: ${formatCurrency(summary.operational_expenses || 0)}</div>
-            </div>
-            <div class="chart-card" style="grid-column: 1 / -1;">
-                <div class="chart-title">Top productos más vendidos (cantidad)</div>
-                ${topSvg}
-            </div>
-        </div>
-    </div>
-    <div class="footer">Generado: ${generatedAt} · Sistema POS Libro de Ventas</div>
-    <script>window.onload = () => { window.print(); };</script>
-</body>
-</html>`;
+        const canUseGState = typeof pdf.setGState === 'function' && typeof pdf.GState === 'function';
 
-        const win = window.open('', '_blank');
-        if (!win) {
-            alert('No se pudo abrir la vista de PDF. Habilita ventanas emergentes.');
-            return;
+        if (logoDataUrl) {
+            const wmW = pageWidth * 0.46;
+            const wmH = wmW;
+            const wmX = (pageWidth - wmW) / 2;
+            const wmY = (pageHeight - wmH) / 2;
+            if (canUseGState) {
+                pdf.setGState(new pdf.GState({ opacity: 0.12 }));
+            }
+            pdf.addImage(logoDataUrl, 'PNG', wmX, wmY, wmW, wmH);
+            if (canUseGState) {
+                pdf.setGState(new pdf.GState({ opacity: 1 }));
+            }
         }
-        win.document.open();
-        win.document.write(html);
-        win.document.close();
+
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(primary[0], primary[1], primary[2]);
+        pdf.setFontSize(20);
+        pdf.text('Resumen del Día — Libro de Ventas', margin, 44);
+
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(11);
+        pdf.setTextColor(75, 85, 99);
+        pdf.text(`Fecha: ${dateLabel}`, margin, 62);
+
+        const kpis = [
+            { label: 'Total ventas', value: formatCurrency(summary.gross_sales || 0) },
+            { label: 'Anulaciones', value: formatCurrency(summary.voided_sales || 0) },
+            { label: 'Transacciones', value: Number(summary.transactions_count || 0).toLocaleString('es-CL') },
+            { label: 'Ingreso neto', value: formatCurrency(summary.net_income || 0) }
+        ];
+
+        const kpiTop = 74;
+        const kpiGap = 10;
+        const kpiW = (contentWidth - kpiGap * 3) / 4;
+        const kpiH = 72;
+        kpis.forEach((kpi, index) => {
+            const x = margin + (kpiW + kpiGap) * index;
+            pdf.setDrawColor(232, 226, 255);
+            pdf.setFillColor(255, 255, 255);
+            pdf.roundedRect(x, kpiTop, kpiW, kpiH, 10, 10, 'FD');
+            pdf.setTextColor(100, 116, 139);
+            pdf.setFontSize(10);
+            pdf.text(kpi.label, x + 10, kpiTop + 18);
+            pdf.setTextColor(30, 27, 75);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(14);
+            pdf.text(String(kpi.value), x + 10, kpiTop + 44);
+            pdf.setFont('helvetica', 'normal');
+        });
+
+        const chartTop = kpiTop + kpiH + 16;
+        const leftW = contentWidth * 0.6;
+        const rightW = contentWidth - leftW - 12;
+
+        drawBarsCard(pdf, {
+            x: margin,
+            y: chartTop,
+            w: leftW,
+            h: 216,
+            title: 'Ventas por turno',
+            values: shifts.map(s => ({ label: `#${s.shift_id}`, value: Number(s.sales_amount || 0) }))
+        });
+
+        drawDonutCard(pdf, {
+            x: margin + leftW + 12,
+            y: chartTop,
+            w: rightW,
+            h: 216,
+            title: 'Distribución del día',
+            values: [
+                { label: 'Ventas', value: Math.max(0, Number(summary.gross_sales || 0)), color: [124, 58, 237] },
+                { label: 'Devoluciones', value: Math.max(0, Number(summary.returns || 0)), color: [239, 68, 68] },
+                { label: 'Gastos', value: Math.max(0, Number(summary.operational_expenses || 0)), color: [245, 158, 11] }
+            ]
+        });
+
+        pdf.addPage('letter', 'landscape');
+
+        if (logoDataUrl) {
+            const wmW = pageWidth * 0.44;
+            const wmH = wmW;
+            const wmX = (pageWidth - wmW) / 2;
+            const wmY = (pageHeight - wmH) / 2;
+            if (canUseGState) {
+                pdf.setGState(new pdf.GState({ opacity: 0.1 }));
+            }
+            pdf.addImage(logoDataUrl, 'PNG', wmX, wmY, wmW, wmH);
+            if (canUseGState) {
+                pdf.setGState(new pdf.GState({ opacity: 1 }));
+            }
+        }
+
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(16);
+        pdf.setTextColor(primary[0], primary[1], primary[2]);
+        pdf.text('Top productos vendidos', margin, 42);
+
+        drawHorizontalBarsCard(pdf, {
+            x: margin,
+            y: 56,
+            w: contentWidth,
+            h: pageHeight - 100,
+            title: 'Ranking por cantidad',
+            values: topProducts.map(item => ({
+                label: String(item.name || 'Producto').slice(0, 44),
+                value: Number(item.qty || 0)
+            }))
+        });
+
+        const footer = `${generatedAt} · Sistema POS Libro de Ventas`;
+        const pages = pdf.getNumberOfPages();
+        for (let page = 1; page <= pages; page++) {
+            pdf.setPage(page);
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(9);
+            pdf.setTextColor(100, 116, 139);
+            pdf.text(footer, pageWidth / 2, pageHeight - 12, { align: 'center' });
+        }
+
+        pdf.save(`Resumen_Dia_Libro_Ventas_${dateLabel}.pdf`);
+    }
+
+    function drawCardFrame(pdf, x, y, w, h, title) {
+        pdf.setDrawColor(232, 226, 255);
+        pdf.setFillColor(255, 255, 255);
+        pdf.roundedRect(x, y, w, h, 10, 10, 'FD');
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(11);
+        pdf.setTextColor(51, 65, 85);
+        pdf.text(title, x + 10, y + 16);
+    }
+
+    function drawBarsCard(pdf, { x, y, w, h, title, values }) {
+        drawCardFrame(pdf, x, y, w, h, title);
+        const chartX = x + 24;
+        const chartY = y + 30;
+        const chartW = w - 48;
+        const chartH = h - 56;
+        const safeValues = values.length ? values : [{ label: 'Sin datos', value: 0 }];
+        const maxValue = Math.max(1, ...safeValues.map(item => item.value));
+        const barW = Math.max(20, (chartW / safeValues.length) * 0.58);
+        const gap = safeValues.length > 1 ? (chartW - barW * safeValues.length) / (safeValues.length - 1) : 0;
+
+        safeValues.forEach((item, index) => {
+            const ratio = Math.max(0, Number(item.value || 0)) / maxValue;
+            const currentH = Math.max(2, ratio * chartH);
+            const bx = chartX + index * (barW + gap);
+            const by = chartY + (chartH - currentH);
+            pdf.setFillColor(124, 58, 237);
+            pdf.roundedRect(bx, by, barW, currentH, 4, 4, 'F');
+
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(8);
+            pdf.setTextColor(71, 85, 105);
+            pdf.text(item.label, bx + barW / 2, chartY + chartH + 12, { align: 'center' });
+            pdf.text(formatCurrency(item.value || 0), bx + barW / 2, by - 4, { align: 'center' });
+        });
+    }
+
+    function drawDonutCard(pdf, { x, y, w, h, title, values }) {
+        drawCardFrame(pdf, x, y, w, h, title);
+        const centerX = x + w * 0.34;
+        const centerY = y + h * 0.55;
+        const outerR = Math.min(w, h) * 0.22;
+        const innerR = outerR * 0.58;
+        const total = Math.max(1, values.reduce((sum, item) => sum + Math.max(0, Number(item.value || 0)), 0));
+        let start = -90;
+
+        values.forEach((item) => {
+            const value = Math.max(0, Number(item.value || 0));
+            const sweep = (value / total) * 360;
+            const color = item.color || [124, 58, 237];
+            drawDonutSlice(pdf, centerX, centerY, outerR, innerR, start, start + sweep, color);
+            start += sweep;
+        });
+
+        pdf.setFillColor(255, 255, 255);
+        pdf.circle(centerX, centerY, innerR, 'F');
+
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(12);
+        pdf.setTextColor(30, 27, 75);
+        pdf.text('100%', centerX, centerY + 4, { align: 'center' });
+
+        let legendY = y + 56;
+        values.forEach((item) => {
+            const color = item.color || [124, 58, 237];
+            pdf.setFillColor(color[0], color[1], color[2]);
+            pdf.roundedRect(x + w * 0.58, legendY, 10, 10, 2, 2, 'F');
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(9);
+            pdf.setTextColor(51, 65, 85);
+            pdf.text(`${item.label}: ${formatCurrency(item.value || 0)}`, x + w * 0.58 + 16, legendY + 8);
+            legendY += 18;
+        });
+    }
+
+    function drawDonutSlice(pdf, cx, cy, outerR, innerR, startDeg, endDeg, rgb) {
+        const step = 6;
+        const points = [];
+        for (let a = startDeg; a <= endDeg; a += step) {
+            const rad = (a * Math.PI) / 180;
+            points.push([cx + outerR * Math.cos(rad), cy + outerR * Math.sin(rad)]);
+        }
+        for (let a = endDeg; a >= startDeg; a -= step) {
+            const rad = (a * Math.PI) / 180;
+            points.push([cx + innerR * Math.cos(rad), cy + innerR * Math.sin(rad)]);
+        }
+        if (points.length < 3) return;
+        pdf.setFillColor(rgb[0], rgb[1], rgb[2]);
+        pdf.lines(points.slice(1).map((p, i) => [p[0] - points[i][0], p[1] - points[i][1]]), points[0][0], points[0][1], [1, 1], 'F', true);
+    }
+
+    function drawHorizontalBarsCard(pdf, { x, y, w, h, title, values }) {
+        drawCardFrame(pdf, x, y, w, h, title);
+        const rows = values.length ? values : [{ label: 'Sin datos', value: 0 }];
+        const maxValue = Math.max(1, ...rows.map(r => Number(r.value || 0)));
+        const startY = y + 30;
+        const rowGap = Math.max(20, (h - 54) / rows.length);
+        const labelW = Math.min(260, w * 0.34);
+        const barX = x + 14 + labelW;
+        const barW = w - labelW - 40;
+
+        rows.forEach((row, index) => {
+            const ry = startY + index * rowGap;
+            const ratio = Math.max(0, Number(row.value || 0)) / maxValue;
+            const currentW = Math.max(2, ratio * barW);
+
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(9);
+            pdf.setTextColor(51, 65, 85);
+            pdf.text(String(row.label || 'Producto'), x + 12, ry + 9);
+
+            pdf.setFillColor(237, 233, 254);
+            pdf.roundedRect(barX, ry, barW, 11, 3, 3, 'F');
+
+            pdf.setFillColor(124, 58, 237);
+            pdf.roundedRect(barX, ry, currentW, 11, 3, 3, 'F');
+
+            pdf.setTextColor(30, 27, 75);
+            pdf.text(Number(row.value || 0).toLocaleString('es-CL'), barX + currentW + 6, ry + 9);
+        });
+    }
+
+    function loadImageAsDataUrl(url) {
+        return new Promise((resolve, reject) => {
+            const image = new Image();
+            image.crossOrigin = 'anonymous';
+            image.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = image.naturalWidth;
+                canvas.height = image.naturalHeight;
+                const context = canvas.getContext('2d');
+                if (!context) {
+                    reject(new Error('Canvas unavailable'));
+                    return;
+                }
+                context.drawImage(image, 0, 0);
+                resolve(canvas.toDataURL('image/png'));
+            };
+            image.onerror = () => reject(new Error('Image load error'));
+            image.src = url;
+        });
     }
 
     function createShiftBarsSvg(shifts) {
@@ -466,7 +679,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const report = payload.data;
             buildDailyXlsx(report);
-            buildPdfPresentation(report);
+            await buildPdfPresentation(report);
         } catch (error) {
             alert('Error de conexión al generar reportes diarios.');
         } finally {

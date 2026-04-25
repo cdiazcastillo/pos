@@ -391,6 +391,8 @@ $currentUser = auth_require_role(['admin'], 'admin_login.php', 'index.php');
         </div>
     </div>
     <script src="xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     <script src="main.js"></script>
     <script src="reports.js"></script>
 </body>

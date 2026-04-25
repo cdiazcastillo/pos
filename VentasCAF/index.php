@@ -630,11 +630,12 @@ function get_stock_semaphore_class($product) {
                 <div id="product-grid">
                     <?php foreach ($products as $product): ?>
                         <?php $stock_class = get_stock_semaphore_class($product); ?>
+                                <?php $available_stock = max(0, (int) floor((float)($product['stock_level'] ?? 0))); ?>
                         <div class="product-card <?php echo $stock_class; ?>"
                              data-id="<?php echo $product['id']; ?>"
                              data-name="<?php echo htmlspecialchars($product['name']); ?>"
                              data-price="<?php echo $product['price']; ?>"
-                                data-stock="<?php echo intval($product['stock_level']); ?>"
+                                          data-stock="<?php echo $available_stock; ?>"
                              <?php echo ($stock_class === 'stock-empty') ? 'disabled' : ''; ?>>
 
                             <div class="product-info">
@@ -642,7 +643,7 @@ function get_stock_semaphore_class($product) {
                                 <span class="product-price">$<?php echo number_format($product['price'], 0, ',', '.'); ?></span>
                             </div>
                             <div class="stock-indicator">
-                                <span>Quedan <?php echo $product['stock_level']; ?></span>
+                                <span>Quedan <?php echo $available_stock; ?></span>
                             </div>
                         </div>
                     <?php endforeach; ?>
@@ -686,6 +687,6 @@ function get_stock_semaphore_class($product) {
     </div>
 
     <div id="toast-notification"></div>
-    <script src="main.js"></script>
+    <script src="main.js?v=20260425-stock"></script>
 </body>
 </html>

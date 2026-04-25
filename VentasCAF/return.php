@@ -245,18 +245,20 @@ $items = $db->query(
                     </thead>
                     <tbody>
                         <?php foreach($items as $item): 
-                            $max_returnable = $item['quantity'] - $item['quantity_returned'];
+                            $net_purchased = max(0, intval($item['quantity']) - intval($item['quantity_returned']));
+                            $max_returnable = $net_purchased;
                         ?>
                         <tr id="item-row-<?php echo $item['id']; ?>" class="<?php if ($max_returnable <= 0) echo 'item-fully-returned'; ?>">
                             <td data-label="Producto"><?php echo htmlspecialchars($item['name']); ?></td>
-                            <td data-label="Cant. Comprada"><?php echo $item['quantity']; ?></td>
-                            <td data-label="Cant. Devuelta" class="returned-qty-cell"><?php echo $item['quantity_returned']; ?></td>
+                            <td data-label="Cant. Comprada" class="purchased-qty-cell"><?php echo $net_purchased; ?></td>
+                            <td data-label="Cant. Devuelta" class="returned-qty-cell"><?php echo max(0, intval($item['quantity_returned'])); ?></td>
                             <td data-label="A Devolver Ahora">
                                 <?php if($max_returnable > 0): ?>
                                 <input type="number" 
                                        class="return-qty-input" 
                                        name="items[<?php echo $item['id']; ?>]"
-                                       value="0" 
+                                       value="" 
+                                        placeholder=""
                                         inputmode="numeric"
                                         pattern="[0-9]*"
                                        min="0" 
@@ -341,15 +343,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     const quantityReturned = parseInt(input.value, 10);
                     const row = input.closest('tr');
                     const returnedCell = row.querySelector('.returned-qty-cell');
+                    const purchasedCell = row.querySelector('.purchased-qty-cell');
                     
                     // 1. Update returned quantity cell
                     const newReturnedQty = (parseInt(returnedCell.textContent, 10) || 0) + quantityReturned;
                     returnedCell.textContent = newReturnedQty;
+
+                    // 1b. Update purchased quantity cell (net remaining purchased units)
+                    if (purchasedCell) {
+                        const newPurchasedQty = Math.max(0, (parseInt(purchasedCell.textContent, 10) || 0) - quantityReturned);
+                        purchasedCell.textContent = newPurchasedQty;
+                    }
                     
                     // 2. Update the input's max value
                     const newMax = parseInt(input.getAttribute('max'), 10) - quantityReturned;
                     input.setAttribute('max', newMax);
-                    input.value = 0; // Reset input
+                    input.value = ''; // Reset input
 
                     // 3. If no more items can be returned, disable and style
                     if (newMax <= 0) {

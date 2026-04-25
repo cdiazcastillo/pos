@@ -14,34 +14,57 @@ $openShiftsCount = intval($openShifts['total'] ?? 0);
 $closedToday = $db->query("SELECT COUNT(*) as total FROM shifts WHERE status = 'closed' AND DATE(end_time) = CURDATE()");
 $closedTodayCount = intval($closedToday['total'] ?? 0);
 
-$salesToday = $db->query(
-    "SELECT COUNT(*) as total_sales, COALESCE(SUM(total_amount), 0) as total_amount FROM sales WHERE status = 'completed' AND DATE(sale_time) = CURDATE()"
-);
-$salesTodayCount = intval($salesToday['total_sales'] ?? 0);
-$salesTodayAmount = intval($salesToday['total_amount'] ?? 0);
+$activeShift = $db->query("SELECT id FROM shifts WHERE status = 'open' ORDER BY start_time DESC LIMIT 1");
+$activeShiftId = intval($activeShift['id'] ?? 0);
 
-$expensesToday = $db->query(
-    "SELECT COALESCE(SUM(amount), 0) as total FROM expenses WHERE DATE(expense_time) = CURDATE() AND sale_id IS NULL"
-);
-$expensesTodayAmount = intval($expensesToday['total'] ?? 0);
+$salesTodayCount = 0;
+$salesTodayAmount = 0;
+$expensesTodayAmount = 0;
+$returnesTodayAmount = 0;
+$netToday = 0;
 
-$returnesToday = $db->query(
-    "SELECT COALESCE(SUM(e.amount), 0) as total FROM expenses e INNER JOIN sales s ON s.id = e.sale_id WHERE e.sale_id IS NOT NULL AND DATE(e.expense_time) = CURDATE()"
-);
-$returnesTodayAmount = intval($returnesToday['total'] ?? 0);
+if ($activeShiftId > 0) {
+    $salesToday = $db->query(
+        "SELECT COUNT(*) as total_sales, COALESCE(SUM(total_amount), 0) as total_amount
+         FROM sales
+         WHERE shift_id = ? AND status = 'completed'",
+        [$activeShiftId]
+    );
+    $salesTodayCount = intval($salesToday['total_sales'] ?? 0);
+    $salesTodayAmount = intval($salesToday['total_amount'] ?? 0);
 
-$netToday = $salesTodayAmount - $returnesTodayAmount - $expensesTodayAmount;
+    $expensesToday = $db->query(
+        "SELECT COALESCE(SUM(amount), 0) as total
+         FROM expenses
+         WHERE shift_id = ? AND sale_id IS NULL",
+        [$activeShiftId]
+    );
+    $expensesTodayAmount = intval($expensesToday['total'] ?? 0);
+
+    $returnesToday = $db->query(
+        "SELECT COALESCE(SUM(amount), 0) as total
+         FROM expenses
+         WHERE shift_id = ? AND sale_id IS NOT NULL",
+        [$activeShiftId]
+    );
+    $returnesTodayAmount = intval($returnesToday['total'] ?? 0);
+
+    $netToday = $salesTodayAmount - $returnesTodayAmount - $expensesTodayAmount;
+    if ($salesTodayAmount > $returnesTodayAmount) {
+        $netToday = max(0, $netToday);
+    }
+}
 
 $topProducts = $db->query(
     "SELECT p.name, COALESCE(SUM(si.quantity - si.quantity_returned), 0) as qty
      FROM products p
      LEFT JOIN sale_items si ON si.product_id = p.id
      LEFT JOIN sales s ON s.id = si.sale_id AND s.status = 'completed'
-     WHERE DATE(s.sale_time) = CURDATE()
+     WHERE s.shift_id = ?
      GROUP BY p.id, p.name
      HAVING qty > 0
      ORDER BY qty DESC LIMIT 5",
-    [],
+    [$activeShiftId],
     true
 ) ?: [];
 
