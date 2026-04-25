@@ -62,7 +62,7 @@ $currentUser = auth_require_role(['admin'], 'admin_login.php', 'index.php');
                 </div>
             </div>
             <div class="reports-actions">
-                <button id="export-all-btn" class="btn btn-success">Exportar a Excel</button>
+                <button id="export-all-btn" class="btn btn-success">Generar reporte diario (Excel + PDF)</button>
             </div>
         </div>
         <div class="reports-container" role="region" aria-label="Listado de turnos">

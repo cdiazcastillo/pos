@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Acceso Vendedor - 4 Básico A</title>
     <style>
         :root {
@@ -47,11 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             --bg-app: #f3f0ff;
             --bg-card: #ffffff;
             --text-dark: #1e1b4b;
-            --text-muted: #4b5563;
-            --danger: #dc2626;
             --success: #16a34a;
-            --blue: #2563eb;
-            --shadow-soft: 0 8px 24px rgba(30, 27, 75, 0.1);
         }
 
         * { box-sizing: border-box; }
@@ -59,69 +55,68 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         body {
             margin: 0;
             font-family: -apple-system, BlinkMacSystemFont, "Inter", "Poppins", "Segoe UI", Roboto, Arial, sans-serif;
-            background: #ffffff;
+            background: var(--bg-app);
             color: var(--text-dark);
             overflow-x: hidden;
         }
 
         .app {
-            min-height: 100svh;
+            min-height: 100dvh;
             display: flex;
             flex-direction: column;
-            background: #ffffff;
         }
 
         .wrap {
-            flex: 1;
-            display: grid;
-            place-items: center;
-            padding: 16px;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem 1rem;
         }
 
         .card {
-            width: min(760px, 100%);
+            width: min(400px, 100%);
             background: var(--bg-card);
-            border-radius: 24px;
-            padding: 22px;
-            box-shadow: var(--shadow-soft);
-            text-align: center;
-            display: grid;
-            justify-items: center;
-            gap: 10px;
+            border-radius: 1.4rem;
+            padding: 1.5rem;
+            box-shadow: 0 0.5rem 1.5rem rgba(30, 27, 75, 0.10);
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+            align-items: stretch;
         }
 
         .logo-wrap {
             display: flex;
             justify-content: center;
-            width: 100%;
-            margin: 0 auto 8px auto;
+            margin-bottom: 0.2rem;
         }
 
         .logo-image {
-            width: min(560px, 94vw);
-            height: min(560px, 94vw);
+            width: min(180px, 50vw);
+            max-width: min(180px, 50vw);
+            max-height: 30dvh;
+            height: auto;
             object-fit: contain;
-            border-radius: 1.1rem;
-            background: #fff;
-            border: 1px solid #dbe4ff;
-            padding: 12px;
-            box-shadow: 0 0.7rem 1.8rem rgba(30, 27, 75, 0.18);
+            padding: 8px;
+            box-shadow: 0 0.25rem 0.75rem rgba(30, 27, 75, 0.10);
             display: block;
-            margin: 0 auto;
         }
 
         .btn {
-            width: min(520px, 100%);
-            min-height: 50px;
+            width: 100%;
+            min-height: 2.75rem;
             border: none;
-            border-radius: 14px;
+            border-radius: 999rem;
             font-weight: 700;
-            font-size: 1.03rem;
+            font-size: 0.95rem;
             cursor: pointer;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            padding: 0.65rem 1rem;
             transition: transform 0.15s ease, filter 0.15s ease;
         }
 
@@ -130,45 +125,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             filter: brightness(0.97);
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary), #8b5cf6);
+        .btn--primary {
+            background: linear-gradient(135deg, #7c3aed, #8b5cf6);
             color: #fff;
         }
 
-        .btn-green {
-            background: var(--success);
-            color: #fff;
-            margin-top: 0;
-            width: min(520px, 100%);
-            min-height: 50px;
-            border: none;
-            border-radius: 14px;
-            font-weight: 700;
-            font-size: 1.03rem;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.15s ease, filter 0.15s ease;
-        }
-
-        .btn-green:hover {
-            transform: translateY(-1px);
-            filter: brightness(0.97);
+        .btn--secondary {
+            background: rgba(124, 58, 237, 0.12);
+            color: #7c3aed;
         }
 
         .error {
-            margin-top: 12px;
+            margin-top: 0.35rem;
             color: #b91c1c;
             font-size: .9rem;
             font-weight: 600;
+            text-align: center;
         }
 
         @media (max-width: 520px) {
-            .card { border-radius: 20px; padding: 16px; gap: 8px; }
-            .btn,
-            .btn-green { min-height: 48px; font-size: 1rem; }
+            .card { padding: 1.35rem 1rem; }
         }
     </style>
 </head>
@@ -179,8 +155,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="logo-wrap">
                 <img src="img/logo.png" alt="Logo" class="logo-image">
             </div>
-            <button type="submit" class="btn btn-primary">Ventas</button>
-            <a href="admin_login.php" class="btn-green">Equipo De Trabajo</a>
+            <button type="submit" class="btn btn--primary">Ventas</button>
+            <a href="admin_login.php" class="btn btn--secondary">Equipo De Trabajo</a>
             <?php if ($error !== ''): ?>
                 <div class="error"><?php echo htmlspecialchars($error); ?></div>
             <?php endif; ?>

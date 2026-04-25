@@ -53,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Administración - 4 Básico A</title>
     <style>
         :root {
@@ -61,11 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             --bg-app: #f3f0ff;
             --bg-card: #ffffff;
             --text-dark: #1e1b4b;
-            --text-muted: #4b5563;
-            --danger: #dc2626;
             --success: #16a34a;
-            --blue: #2563eb;
-            --shadow-soft: 0 8px 24px rgba(30, 27, 75, 0.1);
         }
 
         * { box-sizing: border-box; }
@@ -79,108 +75,125 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         .app {
-            min-height: 100svh;
+            min-height: 100dvh;
             display: flex;
             flex-direction: column;
         }
 
         .wrap {
-            flex: 1;
-            display: grid;
-            place-items: center;
-            padding: 16px;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem 1rem;
         }
 
         .card {
-            width: min(760px, 100%);
+            width: min(400px, 100%);
             background: var(--bg-card);
-            border-radius: 24px;
-            padding: 20px;
-            box-shadow: var(--shadow-soft);
-            text-align: center;
+            border-radius: 1.4rem;
+            padding: 1.5rem;
+            box-shadow: 0 0.5rem 1.5rem rgba(30, 27, 75, 0.10);
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+            align-items: stretch;
         }
 
         .logo-wrap {
             display: flex;
             justify-content: center;
-            margin-bottom: 16px;
+            margin-bottom: 0.2rem;
         }
+
         .logo-image {
-            width: min(560px, 94vw);
-            height: min(560px, 94vw);
+            width: min(180px, 50vw);
+            max-width: min(180px, 50vw);
+            max-height: 30dvh;
+            height: auto;
             object-fit: contain;
-            border-radius: 1.2rem;
-            background: #fff;
-            border: 1px solid #dbe4ff;
-            padding: 10px;
-            box-shadow: 0 0.7rem 1.8rem rgba(30, 27, 75, 0.18);
+            padding: 8px;
+            box-shadow: 0 0.25rem 0.75rem rgba(30, 27, 75, 0.10);
             display: block;
-            margin: 0 auto 16px auto;
         }
+
         .field {
             display: grid;
             gap: 6px;
-            margin-top: 10px;
+            margin-top: 0.1rem;
             text-align: left;
         }
 
-        input {
-            height: 44px;
-            border: 1px solid #d1d5db;
-            border-radius: 12px;
-            padding: 0 12px;
-            font-size: .95rem;
-        }
-
-        .btn {
-            margin-top: 12px;
-            width: 100%;
-            height: 48px;
-            border: none;
-            border-radius: 14px;
-            background: linear-gradient(135deg, var(--primary), #8b5cf6);
-            color: #fff;
-            font-weight: 700;
-            cursor: pointer;
-            font-size: 1rem;
-        }
-
-        .error {
-            margin-top: 10px;
-            color: #b91c1c;
-            font-size: .88rem;
+        .field label {
+            font-size: 0.9rem;
             font-weight: 600;
         }
 
+        input {
+            min-height: 2.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 999rem;
+            padding: 0.65rem 1rem;
+            font-size: 0.95rem;
+            width: 100%;
+        }
+
+        .btn {
+            margin-top: 0.2rem;
+            width: 100%;
+            min-height: 2.75rem;
+            border: none;
+            border-radius: 999rem;
+            background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 0.95rem;
+            padding: 0.65rem 1rem;
+            transition: transform 0.15s ease, filter 0.15s ease;
+        }
+
+        .btn:hover,
+        .link-btn:hover {
+            transform: translateY(-1px);
+            filter: brightness(0.97);
+        }
+
+        .error {
+            margin-top: 0.1rem;
+            color: #b91c1c;
+            font-size: .88rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
         .links {
-            margin-top: 14px;
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 8px;
+            margin-top: 0.1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
         }
 
         .link-btn {
             display: inline-flex;
             justify-content: center;
             align-items: center;
-            height: 44px;
-            border-radius: 12px;
+            min-height: 2.75rem;
+            border-radius: 999rem;
             text-decoration: none;
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: 700;
-            color: #fff;
-        }
-
-        .link-btn.vendor {
-            background: linear-gradient(135deg, var(--primary), #8b5cf6);
-        }
-
-        .link-btn.pos {
-            background: var(--success);
+            color: #7c3aed;
+            width: 100%;
+            border: none;
+            padding: 0.65rem 1rem;
+            background: rgba(124, 58, 237, 0.12);
+            transition: transform 0.15s ease, filter 0.15s ease;
         }
 
         @media (max-width: 520px) {
-            .links { grid-template-columns: 1fr; }
+            .card { padding: 1.35rem 1rem; }
         }
     </style>
 </head>
@@ -202,8 +215,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
 
             <div class="links">
-                <a href="vendedor_login.php" class="link-btn vendor">Vendedor</a>
-                <a href="index.php" class="link-btn pos">Punto de Venta</a>
+                <a href="vendedor_login.php" class="link-btn">Vendedor</a>
+                <a href="index.php" class="link-btn">Punto de Venta</a>
             </div>
         </form>
     </main>

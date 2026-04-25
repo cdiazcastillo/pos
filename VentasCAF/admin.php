@@ -1157,6 +1157,24 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
                         </tbody>
                     </table>
                 </div>
+
+                <div class="active-shifts-table-wrap" style="margin-top: 14px;">
+                    <h3 style="margin:0 0 8px; font-size:1rem;">Historial de cierres forzados</h3>
+                    <table class="active-shifts-table">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Administrador</th>
+                                <th>Acción</th>
+                                <th>Turno</th>
+                                <th>Detalle</th>
+                            </tr>
+                        </thead>
+                        <tbody id="super-admin-history-body">
+                            <tr><td colspan="5">Cargando historial...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </section>
             <?php endif; ?>
 
@@ -1274,6 +1292,7 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
         const realtimeInsightsPanel = document.getElementById('realtime-insights-panel');
         const superAdminToolsPanel = document.getElementById('super-admin-tools-panel');
         const superAdminShiftsBody = document.getElementById('super-admin-shifts-body');
+        const superAdminHistoryBody = document.getElementById('super-admin-history-body');
         const superRefreshShiftsBtn = document.getElementById('super-refresh-shifts-btn');
         const superTerminateProcessesBtn = document.getElementById('super-terminate-processes-btn');
         const kpiGrossSales = document.getElementById('kpi-gross-sales');
@@ -1425,6 +1444,7 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
             event.preventDefault();
             showOnlyPanel(superAdminToolsPanel);
             loadSuperAdminShifts();
+            loadSuperAdminHistory();
         });
 
         async function loadSuperAdminShifts() {
@@ -1466,6 +1486,47 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
             }
         }
 
+        async function loadSuperAdminHistory() {
+            if (!isSuperAdminUser || !superAdminHistoryBody) return;
+            try {
+                const response = await fetch('super_admin_tools_api.php?action=list_force_close_history', { cache: 'no-store' });
+                const payload = await response.json();
+
+                if (!payload.success) {
+                    superAdminHistoryBody.innerHTML = '<tr><td colspan="5">No se pudo cargar el historial.</td></tr>';
+                    return;
+                }
+
+                const rows = Array.isArray(payload.data?.history) ? payload.data.history : [];
+                if (rows.length === 0) {
+                    superAdminHistoryBody.innerHTML = '<tr><td colspan="5">Sin registros aún.</td></tr>';
+                    return;
+                }
+
+                superAdminHistoryBody.innerHTML = rows.map(row => {
+                    const dateValue = row.created_at ? new Date(String(row.created_at).replace(' ', 'T')) : null;
+                    const when = dateValue && !Number.isNaN(dateValue.getTime())
+                        ? dateValue.toLocaleString('es-CL')
+                        : (row.created_at || '-');
+                    const actionText = row.action_type === 'force_close_shift' ? 'Cierre forzado' : 'Terminar incompletos';
+                    const shiftText = row.target_shift_id ? ('#' + row.target_shift_id) : '-';
+                    const details = String(row.details || '-').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+                    return `
+                        <tr>
+                            <td>${when}</td>
+                            <td>${String(row.admin_username || 'admin')}</td>
+                            <td>${actionText}</td>
+                            <td>${shiftText}</td>
+                            <td>${details}</td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (error) {
+                superAdminHistoryBody.innerHTML = '<tr><td colspan="5">Error de conexión.</td></tr>';
+            }
+        }
+
         superAdminShiftsBody?.addEventListener('click', async (event) => {
             const button = event.target.closest('.super-force-close-btn');
             if (!button) return;
@@ -1493,6 +1554,7 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
                 if (data.success) {
                     showToast('Turno cerrado de forma forzada.');
                     await loadSuperAdminShifts();
+                    await loadSuperAdminHistory();
                     return;
                 }
                 showToast(data.message || 'No se pudo forzar el cierre.', true);
@@ -1505,6 +1567,7 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
 
         superRefreshShiftsBtn?.addEventListener('click', () => {
             loadSuperAdminShifts();
+            loadSuperAdminHistory();
         });
 
         superTerminateProcessesBtn?.addEventListener('click', async () => {
@@ -1524,6 +1587,7 @@ $baseHref = ($basePath === '' || $basePath === '.') ? '/' : $basePath . '/';
                     const finalized = Number(data.data?.finalized_notifications || 0);
                     showToast(`Procesos incompletos finalizados. Turnos cerrados: ${closed}, notificaciones: ${finalized}.`);
                     await loadSuperAdminShifts();
+                    await loadSuperAdminHistory();
                     return;
                 }
                 showToast(data.message || 'No se pudo ejecutar la acción.', true);
